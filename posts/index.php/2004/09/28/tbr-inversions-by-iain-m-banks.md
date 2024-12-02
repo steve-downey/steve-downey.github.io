@@ -1,0 +1,4 @@
+<html><body><p>My boss loaned me <a href="http://www.amazon.com/exec/obidos/ASIN/0743421922/ref=pd_sxp_elt_l1/102-6352297-2908912">Look to Windward</a>, and told me I had to read it. He was right, and as soon as I found some other of Ian M. Banks's books, I bought them. He also reminded me that Iain Banks is the same person, but not the same author. That author writes "real literature", not genre.
+<br><br>I can read and enjoy "real lit", but prefer SF. If I need seriosity, I'll reread <a href="http://www.amazon.com/exec/obidos/ASIN/0375706682/qid=1096341713/sr=ka-1/ref=pd_ka_1/102-6352297-2908912">Dhalgren</a>.
+<br><br><br><br><map name="boxmap-p8"><area shape="RECT" coords="14, 200, 103, 207" href="http://rcm.amazon.com/e/cm/privacy-policy.html?o=1">
+<area coords="0,0,10000,10000" href="http://www.amazon.com/exec/obidos/redirect-home/whatcomestomi-20"></map><img width="120" height="240" border="0" usemap="#boxmap-p8" alt="Shop at Amazon.com"></p></body></html>

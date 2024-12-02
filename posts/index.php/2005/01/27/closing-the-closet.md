@@ -1,0 +1,2 @@
+<html><body><p>The bedroom closet is switching from the bedroom (soon to be living room) to the other side, where it will be my closet in my new office. They framed it, and later they'll put up the new sheetrock there, with a door on the other side.
+<br><br><img src="http://www.sdowney.org/closethecloset.jpg"></p></body></html>

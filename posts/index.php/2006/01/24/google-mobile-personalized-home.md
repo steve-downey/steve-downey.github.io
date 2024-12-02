@@ -1,0 +1,1 @@
+<html><body><a href="http://mobile.google.com/personalized/promo.html">Google Mobile - Personalized Home</a><br><br>Way cool. More neat stuff on my mobile phone.</body></html>

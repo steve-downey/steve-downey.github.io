@@ -1,0 +1,3 @@
+<html><body><p>One of the few Nebula or Hugo award winners that I haven't read. 
+<br><br><map name="boxmap-p8"><area shape="RECT" coords="14, 200, 103, 207" href="http://rcm.amazon.com/e/cm/privacy-policy.html?o=1">
+<area coords="0,0,10000,10000" href="http://www.amazon.com/exec/obidos/redirect-home/whatcomestomi-20"></map><img width="120" height="240" border="0" usemap="#boxmap-p8" alt="Shop at Amazon.com"></p></body></html>

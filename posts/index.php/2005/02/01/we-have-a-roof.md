@@ -1,0 +1,2 @@
+<html><body><p>Not only a roof, a whole second floor up there! This picture is from Monday morning. Our contractor worked over the weekend to keep us from freezing (more) than we already were. To be fair, he warned us it was going to be like living in a war zone once the roof started to come off. 
+<br><br><br><img src="http://www.sdowney.org/small-img_0079.jpg"></p></body></html>

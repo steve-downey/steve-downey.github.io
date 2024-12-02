@@ -1,0 +1,2 @@
+<html><body><p>Steven Brust is one my favorite authors that I've started reading recently. That's a mixed blessing for me. It means I've got a backlist to read, but I wish I'd had him to read during some dry spells. This one is from his back list. Read the first few pages at the bookstore, but only because I couldn't resist, I knew I was buying it as soon as I saw it.
+<br><br>&amp;amp;lt;map&amp;gt;&amp;lt;area&amp;gt;&amp;lt;area&amp;gt;&amp;lt;/map&amp;gt;&amp;lt;img&amp;gt;</p></body></html>

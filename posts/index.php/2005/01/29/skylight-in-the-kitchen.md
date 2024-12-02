@@ -1,0 +1,3 @@
+<html><body><p>Well, not really, but with the roof really off, you can see sky through the plastic sheet that's up, covering one of the new beams for the house.
+<br><img src="http://www.sdowney.org/kitchen-skylight.jpg"><br><br>Here's a picture of the front of the house, now that they've started framing the new second story. 
+<br><br><img src="http://www.sdowney.org/framing-front-house.jpg"></p></body></html>

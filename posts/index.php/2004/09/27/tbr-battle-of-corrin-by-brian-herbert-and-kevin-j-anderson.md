@@ -1,0 +1,3 @@
+<html><body><p>The latest in Brian Herbert and Kevin J. Anderson's Dune prequel trilogy. I bought this in hardcover, as I did the last few, but I'm afraid I may regret this. The coincendence that every character in Dune's ancestor from 100 generations ago knew each other, and set everything in motion at roughly the same time tends to strain my suspension of disbelief.
+<br><br>&amp;amp;amp;amp;amp;amp;amp;lt;map&amp;amp;amp;amp;gt;&amp;amp;amp;amp;lt;area&amp;amp;amp;amp;gt;&amp;amp;amp;amp;lt;area&amp;amp;amp;amp;gt;&amp;amp;amp;amp;lt;/map&amp;amp;amp;amp;gt;&amp;amp;amp;amp;lt;img&amp;amp;amp;amp;gt;      
+<br><br></p></body></html>

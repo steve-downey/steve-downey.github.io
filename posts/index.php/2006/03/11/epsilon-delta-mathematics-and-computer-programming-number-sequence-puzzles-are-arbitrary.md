@@ -1,0 +1,1 @@
+<html><body><a href="http://epsilondelta.wordpress.com/2006/03/09/number-sequence-puzzles-are-arbitrary/">Epsilon-Delta: Mathematics and Computer Programming » Number Sequence Puzzles are Arbitrary</a></body></html>

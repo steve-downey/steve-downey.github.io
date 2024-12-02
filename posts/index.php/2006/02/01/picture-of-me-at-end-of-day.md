@@ -1,0 +1,2 @@
+<html><body><p><img width="320" src="http://www.sdowney.org/mobile_images/Photo_01-790705.jpg"></p>
+<p><br>This is me at the end of the day, playing with Blogger's new mobile posting feature, and my new cell phone camera.</p></body></html>

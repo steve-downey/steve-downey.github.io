@@ -1,0 +1,1 @@
+<html><body><span>Take a picture of yourself right now.<br>don't change your clothes, don't fix your hair...just take a picture.<br>post that picture with NO editing.<br>post these instructions with your picture.<br><br></span></body></html>
