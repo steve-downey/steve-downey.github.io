@@ -2,6 +2,9 @@
 
 <p> I managed to gradually destroy the whole thing after a decade or more of platform migrations and upgrades. This is a new and from (mostly) scratch install, into which I've imported the contents of the old one. Good backups and some hints from the excellent staff at <a href="https://www.panix.com">panix.com</a> got me back in shape. I hope. </p>
 
+<!-- TEASER_END -->
+
+
 <div id="outline-container-org0967571" class="outline-2">
 <h2 id="org0967571">Notes to my future self:</h2>
 <div class="outline-text-2" id="text-org0967571">

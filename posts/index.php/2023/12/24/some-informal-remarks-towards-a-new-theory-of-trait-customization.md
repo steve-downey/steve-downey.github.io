@@ -21,6 +21,9 @@ Syntax isn't really awesome, but not utterly unworkable.
 
 </div>
 </div>
+
+<!-- TEASER_END -->
+
 <div id="outline-container-org5ad6709" class="outline-2">
 <h2 id="org5ad6709">Background</h2>
 <div class="outline-text-2" id="text-org5ad6709">

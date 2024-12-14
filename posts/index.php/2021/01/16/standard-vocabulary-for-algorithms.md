@@ -9,6 +9,8 @@ Disclosure: I voted in favor of this. It does <b>not</b> suggest work on <a href
 
 A component can have std::string or std::vector&lt;int&gt; in its interface with little concern. The STL parts of the standard library have always relied on concepts for constraining template parameters implicitly, requiring an Iterator of particular category in places, or specializing algorithms based on such. Composition of container types has also been natural. No one is confused by a std::unordered_map&lt;std::string, std::vector&lt;my::person&gt;&gt;.
 
+<!-- TEASER_END -->
+
 The new C++20 range facilities allow composition of algorithms, which means that the names of algorithms will, and must, become part of the vocabulary of C++ programmers. Algorithms, and the names for them, are far broader than the linear containers supported by C++ today. It is a particular problem because C++ has named core algorithms badly, as they were not, until recently, first class entities.
 
 </div>

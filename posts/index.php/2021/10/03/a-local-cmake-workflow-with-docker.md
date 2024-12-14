@@ -10,6 +10,8 @@
 <p> Building a project that uses cmake runs through a predictable lifecycle that you should be able to pick up where you left off without remembering, and for which you should be able to state your goal, not the step you are on. <code>make</code> is designed for this, and can drive the processs. </p>
 </div>
 
+<!-- TEASER_END -->
+
 <div id="outline-container-org7268417" class="outline-3">
 <h3 id="org7268417">The workflow</h3>
 <div class="outline-text-3" id="text-org7268417">

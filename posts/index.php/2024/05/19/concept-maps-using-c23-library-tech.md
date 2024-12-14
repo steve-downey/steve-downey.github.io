@@ -5,6 +5,8 @@
 
 <p> This allowed open extension of a concept. </p>
 
+<!-- TEASER_END -->
+
 <p> A definition could be provided that allows an algorithm to operate in terms of the API a concept presents and the map would define how those operations are implemented for a particular type. </p>
 
 <ul class="org-ul">

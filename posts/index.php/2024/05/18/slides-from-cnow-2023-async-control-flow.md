@@ -18,6 +18,8 @@
 <li>Where can I steal from?</li>
 </ul>
 
+<!-- TEASER_END -->
+
 <div class="notes" id="org36cf365">
 <p>  </p>
 
@@ -434,12 +436,12 @@ The int is 55
 <div class="outline-text-4" id="text-orga29d66f">
 <p> Transform a function </p>
 
-<p style="text-align:center"> $latex   A  \rightarrow B   $ </p> 
+<p style="text-align:center"> $latex   A  \rightarrow B   $ </p>
 
 
 <p> to </p>
 
-<p style="text-align:center"> $latex   A  \rightarrow B  \rightarrow ( B \rightarrow R ) \rightarrow R   $ </p> 
+<p style="text-align:center"> $latex   A  \rightarrow B  \rightarrow ( B \rightarrow R ) \rightarrow R   $ </p>
 
 
 <div class="org-src-container">
@@ -462,7 +464,7 @@ The int is 55
 <div id="outline-container-orgaf9b3e1" class="outline-4">
 <h4 id="orgaf9b3e1">Sender Closes Over A</h4>
 <div class="outline-text-4" id="text-orgaf9b3e1">
-<p style="text-align:center"> $latex   B  \rightarrow ( B \rightarrow R ) \rightarrow R   $ </p> 
+<p style="text-align:center"> $latex   B  \rightarrow ( B \rightarrow R ) \rightarrow R   $ </p>
 
 <p> The $LATEX A$ is (mostly) erased from the Sender. </p>
 </div>
@@ -470,7 +472,7 @@ The int is 55
 <div id="outline-container-org2621484" class="outline-4">
 <h4 id="org2621484">Reciever Is The Transform to Result</h4>
 <div class="outline-text-4" id="text-org2621484">
-<p style="text-align:center"> $latex   ( B \rightarrow R ) \rightarrow R   $ </p> 
+<p style="text-align:center"> $latex   ( B \rightarrow R ) \rightarrow R   $ </p>
 </div>
 </div>
 </div>

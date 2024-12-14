@@ -19,6 +19,7 @@
 <dt>Schedulers</dt><dd>Arranges for the context work is done in.</dd>
 </dl>
 
+<!-- TEASER_END -->
 
 <p> The primary user facing concept is the sender. Values and functions can be lifted directly into senders. Senders can be stacked together, with a sender passing its value on to another function. Or stacking exception or cancellation handling the same way. </p>
 

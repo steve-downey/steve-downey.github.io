@@ -20,13 +20,15 @@
 
 </div>
 
+<!-- TEASER_END -->
+
 
 
 
 <div id="outline-container-orgf2bc23f" class="outline-2">
 <h2 id="orgf2bc23f"><span class="section-number-2">1.</span> Delete blocks and text</h2>
 <div class="outline-text-2" id="text-1">
-{\color{red}\bfseries  
+{\color{red}\bfseries
 <p> Remove this terrible old stuff. </p>
 
 }
