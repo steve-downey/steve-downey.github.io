@@ -1,6 +1,0 @@
-<html><body><p>I have two batches of beer in progress at the moment. The first was
-<br>supposed to be a <a href="http://www.bjcp.org/styles04/Category9.html#style9E">Scottish Wee Heavy</a>, but due to technical difficulties during the <a href="http://www.listermann.com/Store/WannaMash.asp">mash</a>, it ended up a lot lighter and therefore hoppier than I had intended.  The hose connecting the <a href="http://www.listermann.com/Store/Details.asp?ID=935">false bottom</a> to the outlet valve came loose, and I had to dump out all the grain, reconnect the hose, add more water to keep the grain bed floating, the dump all the grain back in. Only to discover that some grain had got stuck in the valve, and I had to do it all over again. So it ended up with about a gallon of extra water in it.
-<br><br>That batch got bottled last night.  It looks pretty good. I'd noticed earlier a problem with haze, and added some <a href="http://www.scottlaboratories.com/products/fermentation/generaltools.asp">Sparkalloid</a>,
-<br>which took everything out of suspension, leaving really bright, clear beer.
-<br><br>The second batch is what the first batch should have been. A nice rich, malty, Scotch Ale.  Original gravity of 1.096, which is down to 1.016 right now.
-<br></p></body></html>

@@ -1,1 +1,0 @@
-<html><body><p>Yet another test post. Testing post via email</p></body></html>

@@ -1,4 +1,0 @@
-<html><body><p>Zelazny near the height of his power, before Amber took over. OK, I liked the first few, and they were nearly as good as, "This Immortal", or "Creatures of Light and Darkness", but not nearly as good as "Lord of Light" or his shorter works, collected, in "The Doors of His Face, the Lamps of His Mouth" 
-<br><br>I have high hopes, but we'll see how soon it gets to the top of the To Be Read stack.
-<br><br><br><map name="boxmap-p8"><area shape="RECT" coords="14, 200, 103, 207" href="http://rcm.amazon.com/e/cm/privacy-policy.html?o=1">
-<area coords="0,0,10000,10000" href="http://www.amazon.com/exec/obidos/redirect-home/whatcomestomi-20"></map><img width="120" height="240" border="0" usemap="#boxmap-p8" alt="Shop at Amazon.com"></p></body></html>

@@ -1,8 +1,0 @@
-.. title: Home
-.. slug: home
-.. date: 2023-05-17 17:16:25
-.. tags: twentytwentythree
-.. description: 
-.. excerpt: Displays the latest posts as either the site homepage or a custom page defined under reading settings. If it exists, the Front Page template overrides this template when posts are shown on the front page.
-.. wp-status: publish
-

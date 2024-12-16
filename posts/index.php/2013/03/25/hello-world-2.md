@@ -1,1 +1,0 @@
-<html><body><p>Obligatory test post for the new Wordpress install.</p></body></html>

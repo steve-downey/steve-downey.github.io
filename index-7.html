@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Stuff, and more stuff">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What Comes to Mind (old posts, page 7) | What Comes to Mind</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" crossorigin="anonymous">
+<link href="assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="feed.atom">
+<link rel="canonical" href="https://sdowney.org/index-7.html">
+<link rel="prev" href="index-8.html" type="text/html">
+<link rel="next" href="index-6.html" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]-->
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Header and menu bar -->
+<div class="container">
+      <header class="blog-header py-3"><div class="row nbb-header align-items-center">
+          <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+            <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                
+            </div>
+        </div>
+          <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+            <a class="navbar-brand blog-header-logo text-dark" href=".">
+
+            <span id="blog-title">What Comes to Mind</span>
+        </a>
+          </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+            <nav class="navbar navbar-light bg-white"><ul class="navbar-nav bootblog4-right-nav"></ul></nav>
+</div>
+    </div>
+</header><nav class="navbar navbar-expand-md navbar-light bg-white static-top"><div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+            <ul class="navbar-nav nav-fill d-flex w-100">
+<li class="nav-item">
+<a href="archive.html" class="nav-link">Archives</a>
+                </li>
+<li class="nav-item">
+<a href="categories/index.html" class="nav-link">Tags</a>
+                </li>
+<li class="nav-item">
+<a href="mailto:sdowney@sdowney.dev" class="nav-link"><i class="fa fa-envelope"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://github.com/steve-downey" class="nav-link">GitHub <i class="fa-brands fa-square-github"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://mastodon.social/@Sdowney" class="nav-link">Mastodon <i class="fa-brands fa-mastodon"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://bsky.app/profile/sdowney.bsky.social" class="nav-link">Bluesky <i class="fa-brands fa-square-bluesky"></i></a>
+                </li>
+<li class="nav-item">
+<a href="feed.atom" class="nav-link">ATOM <i class="fa-solid fa-atom"></i></a>
+                </li>
+<li class="nav-item">
+<a href="rss.xml" class="nav-link">RSS <i class="fa-solid fa-rss"></i></a>
+
+                
+            </li>
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+</nav>
+</div>
+
+<div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        
+        
+        
+    
+        
+
+    
+        
+    <div class="postindex">
+            <article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/104/" class="u-url">Emacs 24, org-mode, org2blog, and WordPress</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/104/" rel="bookmark">
+            <time class="published dt-published" datetime="2014-11-21T18:41:00-05:00" itemprop="datePublished" title="2014-11-21 18:41">2014-11-21 18:41</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    <p>Posting to a wordpress blog from emacs, using org2blog.
+
+</p>
+<div id="outline-container-orgheadline1" class="outline-2">
+<h3 id="orgheadline1">Setting up org-mode</h3>
+<div class="outline-text-2" id="text-orgheadline1">
+ Install org-mode from their package archive at <a href="http://orgmode.org/elpa">http://orgmode.org/elpa</a> To do so, add to your package archives list in your .emacs 
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">  (add-to-list 'package-archives '(<span style="color: #2aa198;">"org"</span> . <span style="color: #2aa198;">"http://orgmode.org/elpa/"</span>) t)
+</pre>
+</div>
+ Then install org-mode from <b>M-x list-packages</b> 
+
+ This is the relevant org-mode configuration from my .emacs 
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">  (<span style="color: #859900; font-weight: bold;">require</span> '<span style="color: #2aa198;">org-install</span>)
+
+  <span style="color: #93a1a1; font-style: italic;">;; </span><span style="color: #93a1a1; font-style: italic;">Configure languages to run code for in org-mode</span>
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((perl . t)
+     (ruby . t)
+     (sh . t)
+     (python . t)
+     (emacs-lisp . t)
+     (C . t)
+     ))
+  <span style="color: #93a1a1; font-style: italic;">;; </span><span style="color: #93a1a1; font-style: italic;">Use native mode for fontifying code blocks</span>
+  (<span style="color: #859900; font-weight: bold;">setq</span> org-src-fontify-natively t)
+  <span style="color: #93a1a1; font-style: italic;">;; </span><span style="color: #93a1a1; font-style: italic;">Preserve indentation in exported code blocks</span>
+  (<span style="color: #859900; font-weight: bold;">setq</span> org-src-preserve-indentation t)
+</pre>
+</div>
+
+ In order to use native fontification, you will also need htmlize, available from the melpa archive at <a href="http://melpa.org/packages/">http://melpa.org/packages/</a> 
+</div>
+</div>
+
+<div id="outline-container-orgheadline2" class="outline-2">
+<h3 id="orgheadline2">Setting up org2blog</h3>
+<div class="outline-text-2" id="text-orgheadline2">
+ org2blog is also available from melpa. Once the package is installed, add to your .emacs to enable it. 
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">  (<span style="color: #859900; font-weight: bold;">require</span> '<span style="color: #2aa198;">org2blog</span>)
+  <span style="color: #93a1a1; font-style: italic;">;; </span><span style="color: #93a1a1; font-style: italic;">Don't use sourcecode tags in wordpress</span>
+  (<span style="color: #859900; font-weight: bold;">setq</span> org2blog/wp-use-sourcecode-shortcode nil)
+  <span style="color: #93a1a1; font-style: italic;">;; </span><span style="color: #93a1a1; font-style: italic;">Default parameters for sourcecode tag</span>
+  (<span style="color: #859900; font-weight: bold;">setq</span> org2blog/wp-sourcecode-default-params nil)
+</pre>
+</div>
+
+ In order to tell it about your blog, you create an alist named <b>org2blog/wp-blog-alist</b>. Mine looks like this You can then publish by first running <b>M-x org2blog/wp-login</b>, which will log in to your blog, and then posting the entry using <b>M-x org2blog/wp-post-buffer</b> 
+
+<div class="org-src-container">
+
+<pre class="src src-emacs-lisp">(<span style="color: #859900; font-weight: bold;">setq</span> org2blog/wp-blog-alist
+'((<span style="color: #2aa198;">"sdowney"</span>
+   <span style="color: #859900; font-weight: bold; font-style: italic;">:url</span> <span style="color: #2aa198;">"http://www.sdowney.org/wordpress/xmlrpc.php"</span>
+   <span style="color: #859900; font-weight: bold; font-style: italic;">:username</span> <span style="color: #2aa198;">"sdowney"</span>
+   <span style="color: #859900; font-weight: bold; font-style: italic;">:default-title</span> <span style="color: #2aa198;">"Hello World"</span>
+   <span style="color: #859900; font-weight: bold; font-style: italic;">:default-categories</span> (<span style="color: #2aa198;">"org2blog"</span> <span style="color: #2aa198;">"emacs"</span>)
+   <span style="color: #859900; font-weight: bold; font-style: italic;">:tags-as-categories</span> nil)
+  ))
+</pre>
+</div>
+</div>
+</div>
+                </div>
+            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2013/11/19/testing-post-via-email/" class="u-url">Testing post via email</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/index.php/2013/11/19/testing-post-via-email/" rel="bookmark">
+            <time class="published dt-published" datetime="2013-11-19T18:13:13-05:00" itemprop="datePublished" title="2013-11-19 18:13">2013-11-19 18:13</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    <p>Yet another test post. Testing post via email</p>
+                </div>
+            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2013/03/25/hello-world-2/" class="u-url">Hello world!</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/index.php/2013/03/25/hello-world-2/" rel="bookmark">
+            <time class="published dt-published" datetime="2013-03-25T03:22:12-04:00" itemprop="datePublished" title="2013-03-25 03:22">2013-03-25 03:22</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    <p>Obligatory test post for the new Wordpress install.</p>
+                </div>
+            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2009/10/15/real-world-haskell-chapter-3/" class="u-url">Real World Haskell - Chapter 3</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/index.php/2009/10/15/real-world-haskell-chapter-3/" rel="bookmark">
+            <time class="published dt-published" datetime="2009-10-15T22:06:00-04:00" itemprop="datePublished" title="2009-10-15 22:06">2009-10-15 22:06</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    <p>These are the exercises from chapter 3 of<br><a href="http://book.realworldhaskell.org/">Real World Haskell<br>by Bryan O'Sullivan, Don Stewart, and John Goerzen<br></a><br>&gt; module RWHChapter3 where<br><br>{-# OPTIONS_GHC -XMagicHash #-}<br><br><br>Some useful things to check my work:<br><br>&gt; import Test.QuickCheck<br>&gt; import Data.List<br>&gt; import GHC.Prim<br>&gt; import GHC.Base<br><br>1) Write a function that computes the number of elements in a list. To test it, ensure that it gives the same answers as the standard length  function.<br><br>&gt; lengthList (x:xs) = 1 + lengthList xs<br>&gt; lengthList []     = 0<br><br>check that it works by running<br><br>quickCheck (\s -&gt; length s == lengthList s)<br><br>at the interactive prompt<br><br><br><br>&gt; ghclength l                =  len l 0#<br>&gt;     where<br>&gt;     len :: [a] -&gt; Int# -&gt; Int<br>&gt;     len []     a# = I# a#<br>&gt;     len (_:xs) a# = len xs (a# +# 1#)<br><br>is the definition used by GHC.<br>It doesn't stack overflow on ghclength [1..1000000]<br>lengthList [1..1000000] does, at least in ghci<br><br><br>2) Add a type signature for your function to your source file.<br><br>&gt; lengthList :: [a] -&gt; Integer<br><br><br>3. write a function that computes the mean of a list, i.e. the sum of all elements in the list divided by its length. (you may need to use the fromintegral function to convert the length of the list from an integer into a floating point number.)<br><br>&gt; listMean x = sum x / fromIntegral (length x)<br><br>4. Turn a list into a palindrome, i.e. it should read the same both backwards and forwards. For example, given the list [1,2,3], your function should return [1,2,3,3,2,1].<br><br>&gt; makePalindrome x = x ++ reverse x<br><br><br>5. Write a function that determines whether its input list is a palindrome.<br><br>&gt; testPalindrome x = x == reverse x<br><br>&gt; testPalindrome2 x = (take (halfLength x) x)<br>&gt;                     == (take (halfLength x) (reverse x))<br>&gt;     where halfLength x = ((length x) `quot` 2)<br><br>reversing the whole list isn't exactly right<br><br>&gt; testPalindrome3 x = (take (halfLength x) x)<br>&gt;                     == reverse (drop (halfLength x) x)<br>&gt;     where halfLength x = ((length x) `quot` 2)<br><br>except now it thinks that odd length lists aren't palindromes.<br><br>6. Create a function that sorts a list of lists based on the length of each sublist. (You may want to look at the sortBy function from the Data.List module.)<br><br>&gt; sortByLength  = sortBy (\a b -&gt; compare (length a) (length b))<br><br>7 An intersperse with type intersperse :: a -&gt; [[a]] -&gt; [a], such that<br>ghci&gt; myintersperse ',' []<br>""<br>ghci&gt; myintersperse ',' ["foo"]<br>"foo"<br>ghci&gt; myintersperse ',' ["foo","bar","baz","quux"]<br>"foo,bar,baz,quux"<br><br>&gt; myintersperse :: a -&gt; [[a]] -&gt; [a]<br>&gt; myintersperse _ [] = []<br>&gt; myintersperse _ [x] = x<br>&gt; myintersperse c (x:xs) = x ++ [c] ++ (myintersperse c xs)<br><br>8. Height of a tree<br><br>&gt; data Tree a = Node a (Tree a) (Tree a)<br>&gt;             | Empty<br>&gt;               deriving (Show)<br><br>depth' :: Tree a -&gt; Int<br><br>&gt; depth' Empty      = 0<br>&gt; depth' (Node _ b c) = 1 + (max (depth' b) (depth' c))<br><br><br>9. Consider three two-dimensional points a, b, and c. If we look at the angle formed by the line segment from a to b and the line segment from b to c, it either turns left, turns right, or forms a straight line. Define a Direction data type that lets you represent these possibilities.<br><br>&gt; data Direction = DLeft<br>&gt;                | DRight<br>&gt;                | DStraight<br>&gt;                  deriving (Show)<br><br>&gt; data Point = Point {<br>&gt;       x::Double,<br>&gt;       y::Double<br>&gt;     } deriving (Show)<br><br>10. Write a function that takes three 2D Points and returns a direction.<br><br>&gt; direction p1 p2 p3<br>&gt;     |  signCross p1 p2 p3 &gt;     |  signCross p1 p2 p3 &gt; 0 = DLeft<br>&gt;     |  signCross p1 p2 p3 == 0 = DStraight<br>&gt;     where signCross (Point x1 y1) (Point x2 y2) (Point x3 y3) =<br>&gt;               (x2 - x1) * (y3 - y1) - (y2 - y1) * (x3 - x1)<br><br><br>11. Define a function that takes a list of 2D points and computes the direction of each successive triple. Given a list of points [a,b,c,d,e], it should begin by computing the turn made by [a,b,c], then the turn made by [b,c,d], then [c,d,e]. Your function should return a list of Direction.<br><br>&gt; directionList :: [Point] -&gt; [Direction]<br>&gt; directionList ([]) = []<br>&gt; directionList (_:[]) = []<br>&gt; directionList (_:_:[]) = []<br>&gt; directionList (x:x':x'':[]) = [(direction x x' x'')]<br>&gt; directionList (x:x':x'':xs) = (direction x x' x'') : directionList (x':x'':xs)<br><br><br>I don't particularly like the pattern match on the three x's. How<br>about a more general function to do sliding windows of data across the<br>list?<br><br>&gt; window :: Int -&gt; [a] -&gt; [[a]]<br>&gt; window2 :: Int -&gt; [a] -&gt; [[a]]<br><br><br>&gt; window n xs = if (length xs) &gt;               then []<br>&gt;               else (take n xs) : window n (tail xs)<br><br>&gt; window2 n xs  |  (length xs) &gt; window2 n x@(_:xs)                  = (take n x) : window2 n xs<br><br>&gt; direction2 (x1:x2:x3:[]) = direction x1 x2 x3<br><br>&gt; directionList2' (x:xs) = direction2 x : directionList2' xs<br>&gt; directionList2' [] = []<br><br>&gt; directionList2 x = directionList2' (window2 3 x)<br><br><br><br>I'm still working on the convex hull problem</p>
+                </div>
+            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2009/10/01/testing-embedded-tex/" class="u-url">Testing embedded TeX</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/index.php/2009/10/01/testing-embedded-tex/" rel="bookmark">
+            <time class="published dt-published" datetime="2009-10-01T02:21:00-04:00" itemprop="datePublished" title="2009-10-01 02:21">2009-10-01 02:21</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    <p>If I set the up correctly, I can now embed mathematical formulas in my blog:
+[latex]\int_{0}^{1}\frac{x^{4}\left(1-x\right)^{4}}{1+x^{2}}dx=\frac{22}{7}-\pi[/latex]
+
+ </p>
+                </div>
+            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2009/07/02/oops/" class="u-url">oops.</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/index.php/2009/07/02/oops/" rel="bookmark">
+            <time class="published dt-published" datetime="2009-07-02T23:55:00-04:00" itemprop="datePublished" title="2009-07-02 23:55">2009-07-02 23:55</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    
+                </div>
+            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2009/04/30/tabbed-working-notes/" class="u-url">tabbed working notes</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/index.php/2009/04/30/tabbed-working-notes/" rel="bookmark">
+            <time class="published dt-published" datetime="2009-04-30T23:17:00-04:00" itemprop="datePublished" title="2009-04-30 23:17">2009-04-30 23:17</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    <pre><br><br> A           D            A           E           A          <br>------10-8---------10-8--------10-8--------10-7--------10-8----<br>----8------10----8------11---8------10---7------10---8------10-<br>--9-----------10-----------9-----------9-----------9-----------<br>---------------------------------------------------------------<br>---------------------------------------------------------------<br>---------------------------------------------------------------<br></pre>
+                </div>
+            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2008/11/04/electoral-votes-and-poll-closing-times/" class="u-url">Electoral Votes and Poll Closing Times</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/index.php/2008/11/04/electoral-votes-and-poll-closing-times/" rel="bookmark">
+            <time class="published dt-published" datetime="2008-11-04T22:37:00-05:00" itemprop="datePublished" title="2008-11-04 22:37">2008-11-04 22:37</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    <col width="64">
+<col width="99">
+<col width="64">
+<span><div>7:00 PM         Georgia         15</div>
+<div>7:00 PM<span> </span>        Indiana<span> </span>        11</div>
+<div>7:00 PM<span> </span>        Kentucky<span> </span>8</div>
+<div>7:00 PM<span> </span>        South Carolina<span> </span>8</div>
+<div>7:00 PM         Vermont<span> </span>        3</div>
+<div>7:00 PM<span> </span>        Virginia<span> </span>13</div>
+<div>7:30 PM<span> </span>        North Carolina<span> </span>15</div>
+<div>7:30 PM<span> </span>        Ohio<span> </span>        20</div>
+<div>7:30 PM<span> </span>        West Virginia<span> </span>5</div>
+<div>8:00 PM<span> </span>        Alabama<span> </span>        9</div>
+<div>8:00 PM<span> </span>        Connecticut<span> </span>7</div>
+<div>8:00 PM<span> </span>        Delaware<span> </span>3</div>
+<div>8:00 PM<span> </span>        Florida<span> </span>        27</div>
+<div>8:00 PM<span> </span>        Illinois<span> </span>21</div>
+<div>8:00 PM<span> </span>        Maine<span> </span>        4</div>
+<div>8:00 PM<span> </span>        Maryland<span> </span>10</div>
+<div>8:00 PM<span> </span>        Massachusetts<span> </span>12</div>
+<div>8:00 PM<span> </span>        Mississippi<span> </span>6</div>
+<div>8:00 PM<span> </span>        Missouri<span> </span>11</div>
+<div>8:00 PM<span> </span>        New Hampshire<span> </span>4</div>
+<div>8:00 PM<span> </span>        New Jersey<span> </span>15</div>
+<div>8:00 PM<span> </span>        Oklahoma<span> </span>7</div>
+<div>8:00 PM<span> </span>        Pennsylvania<span> </span>21</div>
+<div>8:00 PM<span> </span>        Tennessee<span> </span>11</div>
+<div>8:30 PM<span> </span>        Arkansas<span> </span>6</div>
+<div>9:00 PM<span> </span>        Arizona<span> </span>        10</div>
+<div>9:00 PM<span> </span>        Colorado<span> </span>9</div>
+<div>9:00 PM<span> </span>        Kansas<span> </span>        6</div>
+<div>9:00 PM<span> </span>        Louisiana<span> </span>9</div>
+<div>9:00 PM<span> </span>        Michigan<span> </span>17</div>
+<div>9:00 PM<span> </span>        Minnesota<span> </span>10</div>
+<div>9:00 PM<span> </span>        Nebraska<span> </span>5</div>
+<div>9:00 PM<span> </span>        New Mexico<span> </span>5</div>
+<div>9:00 PM<span> </span>        New York<span> </span>31</div>
+<div>9:00 PM<span> </span>        North Dakota<span> </span>3</div>
+<div>9:00 PM<span> </span>        Rhode Island<span> </span>4</div>
+<div>9:00 PM<span> </span>        South Dakota<span> </span>3</div>
+<div>9:00 PM<span> </span>        Texas<span> </span>        34</div>
+<div>9:00 PM<span> </span>        Wisconsin<span> </span>10</div>
+<div>9:00 PM<span> </span>        Wyoming<span> </span>        3</div>
+<div>10:00 PM<span> </span>Iowa<span> </span>        7</div>
+<div>10:00 PM<span> </span>Montana<span> </span>        3</div>
+<div>10:00 PM<span> </span>Nevada<span> </span>        5</div>
+<div>10:00 PM<span> </span>Utah<span> </span>        5</div>
+<div>11:00 PM<span> </span>California<span> </span>55</div>
+<div>11:00 PM<span> </span>Hawaii<span> </span>        4</div>
+<div>11:00 PM<span> </span>Idaho<span> </span>        4</div>
+<div>11:00 PM<span> </span>Oregon<span> </span>        7</div>
+<div>11:00 PM<span> </span>Washington<span> </span>11</div>
+<div>1:00 AM<span> </span>        Alaska<span> </span>        3</div>
+<div><br></div></span><spv><p></p>
+<p></p>     </spv>
+</div>
+            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2008/09/18/eeeep/" class="u-url">Eeeep</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/index.php/2008/09/18/eeeep/" rel="bookmark">
+            <time class="published dt-published" datetime="2008-09-18T22:13:00-04:00" itemprop="datePublished" title="2008-09-18 22:13">2008-09-18 22:13</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    <span>Take a picture of yourself right now.<br>don't change your clothes, don't fix your hair...just take a picture.<br>post that picture with NO editing.<br>post these instructions with your picture.<br></span><p><a href="http://www.sdowney.org/uploaded_images/photo-734621-734672.jpg"><img src="http://www.sdowney.org/uploaded_images/photo-734621-734666.jpg" border="0" alt=""></a>'</p>
+<p><br></p>
+<p>Trying to operatate an iPhone backwards makes me frown.</p>
+                </div>
+            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2008/09/18/eeep/" class="u-url">Eeep....</a></h1>
+                <div class="metadata">
+                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
+                        Steve Downey
+                    </span></p>
+            <p class="dateline">
+            <a href="posts/index.php/2008/09/18/eeep/" rel="bookmark">
+            <time class="published dt-published" datetime="2008-09-18T22:06:00-04:00" itemprop="datePublished" title="2008-09-18 22:06">2008-09-18 22:06</time></a>
+            </p>
+                </div>
+            </header><div class="p-summary entry-summary">
+                    <span>Take a picture of yourself right now.<br>don't change your clothes, don't fix your hair...just take a picture.<br>post that picture with NO editing.<br>post these instructions with your picture.<br><br></span>
+                </div>
+            </article>
+</div>
+    
+        <ul class="pager postindexpager clearfix">
+<li class="previous"><a href="index-8.html" rel="prev">Newer posts</a></li>
+            <li class="next"><a href="index-6.html" rel="next">Older posts</a></li>
+        </ul>
+<!--End of body content--><footer id="footer">
+            Contents © 2024         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+ <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+            
+        </footer>
+</div>
+</div>
+
+
+        <script src="assets/js/all-nocdn.js"></script><script src="assets/js/luxon.min.js"></script><!-- fancy dates --><script>
+        luxon.Settings.defaultLocale = "en";
+        fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
+        </script><!-- end fancy dates --><script>
+    baguetteBox.run('div#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VGV27RDN3E');
+</script>
+</body>
+</html>

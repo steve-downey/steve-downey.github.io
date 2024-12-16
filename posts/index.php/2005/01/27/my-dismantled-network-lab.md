@@ -1,2 +1,0 @@
-<html><body><img src="http://www.sdowney.org/dismantledlab.jpg"><br>This is most of the computers that used to be in my office upstairs. The upstairs office doesn't exist anymore (see next few posts), and will eventually be our new bedroom. So for now, all the equipment is on the bar in the basement. 
-<br><br></body></html>

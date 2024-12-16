@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Litmus Tests for Multithreaded Behavior | What Comes to Mind</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" crossorigin="anonymous">
+<link href="../../../../../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../../../../../rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="../../../../../../feed.atom">
+<link rel="canonical" href="https://sdowney.org/posts/index.php/2018/06/17/litmus-tests-for-multithreaded-behavior/">
+<!--[if lt IE 9]><script src="../../../../../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Steve Downey">
+<link rel="prev" href="../../05/multithread-experiments/" title="Multithread Experiments" type="text/html">
+<link rel="next" href="../../../10/14/should-unicode-literals-be-guaranteed-to-be-well-formed/" title="Should Unicode literals be guaranteed to be well-formed?" type="text/html">
+<meta property="og:site_name" content="What Comes to Mind">
+<meta property="og:title" content="Litmus Tests for Multithreaded Behavior">
+<meta property="og:url" content="https://sdowney.org/posts/index.php/2018/06/17/litmus-tests-for-multithreaded-behavior/">
+<meta property="og:description" content="Litmus Tests for Multithreaded Behavior
+
+Or How Processors Don't Do What You Think
+Modern multicore processors are entirely weirder than almost anyone thinks possible. They are somewhat weirder than c">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2018-06-17T14:10:15-04:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@sdowney.org">
+<meta name="twitter:creator" content="@sdowney">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Header and menu bar -->
+<div class="container">
+      <header class="blog-header py-3"><div class="row nbb-header align-items-center">
+          <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+            <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                
+            </div>
+        </div>
+          <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+            <a class="navbar-brand blog-header-logo text-dark" href="../../../../../../">
+
+            <span id="blog-title">What Comes to Mind</span>
+        </a>
+          </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+            <nav class="navbar navbar-light bg-white"><ul class="navbar-nav bootblog4-right-nav"></ul></nav>
+</div>
+    </div>
+</header><nav class="navbar navbar-expand-md navbar-light bg-white static-top"><div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+            <ul class="navbar-nav nav-fill d-flex w-100">
+<li class="nav-item">
+<a href="../../../../../../archive.html" class="nav-link">Archives</a>
+                </li>
+<li class="nav-item">
+<a href="../../../../../../categories/index.html" class="nav-link">Tags</a>
+                </li>
+<li class="nav-item">
+<a href="mailto:sdowney@sdowney.dev" class="nav-link"><i class="fa fa-envelope"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://github.com/steve-downey" class="nav-link">GitHub <i class="fa-brands fa-square-github"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://mastodon.social/@Sdowney" class="nav-link">Mastodon <i class="fa-brands fa-mastodon"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://bsky.app/profile/sdowney.bsky.social" class="nav-link">Bluesky <i class="fa-brands fa-square-bluesky"></i></a>
+                </li>
+<li class="nav-item">
+<a href="../../../../../../feed.atom" class="nav-link">ATOM <i class="fa-solid fa-atom"></i></a>
+                </li>
+<li class="nav-item">
+<a href="../../../../../../rss.xml" class="nav-link">RSS <i class="fa-solid fa-rss"></i></a>
+
+                
+            </li>
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+</nav>
+</div>
+
+<div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        
+        
+        
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Litmus Tests for Multithreaded Behavior</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Steve Downey
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2018-06-17T14:10:15-04:00" itemprop="datePublished" title="2018-06-17 14:10">2018-06-17 14:10</time></a>
+            </p>
+            
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <div id="content">
+<h2 class="title">Litmus Tests for Multithreaded Behavior
+
+<span class="subtitle">Or How Processors Don't Do What You Think</span>
+</h2>
+Modern multicore processors are entirely weirder than almost anyone thinks possible. They are somewhat weirder than chip makers were willing to admit until fairly recently. They are sufficiently weird enough that almost all multi-threaded programs, and many lock-free algorithms, had bugs because the hardware just does not work the way anyone would reasonably expect. And, in addition, optimizing compilers did not actually know how to not break your code. [<a href="#boehm2005threads">boehm2005threads</a>]
+
+I'm in the (slow) process of writing some test cases for multi-threaded code. I eventually want to have some confidence that some code is executed once, and only once, in an efficient manner. It's the 'efficient' part that worries me, because for efficient, it also has a tendency to be clever, and I'm learning that clever MT code is often subtly broken. [<a href="#bacon2000double">bacon2000double</a>] So if smarter people than me make mistakes about MT code, I need tests to compensate. And ones that will cover occasional allowed but unexpected behavior. Which means the test framework should be able to detect them.
+
+Also, fortunately, the RPi is a computer that exhibits some odd behavior, as it is an ARM system. X86 has a much stronger model. However, even the x86 model is allowed to perform in odd ways.
+
+Starting in 2007, Intel has started publishing short snippets of assembly and documenting what are the allowed and disallowed results running them in parallel. [<a href="#IWPAug2007">IWPAug2007</a>] These snippets have come to be called litmus tests, and are used to confirm the behavior of hardware, and confirm models of the hardware behavior. A particularly important model for C++ programmers is the x86 Total Store Order model [<a href="#owens2009better">owens2009better</a>] which provides a way of mapping the C++11 memory model to X86 hardware. X86 hardware provides a strongly consistent memory model. Power and ARM provide fewer guarantees, and mapping the C++ memory model to these architectures is more challenging. [<a href="#maranget2012tutorial">maranget2012tutorial</a>]
+<div id="outline-container-org6552108" class="outline-2">
+<h3 id="org6552108">Message Passing</h3>
+<div id="text-org6552108" class="outline-text-2">
+
+The tests outlined in the Intel paper are short pieces of assembly to be exercised on different processors, with guarantees about behavior that will not happen. The first one essentially promises that message passing will work, and is now known as the MP test.
+<table border="2" frame="hsides" rules="groups" cellspacing="0" cellpadding="6">
+<colgroup>
+<col class="org-left">
+<col class="org-left">
+</colgroup>
+<thead><tr>
+<th class="org-left" scope="col">Processor 0</th>
+<th class="org-left" scope="col">Processor 1</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="org-left">mov [ _x], 1 // M1</td>
+<td class="org-left">mov r1, [ _y] // M3</td>
+</tr>
+<tr>
+<td class="org-left">mov [ _y], 1 // M2</td>
+<td class="org-left">mov r2, [ _x] // M4</td>
+</tr>
+</tbody>
+</table>
+Initially x = y = 0
+
+r1 = 1 and r2 = 0 is not allowed
+
+That says that we can't read the writes of x and y out of order, which ensures that if we're waiting to see the write to the flag y, we can be guaranteed to see the payload in x. If we change it slightly to wait for the write to _y to be visible, we can pass a message from one thread to anothher in _x. This is also known as Dekards Algorithm.
+
+ARM and Power do not provide that guarantee without additional synchronization instructions.
+
+In C++ that looks something like the following, using the test framework I'm writing.
+<div class="org-src-container">
+<pre class="src src-C++"><span class="org-constant">MP</span>::<span class="org-function-name">MP</span>() : x_(0), y_(0) {}
+<span class="org-type">void</span> <span class="org-constant">MP</span>::<span class="org-function-name">t1</span>() {
+    x_.store(1, <span class="org-constant">std</span>::memory_order_relaxed);
+    y_.store(1, <span class="org-constant">std</span>::memory_order_relaxed);
+}
+<span class="org-type">void</span> <span class="org-constant">MP</span>::<span class="org-function-name">t2</span>(<span class="org-type">Result</span>&amp; <span class="org-variable-name">read</span>) {
+    <span class="org-keyword">while</span> (<span class="org-negation-char">!</span>y_.load(<span class="org-constant">std</span>::memory_order_relaxed)){}
+    <span class="org-constant">std</span>::get&lt;0&gt;(read) = x_.load(<span class="org-constant">std</span>::memory_order_relaxed);
+}
+
+</pre>
+</div>
+Here, x_ and y_ are atomic&lt;int&gt;s, and we're using the lowest possible atomic guarantee in C++, relaxed. Relaxed guarantees that the operation happens atomically. but there are no synchronization properties with anything else. This usally corresponds to the basic int type. Unless you're using a really insane processor that might let an int be partially written and observable. Like you might get the top half of the int, or the middle byte. The commercial processors that allowed this have pretty much died out.
+
+The test spins on seeing the load of y to be complete. It loads the value of x_ into a result tuple. The tuple is used as the key to a map which accumulates how many times each result has been seen.
+Running the above on my x86 laptop:
+<pre class="example">[ RUN      ] ExperimentTest.MPTest1
+(1) : 2000000
+
+</pre>
+on my Raspberry Pi 3:
+<pre class="example">[ RUN      ] ExperimentTest.MPTest1
+(0) : 483
+(1) : 1999517
+
+</pre>
+Using objdump to check the generated assembly
+<pre class="example">00000088 &lt;litmus::MP::MP()&gt;:
+  88:   mov     r2, #0
+  8c:   str     r2, [r0]
+  90:   str     r2, [r0, #64]   ; 0x40
+  94:   bx      lr
+
+00000098 &lt;litmus::MP::t1()&gt;:
+  98:   mov     r3, #1
+  9c:   str     r3, [r0]
+  a0:   str     r3, [r0, #64]   ; 0x40
+  a4:   bx      lr
+
+000000a8 &lt;litmus::MP::t2(std::tuple&lt;int&gt;&amp;)&gt;:
+  a8:   ldr     r3, [r0, #64]   ; 0x40
+  ac:   cmp     r3, #0
+  b0:   beq     a8 &lt;litmus::MP::t2(std::tuple&lt;int&gt;&amp;)&gt;
+  b4:   ldr     r3, [r0]
+  b8:   str     r3, [r1]
+  bc:   bx      lr
+</pre>
+So, out of the 2,000,000 times that I ran the experiment, there were 483 times that reading x_ resulted in 0, even though y_ was 1. ARM has a weaker memory model than x86. This has some advantages in processor implementation. It has distinct disadvantages in how our brains work. X86 tries to preserve the model that there is shared memory that everyone sees and works with. That's not strictly true, even for X86, but ARM and Power don't even come close. On the other hand, it's also why it's easier to add more cores to Power and ARM chips and systems. I routinely work with Power systems with 512 physical cores.
+
+</div>
+</div>
+<div id="outline-container-orgdbab232" class="outline-2">
+<h3 id="orgdbab232">Store Buffering</h3>
+<div id="text-orgdbab232" class="outline-text-2">
+
+Store buffering is the odd case that is allowed in the Intel memory model. When assigning locations in two threads, and then reading them on opposite threads, both threads are allowed to read the older state. The stores get buffered.
+From the Intel White Paper:
+<table border="2" frame="hsides" rules="groups" cellspacing="0" cellpadding="6">
+<colgroup>
+<col class="org-left">
+<col class="org-left">
+</colgroup>
+<thead><tr>
+<th class="org-left" scope="col">Processor 0</th>
+<th class="org-left" scope="col">Processor 1</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="org-left">mov [ _x], 1 // M1</td>
+<td class="org-left">mov [ _y], 1 // M3</td>
+</tr>
+<tr>
+<td class="org-left">mov r1, [ _y] // M2</td>
+<td class="org-left">mov r2, [ _x] // M4</td>
+</tr>
+</tbody>
+</table>
+Initially x = y = 0
+
+r1 = 0 and r2 ==0 is allowed
+
+Note, in particular, there is no interleaving of M1 - 4 that could result in r1 and r2 being 0. Not without interupting an instruction in the middle. But the instructions themselves are atomic, and indivisible. If they were actually operating on shared memory, this would not be possible. However, it does happen.
+<div class="org-src-container">
+<pre class="src src-c++"><span class="org-constant">SB</span>::<span class="org-function-name">SB</span>() : x_(0), y_(0) {}
+<span class="org-type">void</span> <span class="org-constant">SB</span>::<span class="org-function-name">t1</span>(<span class="org-type">Result</span>&amp; <span class="org-variable-name">read</span>) {
+    y_.store(1, <span class="org-constant">std</span>::memory_order_relaxed);
+    <span class="org-constant">std</span>::get&lt;0&gt;(read) = x_.load(<span class="org-constant">std</span>::memory_order_relaxed);
+}
+<span class="org-type">void</span> <span class="org-constant">SB</span>::<span class="org-function-name">t2</span>(<span class="org-type">Result</span>&amp; <span class="org-variable-name">read</span>) {
+    x_.store(1, <span class="org-constant">std</span>::memory_order_relaxed);
+    <span class="org-constant">std</span>::get&lt;1&gt;(read) = y_.load(<span class="org-constant">std</span>::memory_order_relaxed);
+}
+
+</pre>
+</div>
+That generates the x86 code
+<pre class="example">00000000000000f0 &lt;litmus::SB::t1(std::__1::tuple&lt;int, int&gt;&amp;)&gt;:
+  f0:   mov    DWORD PTR [rdi+0x40],0x1
+  f7:   mov    eax,DWORD PTR [rdi]
+  f9:   mov    DWORD PTR [rsi],eax
+  fb:   ret
+
+0000000000000100 &lt;litmus::SB::t2(std::__1::tuple&lt;int, int&gt;&amp;)&gt;:
+ 100:   mov    DWORD PTR [rdi],0x1
+ 106:   mov    eax,DWORD PTR [rdi+0x40]
+ 109:   mov    DWORD PTR [rsi+0x4],eax
+ 10c:   ret
+
+</pre>
+And on my x86 machine:
+<pre class="example">[ RUN      ] ExperimentTest.SBTest1
+(0, 0) : 559
+(0, 1) : 999858
+(1, 0) : 999576
+(1, 1) : 7
+
+</pre>
+So 559 times neither core saw the other core's store.
+
+</div>
+</div>
+<div id="outline-container-orga3dd0b6" class="outline-2">
+<h3 id="orga3dd0b6">Load Buffering</h3>
+<div id="text-orga3dd0b6" class="outline-text-2">
+
+Load Buffering is the dual of store buffering. Loads into registers might be delayed, or buffered, and actually performed after following instructions. It's not allowed in the Intel architecture.
+
+From the Intel White Paper
+<table border="2" frame="hsides" rules="groups" cellspacing="0" cellpadding="6">
+<colgroup>
+<col class="org-left">
+<col class="org-left">
+</colgroup>
+<thead><tr>
+<th class="org-left" scope="col">Processor 0</th>
+<th class="org-left" scope="col">Processor 1</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="org-left">mov r1, [ _x] // M1</td>
+<td class="org-left">mov r2, [ _y] // M3</td>
+</tr>
+<tr>
+<td class="org-left">mov [ _y], 1 // M2</td>
+<td class="org-left">mov [ _x], 1 // M4</td>
+</tr>
+</tbody>
+</table>
+Initially x = y = 0
+
+r1 = 1 and r2 = 1 is not allowed
+<div class="org-src-container">
+<pre class="src src-C++"><span class="org-constant">LB</span>::<span class="org-function-name">LB</span>() : x_(0), y_(0) {}
+<span class="org-type">void</span> <span class="org-constant">LB</span>::<span class="org-function-name">t1</span>(<span class="org-type">Result</span>&amp; <span class="org-variable-name">read</span>) {
+    <span class="org-constant">std</span>::get&lt;0&gt;(read) = x_.load(<span class="org-constant">std</span>::memory_order_relaxed);
+    y_.store(1, <span class="org-constant">std</span>::memory_order_relaxed);
+}
+<span class="org-type">void</span> <span class="org-constant">LB</span>::<span class="org-function-name">t2</span>(<span class="org-type">Result</span>&amp; <span class="org-variable-name">read</span>) {
+    <span class="org-constant">std</span>::get&lt;1&gt;(read) = y_.load(<span class="org-constant">std</span>::memory_order_relaxed);
+    x_.store(1, <span class="org-constant">std</span>::memory_order_relaxed);
+}
+</pre>
+</div>
+This is the x86 asm code
+<pre class="example">00000000000000c0 &lt;litmus::LB::t1(std::__1::tuple&lt;int, int&gt;&amp;)&gt;:
+  c0:   mov    eax,DWORD PTR [rdi]
+  c2:   mov    DWORD PTR [rsi],eax
+  c4:   mov    DWORD PTR [rdi+0x40],0x1
+  cb:   ret
+  cc:   nop    DWORD PTR [rax+0x0]
+
+00000000000000d0 &lt;litmus::LB::t2(std::__1::tuple&lt;int, int&gt;&amp;)&gt;:
+  d0:   mov    eax,DWORD PTR [rdi+0x40]
+  d3:   mov    DWORD PTR [rsi+0x4],eax
+  d6:   mov    DWORD PTR [rdi],0x1
+  dc:   ret
+  dd:   nop    DWORD PTR [rax]
+
+</pre>
+And the ARM code, at -O1
+<pre class="example">000000d0 &lt;litmus::LB::t1(std::tuple&lt;int, int&gt;&amp;)&gt;:
+  d0:   ldr     r3, [r0]
+  d4:   str     r3, [r1, #4]
+  d8:   mov     r3, #1
+  dc:   str     r3, [r0, #64]   ; 0x40
+  e0:   bx      lr
+
+000000e4 &lt;litmus::LB::t2(std::tuple&lt;int, int&gt;&amp;)&gt;:
+  e4:   ldr     r3, [r0, #64]   ; 0x40
+  e8:   str     r3, [r1]
+  ec:   mov     r3, #1
+  f0:   str     r3, [r0]
+  f4:   bx      lr
+
+</pre>
+ARM generally allows it, but per [<a href="#maranget2012tutorial">maranget2012tutorial</a>] it's very sensitive, and dependencies will make it not appear. In my tests, I did not observe an instance of a buffering, but it may be due to the first store the compiler introduces, in order to actually get the data into the tuple. That it's documented as possible is still exceedingly strange.
+
+</div>
+</div>
+<div id="outline-container-orgb59ad3f" class="outline-2">
+<h3 id="orgb59ad3f">Independent Reads of Independent Writes</h3>
+<div id="text-orgb59ad3f" class="outline-text-2">
+
+IRIW is a generalization of store buffering, where two reader threads each read different apparent orderings of writes from two distinct writer threads.
+<table border="2" frame="hsides" rules="groups" cellspacing="0" cellpadding="6">
+<colgroup>
+<col class="org-left">
+<col class="org-left">
+<col class="org-left">
+<col class="org-left">
+</colgroup>
+<thead><tr>
+<th class="org-left" scope="col">T1</th>
+<th class="org-left" scope="col">T2</th>
+<th class="org-left" scope="col">T3</th>
+<th class="org-left" scope="col">T4</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="org-left">X = 1</td>
+<td class="org-left">Y = 1</td>
+<td class="org-left">R1 = X</td>
+<td class="org-left">R3 = y</td>
+</tr>
+<tr>
+<td class="org-left"></td>
+<td class="org-left"></td>
+<td class="org-left">R2 = Y</td>
+<td class="org-left">R4 = X</td>
+</tr>
+<tr>
+<td class="org-left"></td>
+<td class="org-left"></td>
+<td class="org-left"></td>
+<td class="org-left"></td>
+</tr>
+</tbody>
+</table>
+Initially X=Y=0
+Allowed in ARM, not in x86 r1=1, r2=0, r3=1, r4=0 [<a href="#maranget2012tutorial">maranget2012tutorial</a>,<a href="#owens2009better">owens2009better</a>]
+
+This is not observed in x86 processors, but is in some ARM and POWER, more often in POWER. X86 hardware has a consistent view of memory where other hardware can see memory writes in different orders on different threads. On my rPi, I didn't observe any incidents of X and Y being read out of order, over 40 million runs.
+<div class="org-src-container">
+<pre class="src src-C++"><span class="org-constant">IRIW</span>::<span class="org-function-name">IRIW</span>() : x_(0), y_(0) {}
+<span class="org-type">void</span> <span class="org-constant">IRIW</span>::<span class="org-function-name">t1</span>() {
+    x_.store(1, <span class="org-constant">std</span>::memory_order_relaxed);
+}
+
+<span class="org-type">void</span> <span class="org-constant">IRIW</span>::<span class="org-function-name">t2</span>() {
+    y_.store(1, <span class="org-constant">std</span>::memory_order_relaxed);
+}
+
+<span class="org-type">void</span> <span class="org-constant">IRIW</span>::<span class="org-function-name">t3</span>(<span class="org-type">Result</span>&amp; <span class="org-variable-name">read</span>) {
+    <span class="org-constant">std</span>::get&lt;0&gt;(read) = x_.load(<span class="org-constant">std</span>::memory_order_relaxed);
+    <span class="org-constant">std</span>::get&lt;1&gt;(read) = y_.load(<span class="org-constant">std</span>::memory_order_relaxed);
+}
+
+<span class="org-type">void</span> <span class="org-constant">IRIW</span>::<span class="org-function-name">t4</span>(<span class="org-type">Result</span>&amp; <span class="org-variable-name">read</span>) {
+    <span class="org-constant">std</span>::get&lt;2&gt;(read) = y_.load(<span class="org-constant">std</span>::memory_order_relaxed);
+    <span class="org-constant">std</span>::get&lt;3&gt;(read) = x_.load(<span class="org-constant">std</span>::memory_order_relaxed);
+}
+
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org5fcde9b" class="outline-2">
+<h3 id="org5fcde9b">Summary</h3>
+<div id="text-org5fcde9b" class="outline-text-2">
+
+The allowed behavior of modern processors is very different than our mental model of a Von Neumann architecture computer. Each core can have a different view of memory, and without additional controls, writes and reads can break the illusion of a single unified memory. The C++ memory model gives the controls and guarantees about what happens when different threads read and write memory, and here I've deliberately used the weakest version available, relaxed, in order to allow the processors the wideest latitude in behavior. Relaxed is, for processors that have it, often just an unconstrained int, which means that you will get odd behavior if you are running shared state multithreaded code that uses plain native types. It is a particular problem with code that was originally written and tested on a x86 architecture because the native model is fairly strong. This frequently causes problems when porting to a mobile platform, where ARM is a very popular hardware choice.
+
+</div>
+</div>
+<div id="outline-container-org3e9feb6" class="outline-2">
+<h3 id="org3e9feb6">Org-mode source and git repo</h3>
+<div id="text-org3e9feb6" class="outline-text-2">
+
+Exported from an org-mode doc. All of the source is available on github at <a href="https://github.com/steve-downey/spingate">SpinGate</a>
+
+</div>
+</div>
+<div id="outline-container-org6b2f228" class="outline-2">
+<h3 id="org6b2f228">References</h3>
+<div id="text-org6b2f228" class="outline-text-2">
+<h2 class="org-ref-bib-h1">Bibliography</h2>
+<ul class="org-ref-bib">
+<li>
+<a id="boehm2005threads"></a>[boehm2005threads] <a name="boehm2005threads"></a>Boehm, Threads cannot be implemented as a library, 261-268, in in: ACM Sigplan Notices, edited by (2005)</li>
+    <li>
+<a id="bacon2000double"></a>[bacon2000double] <a name="bacon2000double"></a>@miscbacon2000double,
+title=The “double-checked locking is broken” declaration,
+author=Bacon, David and Bloch, Joshua and Bogda, Jeff and Click, Cliff and Haahr, Paul and Lea, Doug and May, Tom and Maessen, Jan-Willem and Mitchell, JD and Nilsen, Kelvin and others,
+year=2000</li>
+    <li>
+<a id="IWPAug2007"></a>[IWPAug2007] <a name="IWPAug2007"></a>@miscIWPAug2007,
+howpublished =
+\urlhttp://www.cs.cmu.edu/~410-f10/doc/Intel_Reordering_318147.pdf,
+note = Accessed: 2017-04-30,
+title = Intel® 64 Architecture Memory Ordering
+White Paper,</li>
+    <li>
+<a id="owens2009better"></a>[owens2009better] <a name="owens2009better"></a>Owens, Sarkar &amp; Sewell, A better x86 memory model: x86-TSO, 391-407, in in: International Conference on Theorem Proving in Higher Order Logics, edited by (2009)</li>
+    <li>
+<a id="maranget2012tutorial"></a>[maranget2012tutorial] <a name="maranget2012tutorial"></a>Maranget, Sarkar &amp; Sewell, A tutorial introduction to the ARM and POWER relaxed memory models, <i>Draft available from http://www. cl. cam. ac. uk/\~ pes20/ppc-supplemental/test7. pdf</i>, (2012).</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="postamble" class="status">
+<p class="date">Date: 2017-04-30 Sun 00:00</p>
+<p class="author">Author: Steve Downey</p>
+<p class="date">Created: 2018-06-17 Sun 14:07</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul class="pager hidden-print">
+<li class="previous">
+                <a href="../../05/multithread-experiments/" rel="prev" title="Multithread Experiments">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="../../../10/14/should-unicode-literals-be-guaranteed-to-be-well-formed/" rel="next" title="Should Unicode literals be guaranteed to be well-formed?">Next post</a>
+            </li>
+        </ul></nav></aside></article><!--End of body content--><footer id="footer">
+            Contents © 2024         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+ <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+            
+        </footer>
+</div>
+</div>
+
+
+        <script src="../../../../../../assets/js/all-nocdn.js"></script><script src="../../../../../../assets/js/luxon.min.js"></script><!-- fancy dates --><script>
+        luxon.Settings.defaultLocale = "en";
+        fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
+        </script><!-- end fancy dates --><script>
+    baguetteBox.run('div#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VGV27RDN3E');
+</script>
+</body>
+</html>

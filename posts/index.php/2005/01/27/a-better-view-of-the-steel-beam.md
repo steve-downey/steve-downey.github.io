@@ -1,2 +1,0 @@
-<html><body><p>You can't really see the steel in the earlier pictures. They are actually plates running between the wood.
-<br><br><img src="http://www.sdowney.org/steel-between-wood.jpg"></p></body></html>

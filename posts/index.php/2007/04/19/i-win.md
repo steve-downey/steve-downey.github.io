@@ -1,1 +1,0 @@
-<html><body><p><a href="http://www.sdowney.org/uploaded_images/Photo_04-755754-756824.jpg"><img src="http://www.sdowney.org/uploaded_images/Photo_04-755754-756457.jpg" width="320"></a></p></body></html>

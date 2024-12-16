@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Identity Monad | What Comes to Mind</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" crossorigin="anonymous">
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="../../feed.atom">
+<link rel="canonical" href="https://sdowney.org/posts/296/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Steve Downey">
+<link rel="prev" href="../index.php/2017/06/28/why-stdbind-cant-be-formally-deprecated/" title="Why std::bind can't be (formally) deprecated" type="text/html">
+<link rel="next" href="../index.php/2018/06/05/multithread-experiments/" title="Multithread Experiments" type="text/html">
+<meta property="og:site_name" content="What Comes to Mind">
+<meta property="og:title" content="The Identity Monad">
+<meta property="og:url" content="https://sdowney.org/posts/296/">
+<meta property="og:description" content="A short exposition on the simplest monad possible, the Identity monad, which does nothing. It is a pure context, that provides no extra capabilites. The only reason to consider it is that it provides ">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2018-03-01T00:00:00-05:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@sdowney.org">
+<meta name="twitter:creator" content="@sdowney">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Header and menu bar -->
+<div class="container">
+      <header class="blog-header py-3"><div class="row nbb-header align-items-center">
+          <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+            <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                
+            </div>
+        </div>
+          <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+            <a class="navbar-brand blog-header-logo text-dark" href="../../">
+
+            <span id="blog-title">What Comes to Mind</span>
+        </a>
+          </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+            <nav class="navbar navbar-light bg-white"><ul class="navbar-nav bootblog4-right-nav"></ul></nav>
+</div>
+    </div>
+</header><nav class="navbar navbar-expand-md navbar-light bg-white static-top"><div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+            <ul class="navbar-nav nav-fill d-flex w-100">
+<li class="nav-item">
+<a href="../../archive.html" class="nav-link">Archives</a>
+                </li>
+<li class="nav-item">
+<a href="../../categories/index.html" class="nav-link">Tags</a>
+                </li>
+<li class="nav-item">
+<a href="mailto:sdowney@sdowney.dev" class="nav-link"><i class="fa fa-envelope"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://github.com/steve-downey" class="nav-link">GitHub <i class="fa-brands fa-square-github"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://mastodon.social/@Sdowney" class="nav-link">Mastodon <i class="fa-brands fa-mastodon"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://bsky.app/profile/sdowney.bsky.social" class="nav-link">Bluesky <i class="fa-brands fa-square-bluesky"></i></a>
+                </li>
+<li class="nav-item">
+<a href="../../feed.atom" class="nav-link">ATOM <i class="fa-solid fa-atom"></i></a>
+                </li>
+<li class="nav-item">
+<a href="../../rss.xml" class="nav-link">RSS <i class="fa-solid fa-rss"></i></a>
+
+                
+            </li>
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+</nav>
+</div>
+
+<div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        
+        
+        
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">The Identity Monad</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Steve Downey
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2018-03-01T00:00:00-05:00" itemprop="datePublished" title="2018-03-01 00:00">2018-03-01 00:00</time></a>
+            </p>
+            
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <p> A short exposition on the simplest monad possible, the Identity monad, which does nothing. It is a pure context, that provides no extra capabilites. The only reason to consider it is that it provides a fairly pure implementation of the monad interface, with no other distractions. The only known use for the Identity monad, other than exposition, is to model Taint, where the context, such as user input, can't be removed. </p>
+
+<div id="outline-container-org09d1c70" class="outline-2">
+<h3 id="org09d1c70">Identity Monad in Haskell</h3>
+<div class="outline-text-2" id="text-org09d1c70">
+<p> This is a definition of the Identity monad in haskell, for reference. This is using the relatively new Applicative typeclass between Functor and Monad. </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-haskell" id="nil">import Control.Monad
+
+data Id a = Id a deriving Show
+
+instance Functor Id where
+    fmap f (Id x)   = Id (f x)
+
+instance Applicative Id where
+    pure x          = Id x
+    Id f &lt;*&gt; Id x   = Id (f x)
+
+instance Monad Id where
+    (Id x) &gt;&gt;= f    = f x
+</pre>
+</div>
+
+<p> Id wraps a single value. There is no empty state. The mapping function, fmap, simply applies the a funtion to the value being wrapped. The function (&lt;*&gt;), also known as ap, takes a wrapped function, applies it to a wrapped value, and returns it wrapped up. The function pure, which is the same as return, just constructs an Id with the value in it. The bind function (&gt;&gt;=) does the same thing, only with a function that returns a wrapped value. </p>
+</div>
+</div>
+
+
+
+<div id="outline-container-org87576b1" class="outline-2">
+<h3 id="org87576b1">Identity Monad in C++</h3>
+<div class="outline-text-2" id="text-org87576b1">
+<p> The basic data structure for the Identity monad is fairly trivial. It's a generic type, and holds a single element, privately, of that type. I am ignoring any issues about reference types, non-copyable types, non-moveable types, etc. as distractions. I'm also assuming it's default constructable, for simplicity. </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">T</span>&gt;
+<span class="org-keyword">class</span> <span class="org-type">Identity</span> {
+    <span class="org-type">T</span> <span class="org-variable-name">t_</span>;
+
+  <span class="org-keyword">public</span>:
+    <span class="org-function-name">Identity</span>() : t_(){};
+    <span class="org-function-name">Identity</span>(<span class="org-type">T</span> <span class="org-keyword">const</span>&amp; <span class="org-variable-name">t</span>) : t_(t){};
+
+    <span class="org-comment-delimiter">// </span><span class="org-comment">...</span>
+};
+
+</pre>
+</div>
+
+<p> In particular, there are no accesors for the <code class="src src-C++"><span class="org-type">T</span> <span class="org-variable-name">t_</span></code> being held. Values go in but they can't get out. At least not yet, and not without side-effect using functions. This is why it's sometimes used as Taint, where you can not lose track of the data coming from outside and being untrusted. </p>
+</div>
+</div>
+
+
+<div id="outline-container-org6bd987d" class="outline-2">
+<h3 id="org6bd987d">Identity Functor</h3>
+<div class="outline-text-2" id="text-org6bd987d">
+<p> To make a data structure a Functor a <code class="src src-C++">fmap</code> function needs to be provided that satisfies certain requirements. It also turns out that if there is such a function, for a particular data struture, all of the implmentations are isomorphic. So there's basically only one for a particular data structure. Fmap for a functor F takes two arguments, a function from T-&gt;U, an F&lt;T&gt;, and it will return an F&lt;U&gt;. Although, for C++ this is a bit over-restrictive, and we probably want to be able to apply any function where the template type of the Identity can be used to call the function being mapped. Fortunately C++17 added some traits to work with invocables, and we can use <code class="src src-C++"><span class="org-constant">std</span>::invoke_result_t</code> to both detect if a call can be made, and determine the type of the result. </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">U</span>, <span class="org-keyword">typename</span> <span class="org-type">Func</span>&gt;
+<span class="org-keyword">auto</span> <span class="org-function-name">fmap</span>(<span class="org-type">Identity</span>&lt;<span class="org-type">U</span>&gt; <span class="org-keyword">const</span>&amp; <span class="org-variable-name">i</span>, <span class="org-type">Func</span> <span class="org-keyword">const</span>&amp; <span class="org-variable-name">f</span>)
+    -&gt; <span class="org-type">Identity</span>&lt;<span class="org-constant">std</span>::<span class="org-type">invoke_result_t</span>&lt;<span class="org-type">Func</span>, <span class="org-type">U</span>&gt;&gt; {
+    <span class="org-keyword">using</span> <span class="org-type">V</span> = <span class="org-constant">std</span>::<span class="org-type">invoke_result_t</span>&lt;<span class="org-type">Func</span>, <span class="org-type">U</span>&gt;;
+    <span class="org-keyword">return</span> <span class="org-type">Identity</span>&lt;<span class="org-type">V</span>&gt;{<span class="org-constant">std</span>::invoke(f, i.t_)};
+}
+
+</pre>
+</div>
+<p> It's also declared as a friend, so that it can have access to the internally held t_. </p>
+
+<p> There are two "laws" for how fmap must behave </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-haskell" id="nil">-- identity preserving
+fmap id = id
+
+-- Composition
+fmap (f . g) = (fmap f) . (fmap g)
+</pre>
+</div>
+
+<p> The first one says that fmaping the identity function won't change the object, so it's equivalent to just the identity function. For Identity, this is straightforward to show, since the held value isn't going to be changed, the result won't change the value of the Identity. We can write an equality test for Identity: </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">T</span>, <span class="org-keyword">typename</span> <span class="org-type">U</span>&gt;
+<span class="org-type">bool</span> <span class="org-keyword">operator</span><span class="org-function-name">==</span>(<span class="org-type">Identity</span>&lt;<span class="org-type">T</span>&gt; <span class="org-variable-name">t</span>, <span class="org-type">Identity</span>&lt;<span class="org-type">U</span>&gt; <span class="org-variable-name">u</span>) {
+    <span class="org-keyword">return</span> t.t_ == u.t_;
+}
+
+<span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">T</span>, <span class="org-keyword">typename</span> <span class="org-type">U</span>&gt;
+<span class="org-type">bool</span> <span class="org-keyword">operator</span><span class="org-function-name">!=</span>(<span class="org-type">Identity</span>&lt;<span class="org-type">T</span>&gt; <span class="org-variable-name">t</span>, <span class="org-type">Identity</span>&lt;<span class="org-type">U</span>&gt; <span class="org-variable-name">u</span>) {
+    <span class="org-keyword">return</span> <span class="org-negation-char">!</span>(t == u);
+}
+</pre>
+</div>
+
+<p> It's expressed as a non-member, in order to support allowed conversions between T and U. So we can compare Identity&lt;int&gt; and Identity&lt;long&gt; the same way we can compare int and long. </p>
+
+<p> The second law is more interesting. It's expressing that you can distribute fmap over function composition. Chaining functions works transparently. with appropriate adjustment of the types of the functions. So what does applying fmap to a function, without a Functor object like Identity do? It's a higher order function, one that takes <span class="underline">and returns</span> a function. </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">Func</span>&gt;
+<span class="org-keyword">auto</span> <span class="org-function-name">fmap</span>(<span class="org-type">Func</span> <span class="org-keyword">const</span>&amp; <span class="org-variable-name">f</span>) {
+    <span class="org-comment-delimiter">// </span><span class="org-comment">maps (T -&gt; U) -&gt; (Identity&lt;T&gt; -&gt; Identity&lt;U&gt;)</span>
+    <span class="org-keyword">return</span> [f](<span class="org-keyword">auto</span> <span class="org-variable-name">t</span>) { <span class="org-keyword">return</span> fmap(t, f); };
+}
+
+</pre>
+</div>
+
+<p> In haskell this is natuaral, and does not need a separate defintion because of currying. In haskell if you have a function of type (T -&gt; U) -&gt; F&lt;T&gt; -&gt; F&lt;U&gt;, it is both a function taking one argument, and returning a function, and a function taking two argument and returning a value. Both (T-&gt;U) -&gt; (F&lt;T&gt; -&gt; F&lt;U&gt;) and (T -&gt; U), F&lt;T&gt; -&gt; F&lt;U&gt; are true, depending on how many arguments you supply. </p>
+
+<p> The operator (.) in haskell has type <code class="src src-haskell">(.) :: (b -&gt; c) -&gt; (a -&gt; b) -&gt; (a -&gt; c)</code>, so f . g is g(f()), more function chaining. We can either lift the the function (a -&gt; c) into F&lt;a&gt; -&gt; F&lt;c&gt;, or we can chain together F&lt;a&gt; -&gt; F&lt;b&gt; into F&lt;b&gt; -&gt; F&lt;c&gt; and get the same result. This is a natural property of container-like Functors, like Identity, or an optional, or std::vector. </p>
+</div>
+</div>
+
+<div id="outline-container-org210ebb3" class="outline-2">
+<h3 id="org210ebb3">Identity function digression</h3>
+<div class="outline-text-2" id="text-org210ebb3">
+<p> It's surprisingly tricky to get a good identity function, one that really returns the same object in the C++ sense.  This is the one I use: </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-variable-name">identity</span> = [](<span class="org-keyword">auto</span> &amp;&amp;<span class="org-variable-name">v</span>) -&gt; <span class="org-keyword">decltype</span>(<span class="org-keyword">auto</span>)
+{
+    <span class="org-keyword">return</span> <span class="org-constant">std</span>::forward&lt;<span class="org-keyword">decltype</span>(v)&gt;(v);
+};
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgffcca90" class="outline-2">
+<h3 id="orgffcca90">Using fmap on Identity</h3>
+<div class="outline-text-2" id="text-orgffcca90">
+<p> A short example, from a test case of using the two argument fmap: </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt;  <span class="org-variable-name">i</span>;
+<span class="org-type">Identity</span>&lt;<span class="org-type">long</span>&gt; <span class="org-variable-name">l</span>;
+<span class="org-type">Identity</span>&lt;<span class="org-type">char</span>&gt; <span class="org-variable-name">c</span>;
+
+<span class="org-keyword">auto</span> <span class="org-variable-name">twice</span> = [](<span class="org-keyword">auto</span> <span class="org-variable-name">z</span>) { <span class="org-keyword">return</span> 2 * z; };
+<span class="org-keyword">auto</span> <span class="org-variable-name">i2</span>    = fmap(i, twice);
+<span class="org-keyword">auto</span> <span class="org-variable-name">l2</span>    = fmap(l, twice);
+<span class="org-keyword">auto</span> <span class="org-variable-name">c2</span>    = fmap(c, twice);
+
+ASSERT_EQ(Identity{0}, i2);
+ASSERT_EQ(Identity{0L}, l2);
+ASSERT_EQ(Identity{<span class="org-string">'\0'</span>}, c2);
+
+<span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt;  <span class="org-variable-name">i3</span>(3);
+<span class="org-type">Identity</span>&lt;<span class="org-type">long</span>&gt; <span class="org-variable-name">l3</span>(3);
+<span class="org-type">Identity</span>&lt;<span class="org-type">char</span>&gt; <span class="org-variable-name">c3</span>(3);
+
+<span class="org-keyword">auto</span> <span class="org-variable-name">i6</span> = fmap(i3, twice);
+<span class="org-keyword">auto</span> <span class="org-variable-name">l6</span> = fmap(l3, twice);
+<span class="org-keyword">auto</span> <span class="org-variable-name">c6</span> = fmap(c3, twice);
+
+ASSERT_EQ(Identity{6}, i6);
+ASSERT_EQ(Identity{<span class="org-constant">6</span><span class="org-keyword">L</span>}, l6);
+ASSERT_EQ(Identity{<span class="org-string">'\6'</span>}, c6);
+
+</pre>
+</div>
+
+<p> And the one argument form, where the only difference is we can use the fmapped lambda on all of the Identity instances: </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt;  <span class="org-variable-name">i</span>;
+<span class="org-type">Identity</span>&lt;<span class="org-type">long</span>&gt; <span class="org-variable-name">l</span>;
+<span class="org-type">Identity</span>&lt;<span class="org-type">char</span>&gt; <span class="org-variable-name">c</span>;
+
+<span class="org-keyword">auto</span> <span class="org-variable-name">twice</span>     = [](<span class="org-keyword">auto</span> <span class="org-variable-name">i</span>) { <span class="org-keyword">return</span> 2 * i; };
+<span class="org-keyword">auto</span> <span class="org-variable-name">fmapTwice</span> = fmap(twice);
+
+<span class="org-keyword">auto</span> <span class="org-variable-name">i2</span> = fmapTwice(i);
+<span class="org-keyword">auto</span> <span class="org-variable-name">l2</span> = fmapTwice(l);
+<span class="org-keyword">auto</span> <span class="org-variable-name">c2</span> = fmapTwice(c);
+
+ASSERT_EQ(Identity{0}, i2);
+ASSERT_EQ(Identity{0L}, l2);
+ASSERT_EQ(Identity{<span class="org-string">'\0'</span>}, c2);
+
+<span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt;  <span class="org-variable-name">i3</span>(3);
+<span class="org-type">Identity</span>&lt;<span class="org-type">long</span>&gt; <span class="org-variable-name">l3</span>(3);
+<span class="org-type">Identity</span>&lt;<span class="org-type">char</span>&gt; <span class="org-variable-name">c3</span>(3);
+
+<span class="org-keyword">auto</span> <span class="org-variable-name">i6</span> = fmapTwice(i3);
+<span class="org-keyword">auto</span> <span class="org-variable-name">l6</span> = fmapTwice(l3);
+<span class="org-keyword">auto</span> <span class="org-variable-name">c6</span> = fmapTwice(c3);
+
+ASSERT_EQ(Identity{6}, i6);
+ASSERT_EQ(Identity{<span class="org-constant">6</span><span class="org-keyword">L</span>}, l6);
+ASSERT_EQ(Identity{<span class="org-string">'\6'</span>}, c6);
+
+
+</pre>
+</div>
+
+<p> Fmap, and the Functor laws, gives a way of applying chains of functions to a Functor object and know that the application will behave sensibly. The equivalent STL algorithm is <code class="src src-C++"><span class="org-constant">std</span>::transform</code>, however that requires that there be iterators for the Functor, which means it can not be used for Functors like std::optional. If it were, then we could write code like </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-constant">std</span>::<span class="org-type">optional</span>&lt;<span class="org-type">int</span>&gt; <span class="org-function-name">mult</span>(<span class="org-constant">std</span>::<span class="org-type">optional</span>&lt;<span class="org-type">int</span>&gt; <span class="org-variable-name">o1</span>, <span class="org-constant">std</span>::<span class="org-type">optional</span>&lt;<span class="org-type">int</span>&gt; <span class="org-variable-name">o2</span>)
+{
+    <span class="org-keyword">for</span> (<span class="org-keyword">auto</span> <span class="org-keyword">const</span>&amp; <span class="org-variable-name">a</span> : o1)
+    {
+        <span class="org-keyword">for</span> (<span class="org-keyword">auto</span> <span class="org-keyword">const</span>&amp; <span class="org-variable-name">b</span> : o2)
+        {
+            <span class="org-keyword">return</span> a*b;
+        }
+    }
+    <span class="org-keyword">return</span> {};
+}
+</pre>
+</div>
+
+<p> The core function (a * b) is also something that fmap can't deal with directly. Fmap deals with functions of one argument, and this has two. It's <code class="src src-Haskell">int -&gt; int -&gt; int</code>, not <code class="src src-Haskell">int -&gt; int</code>. That's what Applicative is about. </p>
+</div>
+</div>
+
+<div id="outline-container-orgf384ac4" class="outline-2">
+<h3 id="orgf384ac4">Applicative and <code>ap</code>
+</h3>
+<div class="outline-text-2" id="text-orgf384ac4">
+<p> Applicative is a little unnatural in C++. It arises via partial application, which functional languages usually have a direct syntax for, while in C++ we have at best lambda capture, and at worst <code>std::bind</code>, or the late, and unlamented, <code>std::bind1st</code>. The idea, though, is that you can treat a function like (*), multiply, with the type <code class="src src-Haskell">int -&gt; int -&gt; int</code> as a function that takes an int and returns a function with type <code class="src src-Haskell">int -&gt; int</code>. And it is useful to be able to do this with Functors. </p>
+
+<p> Applicative introduces two operators in Haskell, one is an infix version of fmap, and the other is new, and exists to deal with chaining multi-argument functions. </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-Haskell" id="nil">(&lt;$&gt;) :: Functor f =&gt; (a -&gt; b) -&gt; f a -&gt; f b
+(&lt;*&gt;) :: Applicative f =&gt; f (a -&gt; b) -&gt; f a -&gt; f b
+</pre>
+</div>
+
+<p> Infix notation, putting the operation in the middle of the arguments, can improve readability and ergonomics. It's one of the reasons the Uniform Function Call Syntax proposal gets traction. It's useful and natural to be able to say things in noun verb order, and is one of the attactions of member functions in the first place. There are libraries, such as Hana, that provide mechanisms to be able to infix funtions with syntax like <code class="src src-C++"> <span class="org-type">f</span> &lt;fmap&gt; <span class="org-variable-name">x</span></code>, which would translate to <code class="src src-C++">fmap(f, x)</code>. Note this doesn't match the argument order of the fmap I've used so far. The ergonomics of C++ dictate that functions that might take lambdas put that argument last, unless there is a compelling reason otherwise. API design work is hard. </p>
+
+<p> The new function (&lt;*&gt;), also known as <code>ap</code>, takes a function wrapped in a Functor and applies it to an object wrapped in the Functor, and returns the result wrapped in the Functor. That function usually comes from fmaping, so you will see a chain of &lt;$&gt;&lt;*&gt;&lt;*&gt;… providing arguments to the function. For Identity this will just be calling the function with the contents. Often with the <code>pure</code> function as part of it, which is the other piece that Applicative introduces, with a terribly misleading name. The <code>pure</code> function takes a value and lifts it into the Functor in the most natural way possible. For container-like Applicatives, that is putting a single value into the container. </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-Haskell" id="nil">pure :: Applicative f =&gt; a -&gt; f a
+</pre>
+</div>
+
+<p> Pure is also known as <code>return</code> for Monad, and also known as <code>unit</code>. All of these are somewhat misleading names. For C++ I tend to prefer <code>make</code>. This is generally a constructor, but we want to disambiguate constructor calls with control parameters. That is, we want to be sure we're calling the constructor of std::vector that makes a std::vector&lt;size_t&gt; that has one element, not a std::vector&lt;unsigned long&gt; that has size_t elements, all zero. In the case of the identity monad, make is pretty simple to implement. </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">T</span>&gt;
+<span class="org-type">Identity</span>&lt;<span class="org-type">T</span>&gt; <span class="org-function-name">make</span>(<span class="org-type">T</span> <span class="org-variable-name">t</span>) {
+    <span class="org-keyword">return</span> <span class="org-type">Identity</span>&lt;<span class="org-type">T</span>&gt;{t};
+}
+
+</pre>
+</div>
+
+<p> If I wanted a more fully general make that handled other Applicative generic types, it would be a bit more complicated. If I want something like: </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C+" id="nil">    Identity&lt;int&gt;           i  = make&lt;Identity&gt;(1);
+    Identity&lt;Identity&lt;int&gt;&gt; ii = make&lt;Identity&gt;(i);
+</pre>
+</div>
+<p> where I can parameterize the make function on the template type parameter, it's a bit more complicated, because we can't partially specialize a function, and we want to be able to on the Value type of the Identity template. The standard trick is to delegate to a class template that is partially specialized. The base template looks like </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">template</span> &lt;<span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span>&gt; <span class="org-keyword">typename</span> <span class="org-type">Ap</span>, <span class="org-keyword">typename</span> <span class="org-type">Value</span>&gt;
+<span class="org-keyword">struct</span> <span class="org-type">Applicative</span> {
+    <span class="org-type">Ap</span>&lt;<span class="org-type">Value</span>&gt; <span class="org-function-name">make</span>(<span class="org-type">Value</span> <span class="org-keyword">const</span>&amp; <span class="org-variable-name">v</span>);
+    <span class="org-type">Ap</span>&lt;<span class="org-type">Value</span>&gt; <span class="org-function-name">make</span>(<span class="org-type">Value</span>&amp;&amp; <span class="org-variable-name">v</span>);
+};
+</pre>
+</div>
+
+<p> specialized as </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">Value</span>&gt;
+<span class="org-keyword">struct</span> <span class="org-type">Applicative</span>&lt;Identity, <span class="org-type">Value</span>&gt; {
+    <span class="org-keyword">typedef</span> <span class="org-keyword">typename</span> <span class="org-constant">std</span>::<span class="org-constant">decay</span>&lt;<span class="org-type">Value</span>&gt;::<span class="org-type">type</span> <span class="org-type">V</span>;
+    <span class="org-type">Identity</span>&lt;<span class="org-type">V</span>&gt; <span class="org-variable-name">make</span>(V <span class="org-keyword">const</span>&amp; v) { <span class="org-keyword">return</span> <span class="org-type">Identity</span>&lt;<span class="org-type">V</span>&gt;{v}; }
+    <span class="org-type">Identity</span>&lt;<span class="org-type">V</span>&gt; <span class="org-variable-name">make</span>(V&amp;&amp; v) { <span class="org-keyword">return</span> <span class="org-type">Identity</span>&lt;<span class="org-type">V</span>&gt;{v}; }
+};
+</pre>
+</div>
+<p> so that a <code>make</code> function looks like </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">template</span> &lt;<span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span>&gt; <span class="org-keyword">typename</span> <span class="org-type">Ap</span>, <span class="org-keyword">typename</span> <span class="org-type">Value</span>&gt;
+<span class="org-type">Ap</span>&lt;<span class="org-keyword">typename</span> <span class="org-constant">std</span>::<span class="org-constant">decay</span>&lt;<span class="org-type">Value</span>&gt;::<span class="org-type">type</span>&gt; <span class="org-function-name">make</span>(<span class="org-type">Value</span> <span class="org-keyword">const</span>&amp; <span class="org-variable-name">v</span>) {
+    <span class="org-type">Applicative</span>&lt;<span class="org-type">Ap</span>, <span class="org-type">Value</span>&gt; <span class="org-variable-name">a</span>;
+    <span class="org-keyword">return</span> a.make(v);
+}
+
+</pre>
+</div>
+
+<p> The base Applicative type allows writing generic code against different Applicative types. We'll come back to that in a bit. </p>
+
+<p> The <code>ap</code> function, takes a function lifted into the applicative and a value lifted into the applicative, and invokes the function on the value. For Identity, this is just function invocation. For other Applicatives it can be more complicated, but it is always some variation on calling functions. Since there's no way of getting a value out of the Identity, <code>ap</code> needs to be a friend or member. </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">T</span>&gt;
+<span class="org-keyword">class</span> <span class="org-type">Identity</span> {
+<span class="org-comment-delimiter">// </span><span class="org-comment">...</span>
+    <span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">Func</span>, <span class="org-keyword">typename</span> <span class="org-type">U</span>&gt;
+    <span class="org-keyword">friend</span> <span class="org-keyword">auto</span> <span class="org-function-name">ap</span>(<span class="org-type">Identity</span>&lt;<span class="org-type">Func</span>&gt; <span class="org-keyword">const</span>&amp; <span class="org-variable-name">f</span>, <span class="org-type">Identity</span>&lt;<span class="org-type">U</span>&gt; <span class="org-variable-name">t</span>)
+        -&gt; <span class="org-type">Identity</span>&lt;<span class="org-constant">std</span>::<span class="org-type">invoke_result_t</span>&lt;<span class="org-type">Func</span>, <span class="org-type">U</span>&gt;&gt;;
+<span class="org-comment-delimiter">// </span><span class="org-comment">...</span>
+};
+
+<span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">Func</span>, <span class="org-keyword">typename</span> <span class="org-type">U</span>&gt;
+<span class="org-keyword">auto</span> <span class="org-function-name">ap</span>(<span class="org-type">Identity</span>&lt;<span class="org-type">Func</span>&gt; <span class="org-keyword">const</span>&amp; <span class="org-variable-name">f</span>, <span class="org-type">Identity</span>&lt;<span class="org-type">U</span>&gt; <span class="org-variable-name">t</span>)
+    -&gt; <span class="org-type">Identity</span>&lt;<span class="org-constant">std</span>::<span class="org-type">invoke_result_t</span>&lt;<span class="org-type">Func</span>, <span class="org-type">U</span>&gt;&gt; {
+    <span class="org-keyword">return</span> <span class="org-constant">std</span>::invoke(f.t_, t.t_);
+}
+
+</pre>
+</div>
+
+<p> A function wrapped in an applicative context shows up when you partially apply a function to an applicative. That is if you had a function like add </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">auto</span> <span class="org-function-name">add</span>(<span class="org-type">int</span> <span class="org-variable-name">a</span>, <span class="org-type">int</span> <span class="org-variable-name">b</span>) -&gt; <span class="org-type">int</span> {<span class="org-keyword">return</span> a + b;}
+</pre>
+</div>
+<p> which takes two ints and returns an int, and you bind the first argument, returning a function from int to int </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil"><span class="org-keyword">auto</span> <span class="org-variable-name">bind_add</span> = [](<span class="org-type">int</span> <span class="org-variable-name">a</span>) {<span class="org-keyword">return</span> [a](<span class="org-type">int</span> <span class="org-variable-name">b</span>){<span class="org-keyword">return</span> add(a, b);};};
+</pre>
+</div>
+<p> so instead of a function (int, int) -&gt; int, we have a function (int) -&gt; (int -&gt; int) and we fmap that function, where fmap takes a function (a -&gt; b) and gives you a function (a -&gt; F&lt;b&gt;), so the fmap gives you a function a function (int -&gt; F&lt;(int -&gt; int)&gt;). And then that function is something we can use for <code>ap</code> </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil">    <span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt; <span class="org-variable-name">i3</span>(3);
+    <span class="org-keyword">auto</span> <span class="org-variable-name">partial</span> = fmap(i3, bind_add);
+    <span class="org-comment-delimiter">// </span><span class="org-comment">partial is Identity&lt;int -&gt; int&gt; (roughly)</span>
+    <span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt; <span class="org-variable-name">i4</span>(4);
+    <span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt; <span class="org-variable-name">k</span> = ap(partial, i4);
+    ASSERT_EQ(Identity&lt;<span class="org-type">int</span>&gt;(7), k);
+</pre>
+</div>
+
+<p> In Haskell, where partial application comes built into the syntax of the language, this is all much more natural. The expressive power comes in cases where <code>ap</code> is more than just simple function application, as it is for the Identity applicative. Applicatives like Maybe or Expected can short circuit evaluation, for example. For multivalued functions, like List, the eventual result is the cartesian product of all the parameters, in a list. </p>
+
+<p> Another way of looking at <code>ap</code> involves the <code>curry</code> conversion of a multiparameter function, named after Haskell Curry. A <code>curry</code> converts a function from something called like <code>f(a,b,c)</code> to something called like <code>f(a)(b)(c)</code>, where each call returns a function taking a single parameter, an the final result is the same. </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil">    <span class="org-keyword">auto</span> <span class="org-variable-name">curry1</span> = [](<span class="org-keyword">auto</span> <span class="org-variable-name">func</span>) {
+        <span class="org-keyword">return</span> [func](<span class="org-type">int</span> <span class="org-variable-name">a</span>) {
+            <span class="org-keyword">return</span> [func, a](<span class="org-type">int</span> <span class="org-variable-name">b</span>) {
+                <span class="org-keyword">return</span> func(a, b);
+            };
+        };
+    };
+    <span class="org-keyword">auto</span> <span class="org-variable-name">g</span> = curry1(three);
+    <span class="org-keyword">auto</span> <span class="org-variable-name">h</span> = g(3);
+    ASSERT_EQ(7, h(4));
+</pre>
+</div>
+<p> Here <code>curry1</code> unrolls a <code>func(int, int) -&gt; int</code> into a function that takes an int and returns a function taking an int returning an int. It's a straightforward generalization of <code>bind_add</code> from above. We can tale the curried function g, fmap it over an Identity&lt;int&gt; and then apply that partially bound function to another Identity&lt;int&gt;, as so: </p>
+
+<div class="org-src-container">
+<label class="org-src-name"><em></em></label>
+<pre class="src src-C++" id="nil">    <span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt; <span class="org-variable-name">id3</span>(3);
+    <span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt; <span class="org-variable-name">id4</span>(4);
+    <span class="org-keyword">auto</span> <span class="org-variable-name">partial2</span> = fmap(id3, g);
+    <span class="org-type">Identity</span>&lt;<span class="org-type">int</span>&gt; <span class="org-variable-name">id7</span> = ap(partial2, id4);
+    ASSERT_EQ(Identity&lt;<span class="org-type">int</span>&gt;(7), id7);
+
+</pre>
+</div>
+</div>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul class="pager hidden-print">
+<li class="previous">
+                <a href="../index.php/2017/06/28/why-stdbind-cant-be-formally-deprecated/" rel="prev" title="Why std::bind can't be (formally) deprecated">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="../index.php/2018/06/05/multithread-experiments/" rel="next" title="Multithread Experiments">Next post</a>
+            </li>
+        </ul></nav></aside></article><!--End of body content--><footer id="footer">
+            Contents © 2024         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+ <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+            
+        </footer>
+</div>
+</div>
+
+
+        <script src="../../assets/js/all-nocdn.js"></script><script src="../../assets/js/luxon.min.js"></script><!-- fancy dates --><script>
+        luxon.Settings.defaultLocale = "en";
+        fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
+        </script><!-- end fancy dates --><script>
+    baguetteBox.run('div#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VGV27RDN3E');
+</script>
+</body>
+</html>

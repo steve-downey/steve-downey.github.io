@@ -1,7 +1,0 @@
-[Theme]
-engine = mako
-parent = bootblog4
-tags = bootstrap
-
-[Family]
-family = bootblog4

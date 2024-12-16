@@ -1,3 +1,0 @@
-<html><body><span>Take a picture of yourself right now.<br>don't change your clothes, don't fix your hair...just take a picture.<br>post that picture with NO editing.<br>post these instructions with your picture.<br></span><p><a href="http://www.sdowney.org/uploaded_images/photo-734621-734672.jpg"><img src="http://www.sdowney.org/uploaded_images/photo-734621-734666.jpg" border="0" alt=""></a>'</p>
-<p><br></p>
-<p>Trying to operatate an iPhone backwards makes me frown.</p></body></html>

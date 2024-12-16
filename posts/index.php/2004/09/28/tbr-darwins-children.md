@@ -1,2 +1,0 @@
-<html><body><p>Sequel to Greg Bear's Darwin's Radio. Waiting for me to be in a softer, less belicose mood, to read.
-<br><br>&amp;amp;lt;map&amp;gt;&amp;lt;area&amp;gt;&amp;lt;area&amp;gt;&amp;lt;/map&amp;gt;&amp;lt;img&amp;gt;</p></body></html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>std::execution, Sender/Receiver, and the Continuation Monad | What Comes to Mind</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" crossorigin="anonymous">
+<link href="../../../../../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../../../../../rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="../../../../../../feed.atom">
+<link rel="canonical" href="https://sdowney.org/posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/">
+<!--[if lt IE 9]><script src="../../../../../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Steve Downey">
+<link rel="prev" href="../../../01/16/standard-vocabulary-for-algorithms/" title="Standard Vocabulary for Algorithms" type="text/html">
+<link rel="next" href="../a-local-cmake-workflow-with-docker/" title="A local CMake workflow with Docker" type="text/html">
+<meta property="og:site_name" content="What Comes to Mind">
+<meta property="og:title" content="std::execution, Sender/Receiver, and the Continuation Monad">
+<meta property="og:url" content="https://sdowney.org/posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/">
+<meta property="og:description" content="Some thoughts on the std::execution proposal and my understanding of the underlying theory. 
+
+
+What's proposed
+
+ From the paper's Introduction 
+
+
+ This paper proposes a self-contained design for a Sta">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2021-10-03T00:00:00-04:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@sdowney.org">
+<meta name="twitter:creator" content="@sdowney">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Header and menu bar -->
+<div class="container">
+      <header class="blog-header py-3"><div class="row nbb-header align-items-center">
+          <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+            <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                
+            </div>
+        </div>
+          <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+            <a class="navbar-brand blog-header-logo text-dark" href="../../../../../../">
+
+            <span id="blog-title">What Comes to Mind</span>
+        </a>
+          </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+            <nav class="navbar navbar-light bg-white"><ul class="navbar-nav bootblog4-right-nav"></ul></nav>
+</div>
+    </div>
+</header><nav class="navbar navbar-expand-md navbar-light bg-white static-top"><div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+            <ul class="navbar-nav nav-fill d-flex w-100">
+<li class="nav-item">
+<a href="../../../../../../archive.html" class="nav-link">Archives</a>
+                </li>
+<li class="nav-item">
+<a href="../../../../../../categories/index.html" class="nav-link">Tags</a>
+                </li>
+<li class="nav-item">
+<a href="mailto:sdowney@sdowney.dev" class="nav-link"><i class="fa fa-envelope"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://github.com/steve-downey" class="nav-link">GitHub <i class="fa-brands fa-square-github"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://mastodon.social/@Sdowney" class="nav-link">Mastodon <i class="fa-brands fa-mastodon"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://bsky.app/profile/sdowney.bsky.social" class="nav-link">Bluesky <i class="fa-brands fa-square-bluesky"></i></a>
+                </li>
+<li class="nav-item">
+<a href="../../../../../../feed.atom" class="nav-link">ATOM <i class="fa-solid fa-atom"></i></a>
+                </li>
+<li class="nav-item">
+<a href="../../../../../../rss.xml" class="nav-link">RSS <i class="fa-solid fa-rss"></i></a>
+
+                
+            </li>
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+</nav>
+</div>
+
+<div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        
+        
+        
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">std::execution, Sender/Receiver, and the Continuation Monad</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Steve Downey
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2021-10-03T00:00:00-04:00" itemprop="datePublished" title="2021-10-03 00:00">2021-10-03 00:00</time></a>
+            </p>
+            
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <p> Some thoughts on the <a href="https://wg21.link/p2300">std::execution</a> proposal and my understanding of the underlying theory. </p>
+
+<div id="outline-container-org6280fb4" class="outline-2">
+<h3 id="org6280fb4">What's proposed</h3>
+<div class="outline-text-2" id="text-org6280fb4">
+<p> From the paper's <a href="https://brycelelbach.github.io/wg21_p2300_std_execution/std_execution.html#intro">Introduction</a> </p>
+
+<blockquote>
+<p> This paper proposes a self-contained design for a Standard C++ framework for managing asynchronous execution on generic execution contexts. It is based on the ideas in [P0443R14] and its companion papers. </p>
+</blockquote>
+
+<p> Which doesn't tell you much. </p>
+
+<p> It proposes a framework where the principle abstractions are Senders, Receivers, and Schedulers. </p>
+
+<dl class="org-dl">
+<dt>Sender</dt>
+<dd>A composable unit of work.</dd>
+<dt>Receiver</dt>
+<dd>Delimits work, handling completion, exceptions, or cancellation.</dd>
+<dt>Schedulers</dt>
+<dd>Arranges for the context work is done in.</dd>
+</dl>
+<!-- TEASER_END --><p> The primary user facing concept is the sender. Values and functions can be lifted directly into senders. Senders can be stacked together, with a sender passing its value on to another function. Or stacking exception or cancellation handling the same way. </p>
+
+<p> Receivers handle the three ways a sender can complete, by returning a value, throwing an exception, or being canceled. As described, receivers are most likely to be implemented within particular algorithms that combine senders, such as <a href="https://brycelelbach.github.io/wg21_p2300_std_execution/std_execution.html#example-then">`then`</a> or <a href="https://brycelelbach.github.io/wg21_p2300_std_execution/std_execution.html#example-retry">`retry`</a>. </p>
+
+<p> Schedulers provide access to execution contexts. Like inline, single thread, a thread pool, a GPU, and so on, would all have schedulers that provide for putting a sender into the context they manage. </p>
+
+<p> There's a fairly large API surface being proposed. But there's an underlying theory about this, governing what algorithms need to be there and how the pieces fit together. </p>
+</div>
+</div>
+
+<div id="outline-container-org8699f4f" class="outline-2">
+<h3 id="org8699f4f">Continuation Passing Style and the Continuation Monad</h3>
+<div class="outline-text-2" id="text-org8699f4f">
+<p> Continuation passing style is a transformation from a normal function and a call stack to a direction to send the result to the "continuation" without returning. This means the functions context can be cleaned up. Delimited continuations are a slight variation, where instead of an unbounded "rest of the program", the continuation has an end point and a value. It's essentially a function, and can be handled as such. There is a purely mechanical method for converting all of the lambda calculus transforms into CPS form, and this can be profitable for compilers based on lambda, or related logics, like system F. </p>
+
+<p> The mechanical transformation also means that all the control structures, like loops, gotos, coroutines, exceptions, have CPS equivalents. </p>
+
+<p> CPS is tedious, though. Having to explicitly add a continuation to everything is complicated. </p>
+
+<p> However, there's also a typeclass, or concept, that allows you to convert regular functions into continuation passing style, automatically. It's then rather straightforward to involve concerns like where work is being run for something that wraps up the entire work. Even being able to switch back and forth between contexts. That's the continuation monad. </p>
+
+<p> And unfortunately monads became an organizing principle in programming language theory one or two decades after most CS programs were standardized. So it's all complicated and involves things we weren't trained on. Fitting it into C++ has been an ongoing challenge, and until we had generic lambda was neither reasonbly concise nor idiomatic. </p>
+
+<p> See, however, the new monadic interface additions for std::optional for why you want this. Or Ranges, which are solidly based in the 'list' or non-deterministic monad. </p>
+</div>
+</div>
+
+<div id="outline-container-org32f30b7" class="outline-2">
+<h3 id="org32f30b7">We have a poor relationship with Theory</h3>
+<div class="outline-text-2" id="text-org32f30b7">
+<p> There is no satisfactory PL theory for object oriented programming. There's lots of work, but it mostly ends up describing something that OO programmers don't think is quite the same as what they do. Even the ones who spend a lot of time doing theory. </p>
+
+<p> Yet OO was, and is, a successful discipline. Working with identity, behavior, and state has produced remarkable results. Temporal calculi, not so much. </p>
+
+<p> For a long while, we as a discipline thought that multi-threading was similar. There was poor theory, but we had hardware, and libraries that let us use that hardware to do concurrent work correctly. </p>
+
+<p> That turned out not to be the case. </p>
+
+<p> Concurrency can't be just a library, unfortunately. Concurrency models that hardware vendors will commit to won't promise not to violate causality. That makes producing a programming model programmers can use frighteningly difficult. </p>
+
+<p> Which is why having a sound theory for std::execution is a good thing, even if the theory is unfamiliar. </p>
+
+<p> But as a group, we learned the wrong lessons from the 80s and thought it was a researcher's job to take the successes of practitioners and put a sound basis to them. Ignoring that it is a feedback loop. In the 60s and 70s, those researchers were also the practitioners. It's not wrong to get out ahead of theory, but we do need to check back. </p>
+</div>
+</div>
+
+<div id="outline-container-org4d78be1" class="outline-2">
+<h3 id="org4d78be1">p2300 std::execution</h3>
+<div class="outline-text-2" id="text-org4d78be1">
+<p> Senders, via the Decorator pattern, lift ordinary functions into the continuation passing style. People writing functions only need to be concerned with handling the arguments they are passed, without concern for execution context or continuations. Functions used by senders act like, and are, normal functions. </p>
+
+<p> Senders manage a bundle of channels, representing normal return of a value, throwing an exception, or an error channel to handle cancellation, or other errors not within the bound of ordinary functions. All of these channels can be composed taking the result to another function, or monadically with a function returning a sender, where that function can determine the kind of sender based on the values of the arguments. The channels can be combined or rerouted, connecting one to another, or presenting a variant containing either result, exception, and/or error to the continuation function. </p>
+
+<p> Although senders form a logical graph of units of work, the physical type model is containment, much like expression templates. The result of binding senders together via an algorithm is a sender that contains the bound together senders. There are no nodes or allocations inherent to the model, just function calls. </p>
+
+<p> C++ coroutines fit into this model. C++ coroutines are, from the outside, functions with rules about the interaction patterns with the returned value. Making a coroutine owning type a sender, and a sender co_awaitable, is possible and has been demonstrated. </p>
+
+<p> std::execution takes the Continuation Monad and fits it to C++ control flow, return or exception, and adds cancellation, which incidentally allows a channel for failures from execution contexts. The thread pool can potentially signal failure via the error channel, without aliasing problems from application function code. However, for advanced users, these can be folded back into the normal function arguments and handled by application code. Policy decisions are not burned into the ROM of std::execution, but there are defaults that can be provided by application infrastructure authors. </p>
+
+<p> Those infrastructure authors do not have to be std library vendors. The protocols, rendered as concepts, are available to normal users. </p>
+</div>
+</div>
+
+<div id="outline-container-org2dd1cec" class="outline-2">
+<h3 id="org2dd1cec">Network TS</h3>
+<div class="outline-text-2" id="text-org2dd1cec">
+<dl class="org-dl">
+<dt><span class="underline">Eppur si muove</span></dt>
+<dd>And yet it moves</dd>
+</dl>
+<p> I do not believe ASIO's model is a firm foundation for all async programming. However, it is well proven, and exists. It works. </p>
+</div>
+</div>
+
+
+<div id="outline-container-org5f111d1" class="outline-2">
+<h3 id="org5f111d1">And …</h3>
+<div class="outline-text-2" id="text-org5f111d1">
+<p> I have confidence that a networking library can and will be built using p2300. I am less confident that can be done in the timeframe for C++26. I do not believe for a moment we could have one for C++23, even with an existence proof a networking library appearing now. It's simply too late to review and agree. We're in the same place as coroutines. We can have the machinery, but without all of the application user facing infrastructure we should have. </p>
+
+<p> I think this was the right choice with coroutines, and I think providing the machinery for general continuation based async in the standard library so that we can build on top of it is the right choice. The authors have committed to making sure all the facilities are available for programmers, in particular the pipe syntax (an issue for ranges) as well as providing bases or adapters for coroutine promises and typed senders. We can experiment and add existing practice as we go. </p>
+</div>
+</div>
+
+
+<div id="outline-container-orgb7e8b70" class="outline-2">
+<h3 id="orgb7e8b70">Disclaimer</h3>
+<div class="outline-text-2" id="text-orgb7e8b70">
+<p> This is <b>all</b> my personal opinion, based on my own understanding. I've been in the meetings, I've been in discussions, asked questions. But if I'm wrong about some aspect of the proposal, that's on me. Certainly not a formal opinion of Bloomberg, where I work. While we do lots of network services, and async programming, this isn't what our tech looks like at all. Getting from here to there is an open question, but it would be for ASIO, too. </p>
+
+<p> At least it isn't CORBA. </p>
+
+<p> <a href="https://github.com/steve-downey/what-comes-to-mind/blob/master/send-rec.org">Source For Blog</a> </p>
+</div>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul class="pager hidden-print">
+<li class="previous">
+                <a href="../../../01/16/standard-vocabulary-for-algorithms/" rel="prev" title="Standard Vocabulary for Algorithms">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="../a-local-cmake-workflow-with-docker/" rel="next" title="A local CMake workflow with Docker">Next post</a>
+            </li>
+        </ul></nav></aside></article><!--End of body content--><footer id="footer">
+            Contents © 2024         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+ <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+            
+        </footer>
+</div>
+</div>
+
+
+        <script src="../../../../../../assets/js/all-nocdn.js"></script><script src="../../../../../../assets/js/luxon.min.js"></script><!-- fancy dates --><script>
+        luxon.Settings.defaultLocale = "en";
+        fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
+        </script><!-- end fancy dates --><script>
+    baguetteBox.run('div#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VGV27RDN3E');
+</script>
+</body>
+</html>

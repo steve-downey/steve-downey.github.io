@@ -1,2 +1,0 @@
-<html><body><p>"my office looks like a bookstore exploded in it, and then an electronics store was dropped on it to smother the flames." - J.Scalzi<br>http://scalzi.com/whatever/?p=152<br><br>The books are all triple stacked, and there are several more shelves surrounding the room....<br></p>
-<p><a href="http://www.sdowney.org/uploaded_images/Photo_11-719126-719167.jpg"><img src="http://www.sdowney.org/uploaded_images/Photo_11-719126-719162.jpg" alt="" border="0"></a></p></body></html>
