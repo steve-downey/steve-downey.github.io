@@ -246,6 +246,7 @@ POSTS = (
     ("posts/*.txt", "posts", "post.tmpl"),
     ("posts/*.md", "posts", "post.tmpl"),
     ("posts/*.html", "posts", "post.tmpl"),
+    ("posts/*.org", "posts", "post.tmpl"),
 )
 
 PAGES = (
@@ -253,6 +254,7 @@ PAGES = (
     ("pages/*.txt", "pages", "page.tmpl"),
     ("pages/*.md", "pages", "page.tmpl"),
     ("pages/*.html", "pages", "page.tmpl"),
+    ("pages/*.org", "pages", "page.tmpl"),
 )
 
 
@@ -323,6 +325,7 @@ COMPILERS = {
     "rest": ['.txt', '.rst'],
     "markdown": ['.md', '.mdown', '.markdown'],
     "html": ['.html', '.htm'],
+    "orgmode": ['.org'],
 }
 
 # Enable reST directives that insert the contents of external files such
