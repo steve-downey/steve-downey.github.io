@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Empty Product Ranges | What Comes to Mind</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" crossorigin="anonymous">
+<link href="../../assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
+<link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
+<meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="../../feed.atom">
+<link rel="canonical" href="https://sdowney.org/posts/empty-product-ranges/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Steve Downey">
+<link rel="prev" href="../test-two-files/" title="Test two files" type="text/html">
+<link rel="next" href="../all-syntax-example/" title="All Syntax Example" type="text/html">
+<meta property="og:site_name" content="What Comes to Mind">
+<meta property="og:title" content="Empty Product Ranges">
+<meta property="og:url" content="https://sdowney.org/posts/empty-product-ranges/">
+<meta property="og:description" content="Document number: P2540R1
+Date:  2022-02-06
+Author: Steve Downey &lt;sdowney2@bloomberg.net&gt;, &lt;sdowney@gmail.com&gt;
+Audience: SG9, LEWG
+
+
+
+
+Abstract: This paper argues that the Cartesian product of no range">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2024-12-22T16:27:04-05:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@sdowney.org">
+<meta name="twitter:creator" content="@sdowney">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+</head>
+<body>
+<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
+
+<!-- Header and menu bar -->
+<div class="container">
+      <header class="blog-header py-3"><div class="row nbb-header align-items-center">
+          <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
+            <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
+                
+            </div>
+        </div>
+          <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
+            <a class="navbar-brand blog-header-logo text-dark" href="../../">
+
+            <span id="blog-title">What Comes to Mind</span>
+        </a>
+          </div>
+            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
+            <nav class="navbar navbar-light bg-white"><ul class="navbar-nav bootblog4-right-nav"></ul></nav>
+</div>
+    </div>
+</header><nav class="navbar navbar-expand-md navbar-light bg-white static-top"><div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
+            <ul class="navbar-nav nav-fill d-flex w-100">
+<li class="nav-item">
+<a href="../../archive.html" class="nav-link">Archives</a>
+                </li>
+<li class="nav-item">
+<a href="../../categories/index.html" class="nav-link">Tags</a>
+                </li>
+<li class="nav-item">
+<a href="mailto:sdowney@sdowney.dev" class="nav-link"><i class="fa fa-envelope"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://github.com/steve-downey" class="nav-link">GitHub <i class="fa-brands fa-square-github"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://mastodon.social/@Sdowney" class="nav-link">Mastodon <i class="fa-brands fa-mastodon"></i></a>
+                </li>
+<li class="nav-item">
+<a href="https://bsky.app/profile/sdowney.bsky.social" class="nav-link">Bluesky <i class="fa-brands fa-square-bluesky"></i></a>
+                </li>
+<li class="nav-item">
+<a href="../../feed.atom" class="nav-link">ATOM <i class="fa-solid fa-atom"></i></a>
+                </li>
+<li class="nav-item">
+<a href="../../rss.xml" class="nav-link">RSS <i class="fa-solid fa-rss"></i></a>
+
+                
+            </li>
+</ul>
+</div>
+<!-- /.navbar-collapse -->
+</nav>
+</div>
+
+<div class="container" id="content" role="main">
+    <div class="body-content">
+        <!--Body content-->
+        
+        
+        
+<article class="post-text h-entry hentry postpage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Empty Product Ranges</a></h1>
+
+        <div class="metadata">
+            <p class="byline author vcard p-author h-card"><span class="byline-name fn p-name" itemprop="author">
+                    Steve Downey
+            </span></p>
+            <p class="dateline">
+            <a href="." rel="bookmark">
+            <time class="published dt-published" datetime="2024-12-22T16:27:04-05:00" itemprop="datePublished" title="2024-12-22 16:27">2024-12-22 16:27</time></a>
+            </p>
+            
+
+        </div>
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <ul class="org-ul">
+<li>Document number: P2540R1</li>
+<li>Date:  2022-02-06</li>
+<li>Author: Steve Downey &lt;sdowney2@bloomberg.net&gt;, &lt;sdowney@gmail.com&gt;</li>
+<li>Audience: SG9, LEWG</li>
+</ul>
+<div class="ABSTRACT" id="orgae7fdbb">
+<p>
+Abstract: This paper argues that the Cartesian product of no ranges should be a single empty tuple, which is the identity element for Cartesian products. Other product-like views, however, should not automatically have their identity be the result, and in particular for <code>zip</code>, as it would introduce unsound inconsistencies.
+</p>
+
+</div>
+<div id="outline-container-org6c64515" class="outline-2">
+<h2 id="org6c64515">
+<span class="section-number-2">1.</span> Motivation</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+A natural extension of a product of two things is to a product of \(n\) things, that is from \(P = A \times B\) to \(P = \prod_{i=1}^n a_i = a_1 \cdots  a_n\), where the \(\prod\) symbol stands for a repeated product, the same way that \(\sum\) stands for a repeated sum.
+For \(n=1\), the expansion immediately suggests that \(P=a_1\), but the \(n=0\) case requires more care.
+From the general rule that \(P_n a_{n+1}=P_{n+1}\), we have that \(P_0 a_1=a_1\), so \(P_0\) is the identity for the product.
+This convention simplifies induction arguments and sometimes improves consistency with other well defined operations.
+For example, having \(0^{0} = 1\), just as \(n^{0} = 1\) for all non-zero numbers, greatly simplifies Taylor series notation.
+</p>
+
+<p>
+Also note that we are assuming up to isomorphism for types, and in particular that \((a, b, c)\) is isomorphic to \(((a, b), c)\), and \((a, (b, c))\), and further that the unit type \(()\) does not contribute, so that \(((), a) \equiv (a) \equiv (a, ())\). That is there exists a simple and mechanical bijective mapping, one-to-one and onto, between the types.
+</p>
+
+<p>
+Making the empty product the identity element also puts <code>fold0</code> on a sounder footing. We don't have to supply an identity element because the base case gives it to us automatically.
+</p>
+
+<p>
+The Cartesian product can also be viewed as the union of all relations between sets.
+Any subset of the Cartesian product is a relation among the sets.
+For any number of sets, there are always the trivial relations of \(\top\) (every combination is in the relation) and \(\bot\) (the relation is empty).
+With zero sets, those are the only two relations, since there is no input variation on which the value might depend.
+Accordingly, the Cartesian product of zero sets must have exactly one element (which is the empty tuple \(()\)) so as to have exactly the empty set and the whole set as relations.
+</p>
+
+<p>
+The most general definition of product comes from Category Theory, of course, where it is well studied. And an important result is that for a Category, such as sets, there is one universal operation that is the product. This should make us suspicious of extending the empty product ≡ identity rule to other operations.
+</p>
+
+<p>
+In particular, <code>zip</code> has the property that it is the inner join of the indexed sets, and is the main diagonal of the Cartesian product. However, the identity element for <code>zip</code> is <code>repeat(tuple&lt;&gt;)</code>, the infinite range of repeated empty tuples. If we allowed <code>zip</code> of an empty range of ranges to be its identity element, we would be introducing an inconsistency into the system, where two different formulations of notionally the same thing produces different answers. That would be bad.
+</p>
+</div>
+</div>
+<div id="outline-container-org0456b32" class="outline-2">
+<h2 id="org0456b32">
+<span class="section-number-2">2.</span> Proposal</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+Specify that the Cartesian product of an empty range of ranges is a range of one element, which is the empty tuple, <code>std::tuple&lt;&gt;</code>. The type <code>std::tuple&lt;&gt;</code> is a monostate type, consisting of one element.
+This design should <b>not</b> be extended to zip. If it were to be defined, the zip of an empty range of ranges should be the diagonal of the Cartesian product, but this is not actually useful, since that is annihilating for <code>zip</code>. It should be left undefined, as most operations on empty ranges are.
+</p>
+</div>
+</div>
+<div id="outline-container-org3072040" class="outline-2">
+<h2 id="org3072040">
+<span class="section-number-2">3.</span> Wording</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Wording is relative to p2374r3
+</p>
+</div>
+<div id="outline-container-orgdcc5b14" class="outline-3">
+<h3 id="orgdcc5b14">
+<span class="section-number-3">3.1.</span> Overview [range.cartesian.overview]</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+<code>cartesian_product_view</code> presents a view with a value type that represents the cartesian product of the adapted ranges.
+</p>
+
+<p>
+The name <code>views::cartesian_product</code> denotes a customization point object. Given a pack of subexpressions <code>Es...</code>, the expression <code>views::cartesian_product(Es...)</code> is expression-equivalent to
+</p>
+
+<ol class="org-ol">
+<li>
+<del>*decay-copy*(views::empty&lt;tuple&lt;&gt;&gt;)</del> <span class="underline">views::single(tuple())</span> if Es is an empty pack,</li>
+<li>otherwise, cartesian_product_view&lt;views::all_t&lt;decltype((Es))&gt;…&gt;(Es…).</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="outline-container-org8d79fdd" class="outline-2">
+<h2 id="org8d79fdd">
+<span class="section-number-2">4.</span> References</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+Reflector Discussion: [isocpp-lib-ext] zip and cartesian_product base case
+<a href="https://lists.isocpp.org/lib-ext/2022/01/22023.php">https://lists.isocpp.org/lib-ext/2022/01/22023.php</a>
+</p>
+
+<p>
+Twitter: <a href="https://twitter.com/sdowney/status/1482469504248598532">https://twitter.com/sdowney/status/1482469504248598532</a> and ff
+</p>
+
+<p>
+Empty product - Wikipedia: <a href="https://en.wikipedia.org/wiki/Empty_product">https://en.wikipedia.org/wiki/Empty_product</a>
+</p>
+
+<p>
+[P2374R3] Sy Brand, Michał Dominiak. 2021-12-13. views::cartesian_product
+    <a href="https://wg21.link/p2374r3">https://wg21.link/p2374r3</a>
+</p>
+</div>
+</div>
+    </div>
+    <aside class="postpromonav"><nav><ul class="pager hidden-print">
+<li class="previous">
+                <a href="../test-two-files/" rel="prev" title="Test two files">Previous post</a>
+            </li>
+            <li class="next">
+                <a href="../all-syntax-example/" rel="next" title="All Syntax Example">Next post</a>
+            </li>
+        </ul></nav></aside><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
+                renderMathInElement(document.body,
+                    {
+                        
+delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "\\[", right: "\\]", display: true},
+    {left: "\\begin{equation*}", right: "\\end{equation*}", display: true},
+    {left: "$", right: "$", display: false},
+    {left: "\\(", right: "\\)", display: false}
+]
+
+                    }
+                );
+            </script></article><!--End of body content--><footer id="footer">
+            Contents © 2024         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+ <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
+            
+            
+        </footer>
+</div>
+</div>
+
+
+        <script src="../../assets/js/all-nocdn.js"></script><script src="../../assets/js/luxon.min.js"></script><!-- fancy dates --><script>
+        luxon.Settings.defaultLocale = "en";
+        fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
+        </script><!-- end fancy dates --><script>
+    baguetteBox.run('div#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VGV27RDN3E');
+</script>
+</body>
+</html>
