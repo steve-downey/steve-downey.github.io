@@ -3,14 +3,16 @@
  &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
  &lt;img alt="Creative Commons License BY-NC-SA"
  style="border-width:0; margin-bottom:12px;"
- src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Tue, 24 Dec 2024 19:51:11 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Nikola Blog Infrastructure</title><link>https://sdowney.org/posts/nikola-blog-infrastructure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org2bc1ab1"&gt;
+ src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Tue, 24 Dec 2024 20:04:51 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Nikola Blog Infrastructure</title><link>https://sdowney.org/posts/nikola-blog-infrastructure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org16323d8"&gt;
 &lt;p&gt;
 I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
 &lt;/p&gt;
 
 &lt;/div&gt;
-&lt;div id="outline-container-orgb1164a2" class="outline-2"&gt;
-&lt;h2 id="orgb1164a2"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Nikola&lt;/h2&gt;
+
+&lt;!-- TEASER_END --&gt;
+&lt;div id="outline-container-orgdab4ed9" class="outline-2"&gt;
+&lt;h2 id="orgdab4ed9"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Nikola&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 Nikola is a static site generator written in python. It's mostly boring, which is a very good thing for software meant for use to be. Its home is &lt;a href="https://getnikola.org"&gt;https://getnikola.org&lt;/a&gt; and the source is on github at &lt;a href="https://github.com/getnikola/nikola"&gt;https://github.com/getnikola/nikola&lt;/a&gt;. It's many years old at this point, but not dead.
@@ -29,8 +31,8 @@ Conversion was straightforward using the tools that Nikola provided and &lt;a hr
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-org58b22ac" class="outline-2"&gt;
-&lt;h2 id="org58b22ac"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Orgmode plugin&lt;/h2&gt;
+&lt;div id="outline-container-org5552849" class="outline-2"&gt;
+&lt;h2 id="org5552849"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Orgmode plugin&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 Pulling a plugin into my working site was easy
@@ -57,8 +59,8 @@ I then updated the source code for the elisp html exporter using code from &lt;a
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-orgc47cd15" class="outline-2"&gt;
-&lt;h2 id="orgc47cd15"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; LaTeX support via KaTeX&lt;/h2&gt;
+&lt;div id="outline-container-orgaacd786" class="outline-2"&gt;
+&lt;h2 id="orgaacd786"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; LaTeX support via KaTeX&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 I've configure Nikola to support LaTeX via KaTeX rather than MathJax. It is supposed to be a bit faster. This means &lt;b&gt;inline&lt;/b&gt; math like \(x^2\) or \(1 &amp;lt; 2\) or with breaks like:

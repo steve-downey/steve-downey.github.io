@@ -98,85 +98,15 @@
             </p>
                 </div>
             </header><div class="p-summary entry-summary">
-                    <div class="abstract" id="org2bc1ab1">
+                    <div>
+<div class="abstract" id="org16323d8">
 <p>
 I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
 </p>
 
 </div>
-<div id="outline-container-orgb1164a2" class="outline-2">
-<h2 id="orgb1164a2">
-<span class="section-number-2">1.</span> Nikola</h2>
-<div class="outline-text-2" id="text-1">
-<p>
-Nikola is a static site generator written in python. It's mostly boring, which is a very good thing for software meant for use to be. Its home is <a href="https://getnikola.org">https://getnikola.org</a> and the source is on github at <a href="https://github.com/getnikola/nikola">https://github.com/getnikola/nikola</a>. It's many years old at this point, but not dead.
-</p>
 
-<p>
-The interesting part for me is that someone had already written a plugin that compiled org mode files, my preferred markup language, to the html that Nikola wants to publish. It wasn't quite to my tastes, but the changes were all on the org export side in elisp, and the python invocation of emacs to do the translation didn't need particular changes. That update is at <a href="https://github.com/steve-downey/wctm/tree/src/plugins/orgmode">https://github.com/steve-downey/wctm/tree/src/plugins/orgmode</a>.
-</p>
-
-<p>
-I've also set up staging at a github pages repo rendered at <a href="https://steve-downey.github.io/">https://steve-downey.github.io/</a> since it's a static site. The real version is at <a href="https://sdowney.org">https://sdowney.org</a>.
-</p>
-
-<p>
-Conversion was straightforward using the tools that Nikola provided and <a href="https://getnikola.com/handbook.html#importing-your-wordpress-site-into-nikola">following the directions</a> for importing a WordPress xml backup.
-</p>
-</div>
-</div>
-<div id="outline-container-org58b22ac" class="outline-2">
-<h2 id="org58b22ac">
-<span class="section-number-2">2.</span> Orgmode plugin</h2>
-<div class="outline-text-2" id="text-2">
-<p>
-Pulling a plugin into my working site was easy
-</p>
-<div class="org-src-container">
-<pre class="src src-zsh">nikola plugin -i orgmode
-</pre>
-</div>
-<p>
-copied the code from <a href="https://github.com/getnikola/plugins/tree/master/v8/orgmode">https://github.com/getnikola/plugins/tree/master/v8/orgmode</a> and I just had to update the main configuration file, <code>conf.py</code>, to map org files to the orgmode compiler.
-</p>
-<div class="org-src-container">
-<pre class="src src-python"><span class="org-variable-name">COMPILERS</span> <span class="org-operator">=</span> {
-    <span class="org-string">"rest"</span>: [<span class="org-string">'.txt'</span>, <span class="org-string">'.rst'</span>],
-    <span class="org-string">"markdown"</span>: [<span class="org-string">'.md'</span>, <span class="org-string">'.mdown'</span>, <span class="org-string">'.markdown'</span>],
-    <span class="org-string">"html"</span>: [<span class="org-string">'.html'</span>, <span class="org-string">'.htm'</span>],
-    <span class="org-string">"orgmode"</span>: [<span class="org-string">'.org'</span>],
-}
-</pre>
-</div>
-
-<p>
-I then updated the source code for the elisp html exporter using code from <a href="https://github.com/steve-downey/wg21org/blob/main/emacs.d/init.el">https://github.com/steve-downey/wg21org/blob/main/emacs.d/init.el</a> which installs org from upstream rather than using the built-in orgmode and configures my preferences. I may end up using more of <a href="https://github.com/steve-downey/wg21org/blob/main/ox-wg21html.el">ox-wg21html.el</a> as a framework for the exported HTML, only updating to use Bootstrap for css classes instead of my own or the org builtin.
-</p>
-</div>
-</div>
-<div id="outline-container-orgc47cd15" class="outline-2">
-<h2 id="orgc47cd15">
-<span class="section-number-2">3.</span> LaTeX support via KaTeX</h2>
-<div class="outline-text-2" id="text-3">
-<p>
-I've configure Nikola to support LaTeX via KaTeX rather than MathJax. It is supposed to be a bit faster. This means <b>inline</b> math like \(x^2\) or \(1 &lt; 2\) or with breaks like:
-  \[
-  \int_0^\infty e^{-x^2} dx = {{\sqrt{\pi}} \over {2}}
-  \]
-Or in running text where I want to mention \[ \frac{-b \pm \sqrt{b^2 - 4 a c}}{2a} \] as the quadratic equation.
-It does mean I don't have access to latex blocks like
-</p>
-<div class="org-src-container">
-<pre class="src src-latex"><span class="org-font-latex-sedate"><span class="org-keyword">\begin</span></span>{<span class="org-function-name">equation</span>}
-<span class="org-font-latex-math">  n</span><span class="org-font-latex-math"><span class="org-font-latex-script-char">_{i+1}</span></span><span class="org-font-latex-math"> = </span><span class="org-font-latex-sedate"><span class="org-font-latex-math">\frac</span></span><span class="org-font-latex-math">{n</span><span class="org-font-latex-math"><span class="org-font-latex-script-char">_{i}</span></span><span class="org-font-latex-math"> (d-i) (e-1)}{(i+1)}</span>
-<span class="org-font-latex-sedate"><span class="org-keyword">\end</span></span>{<span class="org-function-name">equation</span>}
-</pre>
-</div>
-
-<p>
-Maybe I won't miss it.
-</p>
-</div>
+<p class="more"><a href="posts/nikola-blog-infrastructure/">Read more…</a></p>
 </div>
                 </div>
             </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/" class="u-url">Concept Maps using C++23 Library Tech</a></h1>
