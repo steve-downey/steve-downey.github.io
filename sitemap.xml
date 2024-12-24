@@ -79,7 +79,7 @@
  </url>
  <url>
   <loc>https://sdowney.org/archive.html</loc>
-  <lastmod>2024-12-23T18:14:00Z</lastmod>
+  <lastmod>2024-12-24T19:33:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/categories/</loc>
@@ -131,7 +131,7 @@
  </url>
  <url>
   <loc>https://sdowney.org/index-9.html</loc>
-  <lastmod>2024-12-23T18:14:00Z</lastmod>
+  <lastmod>2024-12-24T19:33:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index.php/2004/09/08/test-mail-post/</loc>
@@ -638,14 +638,6 @@
   <lastmod>2024-12-16T00:26:00Z</lastmod>
  </url>
  <url>
-  <loc>https://sdowney.org/posts/all-syntax-example/</loc>
-  <lastmod>2024-12-22T21:53:00Z</lastmod>
- </url>
- <url>
-  <loc>https://sdowney.org/posts/empty-product-ranges/</loc>
-  <lastmod>2024-12-22T22:17:00Z</lastmod>
- </url>
- <url>
   <loc>https://sdowney.org/posts/hello-world/</loc>
   <lastmod>2024-12-16T00:26:00Z</lastmod>
  </url>
@@ -1010,15 +1002,11 @@
   <lastmod>2024-12-16T00:26:00Z</lastmod>
  </url>
  <url>
+  <loc>https://sdowney.org/posts/nikola-blog-infrastructure/</loc>
+  <lastmod>2024-12-24T19:33:00Z</lastmod>
+ </url>
+ <url>
   <loc>https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/</loc>
   <lastmod>2024-12-16T00:26:00Z</lastmod>
- </url>
- <url>
-  <loc>https://sdowney.org/posts/test-base-orgmode/</loc>
-  <lastmod>2024-12-18T04:38:00Z</lastmod>
- </url>
- <url>
-  <loc>https://sdowney.org/posts/test-two-files/</loc>
-  <lastmod>2024-12-22T21:27:00Z</lastmod>
  </url>
 </urlset>

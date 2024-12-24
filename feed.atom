@@ -3,13 +3,177 @@
 <feed xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
   <title>What Comes to Mind</title>
   <id>https://sdowney.org/feed.atom</id>
-  <updated>2024-12-23T18:14:20Z</updated>
+  <updated>2024-12-24T19:51:11Z</updated>
   <author>
     <name>Steve Downey</name>
   </author>
   <link rel="self" type="application/atom+xml" href="https://sdowney.org/feed.atom"/>
   <link rel="alternate" type="text/html" href="https://sdowney.org/"/>
   <generator uri="https://getnikola.com/">Nikola</generator>
+  <entry>
+    <title>Nikola Blog Infrastructure</title>
+    <id>https://sdowney.org/posts/nikola-blog-infrastructure/</id>
+    <updated>2024-12-23T13:15:27-05:00</updated>
+    <published>2024-12-23T13:15:27-05:00</published>
+    <author>
+      <name>Steve Downey</name>
+    </author>
+    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/nikola-blog-infrastructure/"/>
+    <summary type="html">&lt;div class="abstract" id="org2bc1ab1"&gt;
+&lt;p&gt;
+I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
+&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;div id="outline-container-orgb1164a2" class="outline-2"&gt;
+&lt;h2 id="orgb1164a2"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Nikola&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+Nikola is a static site generator written in python. It's mostly boring, which is a very good thing for software meant for use to be. Its home is &lt;a href="https://getnikola.org"&gt;https://getnikola.org&lt;/a&gt; and the source is on github at &lt;a href="https://github.com/getnikola/nikola"&gt;https://github.com/getnikola/nikola&lt;/a&gt;. It's many years old at this point, but not dead.
+&lt;/p&gt;
+
+&lt;p&gt;
+The interesting part for me is that someone had already written a plugin that compiled org mode files, my preferred markup language, to the html that Nikola wants to publish. It wasn't quite to my tastes, but the changes were all on the org export side in elisp, and the python invocation of emacs to do the translation didn't need particular changes. That update is at &lt;a href="https://github.com/steve-downey/wctm/tree/src/plugins/orgmode"&gt;https://github.com/steve-downey/wctm/tree/src/plugins/orgmode&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+I've also set up staging at a github pages repo rendered at &lt;a href="https://steve-downey.github.io/"&gt;https://steve-downey.github.io/&lt;/a&gt; since it's a static site. The real version is at &lt;a href="https://sdowney.org"&gt;https://sdowney.org&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+Conversion was straightforward using the tools that Nikola provided and &lt;a href="https://getnikola.com/handbook.html#importing-your-wordpress-site-into-nikola"&gt;following the directions&lt;/a&gt; for importing a WordPress xml backup.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org58b22ac" class="outline-2"&gt;
+&lt;h2 id="org58b22ac"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Orgmode plugin&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;p&gt;
+Pulling a plugin into my working site was easy
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-zsh"&gt;nikola plugin -i orgmode
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;
+copied the code from &lt;a href="https://github.com/getnikola/plugins/tree/master/v8/orgmode"&gt;https://github.com/getnikola/plugins/tree/master/v8/orgmode&lt;/a&gt; and I just had to update the main configuration file, &lt;code&gt;conf.py&lt;/code&gt;, to map org files to the orgmode compiler.
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-python"&gt;&lt;span class="org-variable-name"&gt;COMPILERS&lt;/span&gt; &lt;span class="org-operator"&gt;=&lt;/span&gt; {
+    &lt;span class="org-string"&gt;"rest"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.txt'&lt;/span&gt;, &lt;span class="org-string"&gt;'.rst'&lt;/span&gt;],
+    &lt;span class="org-string"&gt;"markdown"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.md'&lt;/span&gt;, &lt;span class="org-string"&gt;'.mdown'&lt;/span&gt;, &lt;span class="org-string"&gt;'.markdown'&lt;/span&gt;],
+    &lt;span class="org-string"&gt;"html"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.html'&lt;/span&gt;, &lt;span class="org-string"&gt;'.htm'&lt;/span&gt;],
+    &lt;span class="org-string"&gt;"orgmode"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.org'&lt;/span&gt;],
+}
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+I then updated the source code for the elisp html exporter using code from &lt;a href="https://github.com/steve-downey/wg21org/blob/main/emacs.d/init.el"&gt;https://github.com/steve-downey/wg21org/blob/main/emacs.d/init.el&lt;/a&gt; which installs org from upstream rather than using the built-in orgmode and configures my preferences. I may end up using more of &lt;a href="https://github.com/steve-downey/wg21org/blob/main/ox-wg21html.el"&gt;ox-wg21html.el&lt;/a&gt; as a framework for the exported HTML, only updating to use Bootstrap for css classes instead of my own or the org builtin.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-orgc47cd15" class="outline-2"&gt;
+&lt;h2 id="orgc47cd15"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; LaTeX support via KaTeX&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-3"&gt;
+&lt;p&gt;
+I've configure Nikola to support LaTeX via KaTeX rather than MathJax. It is supposed to be a bit faster. This means &lt;b&gt;inline&lt;/b&gt; math like \(x^2\) or \(1 &amp;lt; 2\) or with breaks like:
+  \[
+  \int_0^\infty e^{-x^2} dx = {{\sqrt{\pi}} \over {2}}
+  \]
+Or in running text where I want to mention \[ \frac{-b \pm \sqrt{b^2 - 4 a c}}{2a} \] as the quadratic equation.
+It does mean I don't have access to latex blocks like
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-latex"&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\begin&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
+&lt;span class="org-font-latex-math"&gt;  n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i+1}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; = &lt;/span&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-font-latex-math"&gt;\frac&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;{n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; (d-i) (e-1)}{(i+1)}&lt;/span&gt;
+&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\end&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Maybe I won't miss it.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;</summary>
+    <content type="html">&lt;div class="abstract" id="org2bc1ab1"&gt;
+&lt;p&gt;
+I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
+&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;div id="outline-container-orgb1164a2" class="outline-2"&gt;
+&lt;h2 id="orgb1164a2"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Nikola&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+Nikola is a static site generator written in python. It's mostly boring, which is a very good thing for software meant for use to be. Its home is &lt;a href="https://getnikola.org"&gt;https://getnikola.org&lt;/a&gt; and the source is on github at &lt;a href="https://github.com/getnikola/nikola"&gt;https://github.com/getnikola/nikola&lt;/a&gt;. It's many years old at this point, but not dead.
+&lt;/p&gt;
+
+&lt;p&gt;
+The interesting part for me is that someone had already written a plugin that compiled org mode files, my preferred markup language, to the html that Nikola wants to publish. It wasn't quite to my tastes, but the changes were all on the org export side in elisp, and the python invocation of emacs to do the translation didn't need particular changes. That update is at &lt;a href="https://github.com/steve-downey/wctm/tree/src/plugins/orgmode"&gt;https://github.com/steve-downey/wctm/tree/src/plugins/orgmode&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+I've also set up staging at a github pages repo rendered at &lt;a href="https://steve-downey.github.io/"&gt;https://steve-downey.github.io/&lt;/a&gt; since it's a static site. The real version is at &lt;a href="https://sdowney.org"&gt;https://sdowney.org&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+Conversion was straightforward using the tools that Nikola provided and &lt;a href="https://getnikola.com/handbook.html#importing-your-wordpress-site-into-nikola"&gt;following the directions&lt;/a&gt; for importing a WordPress xml backup.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org58b22ac" class="outline-2"&gt;
+&lt;h2 id="org58b22ac"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Orgmode plugin&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;p&gt;
+Pulling a plugin into my working site was easy
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-zsh"&gt;nikola plugin -i orgmode
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;
+copied the code from &lt;a href="https://github.com/getnikola/plugins/tree/master/v8/orgmode"&gt;https://github.com/getnikola/plugins/tree/master/v8/orgmode&lt;/a&gt; and I just had to update the main configuration file, &lt;code&gt;conf.py&lt;/code&gt;, to map org files to the orgmode compiler.
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-python"&gt;&lt;span class="org-variable-name"&gt;COMPILERS&lt;/span&gt; &lt;span class="org-operator"&gt;=&lt;/span&gt; {
+    &lt;span class="org-string"&gt;"rest"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.txt'&lt;/span&gt;, &lt;span class="org-string"&gt;'.rst'&lt;/span&gt;],
+    &lt;span class="org-string"&gt;"markdown"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.md'&lt;/span&gt;, &lt;span class="org-string"&gt;'.mdown'&lt;/span&gt;, &lt;span class="org-string"&gt;'.markdown'&lt;/span&gt;],
+    &lt;span class="org-string"&gt;"html"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.html'&lt;/span&gt;, &lt;span class="org-string"&gt;'.htm'&lt;/span&gt;],
+    &lt;span class="org-string"&gt;"orgmode"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.org'&lt;/span&gt;],
+}
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+I then updated the source code for the elisp html exporter using code from &lt;a href="https://github.com/steve-downey/wg21org/blob/main/emacs.d/init.el"&gt;https://github.com/steve-downey/wg21org/blob/main/emacs.d/init.el&lt;/a&gt; which installs org from upstream rather than using the built-in orgmode and configures my preferences. I may end up using more of &lt;a href="https://github.com/steve-downey/wg21org/blob/main/ox-wg21html.el"&gt;ox-wg21html.el&lt;/a&gt; as a framework for the exported HTML, only updating to use Bootstrap for css classes instead of my own or the org builtin.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-orgc47cd15" class="outline-2"&gt;
+&lt;h2 id="orgc47cd15"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; LaTeX support via KaTeX&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-3"&gt;
+&lt;p&gt;
+I've configure Nikola to support LaTeX via KaTeX rather than MathJax. It is supposed to be a bit faster. This means &lt;b&gt;inline&lt;/b&gt; math like \(x^2\) or \(1 &amp;lt; 2\) or with breaks like:
+  \[
+  \int_0^\infty e^{-x^2} dx = {{\sqrt{\pi}} \over {2}}
+  \]
+Or in running text where I want to mention \[ \frac{-b \pm \sqrt{b^2 - 4 a c}}{2a} \] as the quadratic equation.
+It does mean I don't have access to latex blocks like
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-latex"&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\begin&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
+&lt;span class="org-font-latex-math"&gt;  n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i+1}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; = &lt;/span&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-font-latex-math"&gt;\frac&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;{n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; (d-i) (e-1)}{(i+1)}&lt;/span&gt;
+&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\end&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Maybe I won't miss it.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;</content>
+  </entry>
   <entry>
     <title>Concept Maps using C++23 Library Tech</title>
     <id>https://sdowney.org/posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/</id>
@@ -3066,132 +3230,5 @@ We should all be able to get behind not calling it &lt;code&gt;accumulate&lt;/co
 &lt;!-- /wp:paragraph --&gt;</summary>
     <content type="html">&lt;p&gt;Welcome to WordPress. This is your first post. Edit or delete it, then start writing!&lt;/p&gt;
 &lt;!-- /wp:paragraph --&gt;</content>
-  </entry>
-  <entry>
-    <title>Value Oriented Programming: A Manifesto</title>
-    <id>https://sdowney.org/posts/index.php/2020/09/30/value-oriented-programming-a-manifesto/</id>
-    <updated>2020-09-30T00:00:00-04:00</updated>
-    <published>2020-09-30T00:00:00-04:00</published>
-    <author>
-      <name>Steve Downey</name>
-    </author>
-    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/index.php/2020/09/30/value-oriented-programming-a-manifesto/"/>
-    <summary type="html">&lt;div&gt;&lt;div id="outline-container-org5372f25" class="outline-2"&gt;
-&lt;h3 id="org5372f25"&gt;Object Oriented Programming&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org5372f25"&gt;
- The primitive entities are objects which have certain properties
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Objects have Identity&lt;/li&gt;
-&lt;li&gt;Objects have State&lt;/li&gt;
-&lt;li&gt;Objects have Behavior&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-orgae5a05b" class="outline-2"&gt;
-&lt;h3 id="orgae5a05b"&gt;Values are not Objects&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgae5a05b"&gt;
- The primitive entities are values which have none of the properties of Objects
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Values have no identity&lt;/li&gt;
-&lt;li&gt;Values have no State&lt;/li&gt;
-&lt;li&gt;Values have no Behavior&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org559c00a" class="outline-2"&gt;
-&lt;h3 id="org559c00a"&gt;A positive definition of VOP&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org559c00a"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Values are Equivalent&lt;/li&gt;
-&lt;li&gt;Values are Immutable&lt;/li&gt;
-&lt;li&gt;Values are Side-effect Free&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;a href="https://sdowney.org/posts/index.php/2020/09/30/value-oriented-programming-a-manifesto/"&gt;Read more…&lt;/a&gt; (1 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
-    <content type="html">&lt;div id="outline-container-org5372f25" class="outline-2"&gt;
-&lt;h3 id="org5372f25"&gt;Object Oriented Programming&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org5372f25"&gt;
- The primitive entities are objects which have certain properties
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Objects have Identity&lt;/li&gt;
-&lt;li&gt;Objects have State&lt;/li&gt;
-&lt;li&gt;Objects have Behavior&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-orgae5a05b" class="outline-2"&gt;
-&lt;h3 id="orgae5a05b"&gt;Values are not Objects&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgae5a05b"&gt;
- The primitive entities are values which have none of the properties of Objects
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Values have no identity&lt;/li&gt;
-&lt;li&gt;Values have no State&lt;/li&gt;
-&lt;li&gt;Values have no Behavior&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org559c00a" class="outline-2"&gt;
-&lt;h3 id="org559c00a"&gt;A positive definition of VOP&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org559c00a"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Values are Equivalent&lt;/li&gt;
-&lt;li&gt;Values are Immutable&lt;/li&gt;
-&lt;li&gt;Values are Side-effect Free&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;!-- TEASER_END --&gt;
-
-&lt;div id="outline-container-orgc5cb65c" class="outline-2"&gt;
-&lt;h3 id="orgc5cb65c"&gt;Values are Equivalent&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgc5cb65c"&gt;
- One entity with a value will give the same results as a different entity with the same value. All 'fives' are the same. This allows equational reasoning. If `a` and `b` have the same value, `f(a)` and `f(b)` have the same value.
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org24467e2" class="outline-2"&gt;
-&lt;h3 id="org24467e2"&gt;Values are Immutable&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org24467e2"&gt;
- 'five' never becomes 'six'. Values do not change.
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org5833d94" class="outline-2"&gt;
-&lt;h3 id="org5833d94"&gt;Values are Side-effect free&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org5833d94"&gt;
- No operation on a value has an effect on other values. Temporal changes are explicit.
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org44be465" class="outline-2"&gt;
-&lt;h3 id="org44be465"&gt;Value Oriented Programming does not deny Objects&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org44be465"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;There are things with identity&lt;/li&gt;
-&lt;li&gt;There are things that vary over time&lt;/li&gt;
-&lt;li&gt;There are things that affect the state of other things&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-orge78ff25" class="outline-2"&gt;
-&lt;h3 id="orge78ff25"&gt;Values are are a better basis&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orge78ff25"&gt;
- We can, and do, build objects out of values, but objects in the OO sense are impossible to reason about.
-
- Values are.
-&lt;/div&gt;
-&lt;/div&gt;</content>
   </entry>
 </feed>
