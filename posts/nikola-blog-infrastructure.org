@@ -1,0 +1,76 @@
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:t arch:headline author:t
+#+options: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+options: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:nil todo:t |:t
+#+options: html5-fancy:t
+#+TITLE: Nikola Blog Infrastructure
+#+AUTHOR: Steve Downey
+#+EMAIL: sdowney@gmail.com
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+DESCRIPTION:
+#+KEYWORDS:
+#+SUBTITLE: The obligatory how the blog software works post
+#+DATE: {{{modification-time(%Y-%m-%d, VC)}}}
+#+STARTUP: showall
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:nil html-preamble:t
+#+OPTIONS: html-scripts:n html-style:nil html5-fancy:nil tex:t
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD:
+#+HTML_HEAD_EXTRA:
+#+SUBTITLE:
+#+INFOJS_OPT:
+
+
+
+#+begin_abstract
+I've migrated from WordPress to a static blog generator--Nikola. This is how it works.
+#+end_abstract
+
+* Nikola
+Nikola is a static site generator written in python. It's mostly boring, which is a very good thing for software meant for use to be. Its home is [[https://getnikola.org]] and the source is on github at [[https://github.com/getnikola/nikola]]. It's many years old at this point, but not dead.
+
+The interesting part for me is that someone had already written a plugin that compiled org mode files, my preferred markup language, to the html that Nikola wants to publish. It wasn't quite to my tastes, but the changes were all on the org export side in elisp, and the python invocation of emacs to do the translation didn't need particular changes. That update is at [[https://github.com/steve-downey/wctm/tree/src/plugins/orgmode]].
+
+I've also set up staging at a github pages repo rendered at [[https://steve-downey.github.io/]] since it's a static site. The real version is at [[https://sdowney.org]].
+
+Conversion was straightforward using the tools that Nikola provided and [[https://getnikola.com/handbook.html#importing-your-wordpress-site-into-nikola][following the directions]] for importing a WordPress xml backup.
+
+* Orgmode plugin
+Pulling a plugin into my working site was easy
+#+begin_src zsh
+nikola plugin -i orgmode
+#+end_src
+copied the code from [[https://github.com/getnikola/plugins/tree/master/v8/orgmode]] and I just had to update the main configuration file, ~conf.py~, to map org files to the orgmode compiler.
+#+begin_src python
+COMPILERS = {
+    "rest": ['.txt', '.rst'],
+    "markdown": ['.md', '.mdown', '.markdown'],
+    "html": ['.html', '.htm'],
+    "orgmode": ['.org'],
+}
+#+end_src
+
+I then updated the source code for the elisp html exporter using code from [[https://github.com/steve-downey/wg21org/blob/main/emacs.d/init.el]] which installs org from upstream rather than using the built-in orgmode and configures my preferences. I may end up using more of [[https://github.com/steve-downey/wg21org/blob/main/ox-wg21html.el][ox-wg21html.el]] as a framework for the exported HTML, only updating to use Bootstrap for css classes instead of my own or the org builtin.
+
+* LaTeX support via KaTeX
+I've configure Nikola to support LaTeX via KaTeX rather than MathJax. It is supposed to be a bit faster. This means *inline* math like \(x^2\) or \(1 < 2\) or with breaks like:
+  \[
+  \int_0^\infty e^{-x^2} dx = {{\sqrt{\pi}} \over {2}}
+  \]
+Or in running text where I want to mention \[ \frac{-b \pm \sqrt{b^2 - 4 a c}}{2a} \] as the quadratic equation.
+It does mean I don't have access to latex blocks like
+#+begin_src latex
+\begin{equation}
+  n_{i+1} = \frac{n_{i} (d-i) (e-1)}{(i+1)}
+\end{equation}
+#+end_src
+
+Maybe I won't miss it.
