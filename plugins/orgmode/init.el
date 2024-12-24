@@ -70,7 +70,7 @@
       org-html-use-infojs nil)
 
 (setq org-export-global-macros '(
-                                 ("TEASER_END" . "<!-- TEASER_END -->")
+                                 ("TEASER_END" . "#+HTML:<!-- TEASER_END -->")
                                  ))
 ;; (use-package ox-html
 ;;   :after (org)

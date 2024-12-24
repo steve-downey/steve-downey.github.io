@@ -34,6 +34,7 @@
 I've migrated from WordPress to a static blog generator--Nikola. This is how it works.
 #+end_abstract
 
+{{{TEASER_END}}}
 * Nikola
 Nikola is a static site generator written in python. It's mostly boring, which is a very good thing for software meant for use to be. Its home is [[https://getnikola.org]] and the source is on github at [[https://github.com/getnikola/nikola]]. It's many years old at this point, but not dead.
 
