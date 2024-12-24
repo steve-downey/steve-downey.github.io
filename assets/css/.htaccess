@@ -1,4 +1,0 @@
-order allow,deny
-<Files ~ "\.(css)$">
-   allow from all
-</Files>
