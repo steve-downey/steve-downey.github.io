@@ -1,105 +1,363 @@
 <!DOCTYPE html>
-<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " lang="en">
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " vocab="http://ogp.me/ns" lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="description" content="Stuff, and more stuff">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width">
 <title>What Comes to Mind</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" crossorigin="anonymous">
-<link href="assets/css/all-nocdn.css" rel="stylesheet" type="text/css">
-<link href="https://fonts.googleapis.com/css?family=Playfair+Display:700,900" rel="stylesheet">
-<meta name="theme-color" content="#5670d4">
-<meta name="generator" content="Nikola (getnikola.com)">
-<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="rss.xml">
-<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="feed.atom">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="assets/css/rst.min.css">
+<link rel="stylesheet" href="assets/css/foundation.min.css">
+<link rel="stylesheet" href="assets/css/app.css">
+<link rel="stylesheet" href="assets/css/modus-vivendi-tinted.css">
+<link href="assets/css/custom.css" rel="stylesheet" type="text/css">
+<meta content="#5670d4" name="theme-color">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
 <link rel="canonical" href="https://sdowney.org/">
 <link rel="next" href="index-9.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/nikola-blog-infrastructure/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/substitution-is-sometimes-a-failure/" type="text/html">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
 </head>
 <body>
-<a href="#content" class="sr-only sr-only-focusable">Skip to main content</a>
 
-<!-- Header and menu bar -->
-<div class="container">
-      <header class="blog-header py-3"><div class="row nbb-header align-items-center">
-          <div class="col-md-3 col-xs-2 col-sm-2" style="width: auto;">
-            <button class="navbar-toggler navbar-light bg-light nbb-navbar-toggler" type="button" data-toggle="collapse" data-target=".bs-nav-collapsible" aria-controls="bs-navbar" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse bs-nav-collapsible bootblog4-search-form-holder">
-                
-            </div>
-        </div>
-          <div class="col-md-6 col-xs-10 col-sm-10 bootblog4-brand" style="width: auto;">
-            <a class="navbar-brand blog-header-logo text-dark" href=".">
+    
 
-            <span id="blog-title">What Comes to Mind</span>
-        </a>
-          </div>
-            <div class="col-md-3 justify-content-end align-items-center bs-nav-collapsible collapse flex-collapse bootblog4-right-nav">
-            <nav class="navbar navbar-light bg-white"><ul class="navbar-nav bootblog4-right-nav"></ul></nav>
+    
+<div class="top-bar">
+<div class="top-bar-left">
+<ul class="menu">
+<li class="menu-text"><a href="https://sdowney.org/" title="What Comes to Mind" rel="home">What Comes to Mind</a></li>
+                <li><a href="archive.html">Archives</a></li>
+                <li><a href="categories/index.html">Tags</a></li>
+                <li><a href="mailto:sdowney@sdowney.dev"><i class="fa fa-envelope"></i></a></li>
+                <li><a href="https://github.com/steve-downey">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                <li><a href="https://mastodon.social/@Sdowney">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                <li><a href="https://bsky.app/profile/sdowney.bsky.social">Bluesky <i class="fa-brands fa-square-bluesky"></i></a></li>
+                <li><a href="feed.atom">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                <li><a href="rss.xml">RSS <i class="fa-solid fa-rss"></i></a></li>
+    
+    
+    </ul>
+</div>
+</div>
+
+    
+
+<div class="callout large primary">
+<div class="row column text-center">
+
+<h1>What Comes to Mind</h1>
+<h2 class="subheader">Stuff, and more stuff</h2>
+
+</div>
+</div>
+
+<div class="row medium-8 large-7 columns">
+
+
+    <div class="blog-post">
+    <h3>
+<a href="posts/substitution-is-sometimes-a-failure/">Substitution is Sometimes a Failure</a><br><small>2025-11-28 12:06</small>
+</h3>
+    <div>
+
+        <div class="abstract" id="org2939d20">
+<p>
+Why are optional::transform and optional::and_then not constrained by <code>invocable</code>?
+</p>
+
+</div>
+<div id="outline-container-org452148a" class="outline-2">
+<h2 id="org452148a">
+<span class="section-number-2">1.</span> Optional "Monadic" Interface</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<a href="http://wg21.link/P0798">Monadic operations for std::optional</a>
+</p>
+<ul class="org-ul">
+<li>
+<code>transform</code> is the c++ spelling for <code>map</code> or <code>fmap</code>
+</li>
+<li>
+<code>and_then</code> is monadic <code>bind</code> for optional</li>
+<li>
+<code>or_else</code> is dual to <code>and_then</code>
+</li>
+</ul>
+<p>
+<code>or_else</code> also has:
+</p>
+
+<blockquote>
+<p>
+Constraints: <code>F</code> models <code>invocable</code> and <code>T</code> models <code>{move,copy}_constructible</code>.
+</p>
+</blockquote>
+
+<p>
+<code>transform</code> and <code>and_then</code> do not.
+</p>
+
+<p>
+They don't work if you don't give them invocables, and rely on <code>invoke_result_t</code> to compute the result. So why not constrain them?
+</p>
+</div>
+</div>
+<div id="outline-container-org95813d0" class="outline-2">
+<h2 id="org95813d0">
+<span class="section-number-2">2.</span> SFINAE is shallow</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+The problem is if another template has to be instantiated in order to evaluate the template of interest, and that template has an error, you get an error, not a substitution failure. And, it turns out, lambdas are a common source of the problem and a common case in real use.
+</p>
+
+<p>
+Consider the code:
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span class="org-type">void</span> <span class="org-function-name">f</span>(<span class="org-type">int</span>&amp;);
+
+<span class="org-keyword">auto</span> <span class="org-variable-name">l</span> = [](<span class="org-keyword">auto</span>&amp; <span class="org-variable-name">y</span>) {
+    f(y);
+    <span class="org-keyword">return</span> 42;
+};
+</pre>
+</div>
+
+<p>
+The two important parts are the <code>auto&amp;</code> parameter and the implicit deduced return type.
+</p>
+
+<p>
+We can rewrite it, to make things possibly more obvious:
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span class="org-keyword">struct</span> <span class="org-type">Func</span> {
+    <span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">T</span>&gt;
+    <span class="org-keyword">auto</span> <span class="org-keyword">operator</span><span class="org-function-name">()</span>(<span class="org-type">T</span>&amp; <span class="org-variable-name">t</span>) {
+        f(t);
+        <span class="org-keyword">return</span> 42;
+    }
+};
+</pre>
+</div>
+
+<p>
+and to slightly spoil things, the problem code is effectively:
+</p>
+<div class="org-src-container">
+<pre class="src src-c++">static_assert(<span class="org-constant">std</span>::<span class="org-type">invocable</span>&lt;Func, <span class="org-type">int</span> <span class="org-keyword">const</span>&amp;&gt;);
+</pre>
+</div>
+
+<p>
+which produces:
+</p>
+<div class="org-src-container">
+<pre class="src src-c++">&lt;source&gt;: In instantiation of <span class="org-warning">'</span><span class="org-keyword">auto</span> <span class="org-constant">Func</span>::<span class="org-keyword">operator</span>()(<span class="org-type">T</span>&amp;) [with T = <span class="org-keyword">const</span> <span class="org-type">int</span>]<span class="org-warning">'</span>:
+type_traits:2565:26:   required by substitution of <span class="org-warning">'</span><span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">_Fn</span>, <span class="org-keyword">class</span> ... <span class="org-type">_Args</span>&gt; <span class="org-keyword">static</span> <span class="org-constant">std</span>::<span class="org-type">__result_of_success</span>&lt;<span class="org-keyword">decltype</span> (declval&lt;<span class="org-type">_Fn</span>&gt;()((<span class="org-type">declval</span>&lt;<span class="org-type">_Args</span>&gt;)()...)), <span class="org-constant">std</span>::__invoke_other&gt; <span class="org-constant">std</span>::<span class="org-constant">__result_of_other_impl</span>::_S_test(<span class="org-type">int</span>) [with _Fn = Func; _Args = {<span class="org-keyword">const</span> <span class="org-type">int</span>&amp;}]<span class="org-warning">'</span>
+type_traits:2576:55:   required from <span class="org-warning">'</span><span class="org-keyword">struct</span> <span class="org-constant">std</span>::<span class="org-type">__result_of_impl</span>&lt;<span class="org-constant">false</span>, <span class="org-constant">false</span>, Func, <span class="org-keyword">const</span> <span class="org-type">int</span>&amp;&gt;<span class="org-warning">'</span>
+type_traits:3038:12:   recursively required by substitution of <span class="org-warning">'</span><span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">_Result</span>, <span class="org-keyword">class</span> <span class="org-type">_Ret</span>&gt; <span class="org-keyword">struct</span> <span class="org-constant">std</span>::<span class="org-type">__is_invocable_impl</span>&lt;<span class="org-type">_Result</span>, <span class="org-type">_Ret</span>, <span class="org-constant">true</span>, <span class="org-constant">std</span>::<span class="org-type">__void_t</span>&lt;<span class="org-keyword">typename</span> <span class="org-constant">_CTp</span>::<span class="org-type">type</span>&gt; &gt; [<span class="org-constant">with</span> _Result = <span class="org-constant">std</span>::<span class="org-type">__invoke_result</span>&lt;Func, <span class="org-keyword">const</span> <span class="org-type">int</span>&amp;&gt;; _Ret = <span class="org-type">void</span>]<span class="org-warning">'</span>
+type_traits:3038:12:   required from <span class="org-warning">'</span><span class="org-keyword">struct</span> <span class="org-constant">std</span>::<span class="org-type">is_invocable</span>&lt;Func, <span class="org-keyword">const</span> <span class="org-type">int</span>&amp;&gt;<span class="org-warning">'</span>
+type_traits:3286:71:   required from <span class="org-warning">'</span><span class="org-keyword">constexpr</span> <span class="org-keyword">const</span> <span class="org-type">bool</span> <span class="org-constant">std</span>::<span class="org-type">is_invocable_v</span>&lt;Func, <span class="org-keyword">const</span> <span class="org-type">int</span>&amp;&gt;<span class="org-warning">'</span>
+concepts:336:25:   required from <span class="org-type">here</span>
+&lt;source&gt;:12:10: error: binding reference of type <span class="org-warning">'</span><span class="org-type">int</span>&amp;<span class="org-warning">'</span> to <span class="org-warning">'</span><span class="org-keyword">const</span> <span class="org-type">int</span><span class="org-warning">'</span> discards qualifiers
+   12 |         f(t);
+      |         ~^~~
+&lt;source&gt;:2:12: note:   initializing argument 1 of <span class="org-warning">'</span><span class="org-type">void</span> f(<span class="org-type">int</span>&amp;)<span class="org-warning">'</span>
+    2 |     <span class="org-type">void</span> f(<span class="org-type">int</span>&amp;);
+      |            ^~~~
+Compiler returned: 1
+</pre>
+</div>
+<p>
+<a href="https://compiler-explorer.com/z/W1jT6bxrf">Compiler Explorer</a>
+</p>
+
+<p>
+as the compiler is unhappy about trying to call the function <code>f</code> with a <code>const int&amp;</code>.
+</p>
+
+<p>
+If the lambda or <code>Func</code> is changed to have a non-deduced return type, the instantiation errors from the check to <code>invocable</code> go away, although you still get an error calling either with a <code>const int</code>.
+</p>
+
+<p>
+So why do we run into this with <code>transform</code> if we were to constrain it with <code>invocable</code> ?
+</p>
+
+<p>
+The compiler needs to figure out the overload set in order to resolve which one to use from the set. There are four of them two for the l- and r- value category and two for the const overloads.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-c++"><span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">F</span>&gt; <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-function-name">transform</span>(<span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>) &amp;;
+<span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">F</span>&gt; <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-function-name">transform</span>(<span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>) <span class="org-keyword">const</span> &amp;;
+<span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">F</span>&gt; <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-function-name">transform</span>(<span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>) &amp;&amp;;
+<span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">F</span>&gt; <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-function-name">transform</span>(<span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>) <span class="org-keyword">const</span> &amp;&amp;;
+</pre>
+</div>
+<p>
+with differing computations of the resulting <code>optional</code> being returned.
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span class="org-keyword">using</span> <span class="org-type">U</span> = <span class="org-type">invoke_result_t</span>&lt;F, <span class="org-keyword">decltype</span>(<span class="org-constant">std</span>​::​move(*val))&gt;;
+<span class="org-comment-delimiter">//</span><span class="org-comment">or
+</span><span class="org-keyword">using</span> <span class="org-type">U</span> = <span class="org-type">remove_cv_t</span>&lt;<span class="org-type">invoke_result_t</span>&lt;F, <span class="org-keyword">decltype</span>(*val)&gt;&gt;;
+</pre>
+</div>
+
+<p>
+So, in order to work out what the templated <code>transform</code>'s signature really is, it has to compute what the invocable returns, and since the invocable has deduced return type, it needs to instantiate it, and instantiating with <code>const int</code> causes an error.
+</p>
+
+<p>
+This is unfortunate.
+</p>
+
+<p>
+If we constrain <code>transform</code> we get the same errors as above. <a href="https://compiler-explorer.com/z/r1qbjx4zG">See here,</a> with just enough of an <code>optional</code> to compile.
+</p>
+</div>
+</div>
+<div id="outline-container-org7a1b9db" class="outline-2">
+<h2 id="org7a1b9db">
+<span class="section-number-2">3.</span> Constraints, what are they good for</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Not absolutely nothing.
+</p>
+
+<p>
+Constraints in the library:
+</p>
+
+<blockquote>
+<p>
+Constraints: the conditions for the function's participation in overload resolution ([over.match]).
+</p>
+
+<p>
+[Note 1: Failure to meet such a condition results in the function's silent non-viability. — end note]
+</p>
+
+<p>
+[Example 1: An implementation can express such a condition via a constraint-expression ([temp.constr.decl]). — end example]
+</p>
+</blockquote>
+
+<p>
+<a href="https://eel.is/c++draft/description#structure.specifications-3.1">[structure.specifications] 3.1</a>
+</p>
+
+<p>
+Constraints are for making an overload not exist if the constraint isn't met. It's not a way of signaling an error. Those are <code>Mandates</code>:
+</p>
+
+<blockquote>
+<p>
+Mandates: the conditions that, if not met, render the program ill-formed.
+</p>
+
+<p>
+[Example 2: An implementation can express such a condition via the constant-expression in a static_assert-declaration ([dcl.pre]). If the diagnostic is to be emitted only after the function has been selected by overload resolution, an implementation can express such a condition via a constraint-expression ([temp.constr.decl]) and also define the function as deleted. — end example]
+</p>
+</blockquote>
+
+<p>
+<a href="https://eel.is/c++draft/description#structure.specifications-3.2">[structure.specifications] 3.2</a>
+</p>
+
+<p>
+Asking to run <code>and_then</code> on a non-invocable probably ought not to say there is no such function, but instead tell you it can't be invoked. I'm now not convinced that <code>or_else</code> should be constrained this way. It's not significantly better for <code>o.or_else(5)</code> to fail to resolve, mentioning <code>invocable</code>, than produce an error that <code>invoke_result_t</code> doesn't work, or that <code>f</code> can't be invoked. The kind of error is a minor detail.
+</p>
+
+<p>
+Constraints that let you control the choice of alternatives are wonderful, and requires clauses are normal programmer accessible, unlike SFINAE, or even <code>enable_if</code>. But without an overload set to constrain, there possibly should not be a constraint.
+</p>
+</div>
+</div>
+<div id="outline-container-orgd1b0868" class="outline-2">
+<h2 id="orgd1b0868">
+<span class="section-number-2">4.</span> Can we do better?</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+There are some notes in <a href="https://wg21.link/P0798">P0798</a> that suggest that Deducing This might help, <a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0847r7.html">P0847</a>.
+</p>
+
+<p>
+The idea would to be to NOT have all the value category overloads that need to be checked, but to just have a single one that deduces what <code>this</code> is and provide it as a template parameter for further use. The contained parameter could be forwarded using <code>forward_like&lt;Self&gt;</code>.
+</p>
+
+<p>
+P0847 has discussion about how deducing this might be applied to optional. There's also discussion of deducing this and the SFINAE-unfriendly auto at <a href="https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/">C++23’s Deducing this: what it is, why it is, how to use it</a>.
+</p>
+
+<p>
+With the tools we have today, it looks possible, but still slightly messy. I managed to get my implementation of optional to compile and pass its own tests with.
+</p>
+<div class="org-src-container">
+<pre class="src src-c++"><span class="org-keyword">template</span> &lt;<span class="org-keyword">class</span> <span class="org-type">F</span>, <span class="org-keyword">class</span> <span class="org-type">Self</span>&gt;
+    <span class="org-keyword">requires</span>(
+        <span class="org-constant">std</span>::<span class="org-type">invocable</span>&lt;<span class="org-type">F</span>,
+                       <span class="org-keyword">decltype</span>(<span class="org-constant">std</span>::forward_like&lt;<span class="org-type">Self</span>&gt;(<span class="org-constant">std</span>::declval&lt;T&gt;()))&gt;)
+<span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-variable-name">transform</span>(<span class="org-keyword">this</span> Self&amp;&amp; self, <span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>)
+    -&gt; <span class="org-type">optional</span>&lt;<span class="org-constant">std</span>::<span class="org-type">invoke_result_t</span>&lt;
+        <span class="org-type">F</span>,
+        <span class="org-keyword">decltype</span>(<span class="org-constant">std</span>::forward_like&lt;<span class="org-type">Self</span>&gt;(<span class="org-constant">std</span>::declval&lt;T&gt;()))&gt;&gt; {
+    <span class="org-keyword">using</span> <span class="org-type">U</span> = <span class="org-constant">std</span>::<span class="org-type">invoke_result_t</span>&lt;<span class="org-type">F</span>,
+                                   <span class="org-keyword">decltype</span>(<span class="org-constant">std</span>::forward_like&lt;<span class="org-type">Self</span>&gt;(
+                                       <span class="org-constant">std</span>::declval&lt;T&gt;()))&gt;;
+    static_assert(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_array_v</span>&lt;<span class="org-type">U</span>&gt;);
+    static_assert(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">in_place_t</span>&gt;);
+    static_assert(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">nullopt_t</span>&gt;);
+    static_assert(<span class="org-constant">std</span>::<span class="org-type">is_object_v</span>&lt;<span class="org-type">U</span>&gt; || <span class="org-constant">std</span>::<span class="org-type">is_reference_v</span>&lt;<span class="org-type">U</span>&gt;);
+    <span class="org-keyword">if</span> (self.has_value()) {
+        <span class="org-keyword">return</span> <span class="org-type">optional</span>&lt;<span class="org-type">U</span>&gt;{<span class="org-constant">detail</span>::from_function,
+                           <span class="org-constant">std</span>::forward&lt;<span class="org-type">F</span>&gt;(f),
+                           <span class="org-constant">std</span>::forward_like&lt;<span class="org-type">Self</span>&gt;(self.value_)};
+    }
+    <span class="org-keyword">return</span> <span class="org-type">optional</span>&lt;<span class="org-type">U</span>&gt;;
+}
+</pre>
+</div>
+
+<p>
+If there were a <code>std::forward_like_t</code>, it might be possible to reduce some of the noise in computing the value category used for the <code>T</code>. I also have not thought extensively about if the requires clause is truly needed in light of the <code>invoke_result_</code> that can now be used in the trailing return type.
+</p>
+</div>
 </div>
     </div>
-</header><nav class="navbar navbar-expand-md navbar-light bg-white static-top"><div class="collapse navbar-collapse bs-nav-collapsible" id="bs-navbar">
-            <ul class="navbar-nav nav-fill d-flex w-100">
-<li class="nav-item">
-<a href="archive.html" class="nav-link">Archives</a>
-                </li>
-<li class="nav-item">
-<a href="categories/index.html" class="nav-link">Tags</a>
-                </li>
-<li class="nav-item">
-<a href="mailto:sdowney@sdowney.dev" class="nav-link"><i class="fa fa-envelope"></i></a>
-                </li>
-<li class="nav-item">
-<a href="https://github.com/steve-downey" class="nav-link">GitHub <i class="fa-brands fa-square-github"></i></a>
-                </li>
-<li class="nav-item">
-<a href="https://mastodon.social/@Sdowney" class="nav-link">Mastodon <i class="fa-brands fa-mastodon"></i></a>
-                </li>
-<li class="nav-item">
-<a href="https://bsky.app/profile/sdowney.bsky.social" class="nav-link">Bluesky <i class="fa-brands fa-square-bluesky"></i></a>
-                </li>
-<li class="nav-item">
-<a href="feed.atom" class="nav-link">ATOM <i class="fa-solid fa-atom"></i></a>
-                </li>
-<li class="nav-item">
-<a href="rss.xml" class="nav-link">RSS <i class="fa-solid fa-rss"></i></a>
 
-                
-            </li>
-</ul>
-</div>
-<!-- /.navbar-collapse -->
-</nav>
+    </div>
+    <div class="blog-post">
+    <h3>
+<a href="posts/entry-fountain-pens/">Entry Fountain Pens</a><br><small>2025-01-19 11:07</small>
+</h3>
+    <div>
+
+        <div>
+<div class="abstract" id="orgd12e55b">
+<p>
+A list of very good inexpensive fountain pens.
+</p>
+
 </div>
 
-<div class="container" id="content" role="main">
-    <div class="body-content">
-        <!--Body content-->
-        
-        
-        
-    
-        
+<p class="more"><a href="posts/entry-fountain-pens/">Read more…</a></p>
+</div>
+    </div>
 
-    
-        
-    <div class="postindex">
-            <article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/nikola-blog-infrastructure/" class="u-url">Nikola Blog Infrastructure</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/nikola-blog-infrastructure/" rel="bookmark">
-            <time class="published dt-published" datetime="2024-12-23T13:15:27-05:00" itemprop="datePublished" title="2024-12-23 13:15">2024-12-23 13:15</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <div>
-<div class="abstract" id="org16323d8">
+    </div>
+    <div class="blog-post">
+    <h3>
+<a href="posts/nikola-blog-infrastructure/">Nikola Blog Infrastructure</a><br><small>2024-12-23 13:15</small>
+</h3>
+    <div>
+
+        <div>
+<div class="abstract" id="org334ae85">
 <p>
 I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
 </p>
@@ -108,19 +366,16 @@ I've migrated from WordPress to a static blog generator–Nikola. This is how it
 
 <p class="more"><a href="posts/nikola-blog-infrastructure/">Read more…</a></p>
 </div>
-                </div>
-            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/" class="u-url">Concept Maps using C++23 Library Tech</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/" rel="bookmark">
-            <time class="published dt-published" datetime="2024-05-19T11:51:00-04:00" itemprop="datePublished" title="2024-05-19 11:51">2024-05-19 11:51</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <div id="outline-container-orga2bfebe" class="outline-2">
+    </div>
+
+    </div>
+    <div class="blog-post">
+    <h3>
+<a href="posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/">Concept Maps using C++23 Library Tech</a><br><small>2024-05-19 11:51</small>
+</h3>
+    <div>
+
+        <div id="outline-container-orga2bfebe" class="outline-2">
 <h3 id="orga2bfebe">Abstract</h3>
 <div class="outline-text-2" id="text-orga2bfebe">
 <p> C++0x Concepts had a feature <code>Concept Maps</code> that allowed a set of functions, types, and template definitions to be associated with a concept and the map to be specialized for types that meet the concept. </p>
@@ -130,19 +385,16 @@ I've migrated from WordPress to a static blog generator–Nikola. This is how it
 <p class="more"><a href="posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/">Read more…</a></p>
 </div>
 </div>
-                </div>
-            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/" class="u-url">Slides from C++Now 2023 Async Control Flow</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/" rel="bookmark">
-            <time class="published dt-published" datetime="2024-05-18T18:27:00-04:00" itemprop="datePublished" title="2024-05-18 18:27">2024-05-18 18:27</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <div>
+    </div>
+
+    </div>
+    <div class="blog-post">
+    <h3>
+<a href="posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/">Slides from C++Now 2023 Async Control Flow</a><br><small>2024-05-18 18:27</small>
+</h3>
+    <div>
+
+        <div>
 <div id="outline-container-org8b3a3c0" class="outline-2">
 <h3 id="org8b3a3c0">Using Sender/Receiver for Async Control Flow</h3>
 <div class="outline-text-2" id="text-org8b3a3c0">
@@ -166,19 +418,16 @@ I've migrated from WordPress to a static blog generator–Nikola. This is how it
 </div>
 </div>
 </div>
-                </div>
-            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2023/12/24/some-informal-remarks-towards-a-new-theory-of-trait-customization/" class="u-url">Some Informal Remarks Towards a New Theory of Trait Customization</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/index.php/2023/12/24/some-informal-remarks-towards-a-new-theory-of-trait-customization/" rel="bookmark">
-            <time class="published dt-published" datetime="2023-12-24T00:00:00-05:00" itemprop="datePublished" title="2023-12-24 00:00">2023-12-24 00:00</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <div>
+    </div>
+
+    </div>
+    <div class="blog-post">
+    <h3>
+<a href="posts/index.php/2023/12/24/some-informal-remarks-towards-a-new-theory-of-trait-customization/">Some Informal Remarks Towards a New Theory of Trait Customization</a><br><small>2023-12-24 00:00</small>
+</h3>
+    <div>
+
+        <div>
 <div id="outline-container-org0a7dcc5" class="outline-2">
 <h3 id="org0a7dcc5">A Possible Technique</h3>
 <div class="outline-text-2" id="text-org0a7dcc5">
@@ -205,19 +454,16 @@ Syntax isn't really awesome, but not utterly unworkable.
 
 <p class="more"><a href="posts/index.php/2023/12/24/some-informal-remarks-towards-a-new-theory-of-trait-customization/">Read more…</a></p>
 </div>
-                </div>
-            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/special-blocks-and-emacs-org-mode-export/" class="u-url">Special Blocks and Emacs Org-mode Export</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/special-blocks-and-emacs-org-mode-export/" rel="bookmark">
-            <time class="published dt-published" datetime="2021-12-03T00:00:00-05:00" itemprop="datePublished" title="2021-12-03 00:00">2021-12-03 00:00</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <div>
+    </div>
+
+    </div>
+    <div class="blog-post">
+    <h3>
+<a href="posts/special-blocks-and-emacs-org-mode-export/">Special Blocks and Emacs Org-mode Export</a><br><small>2021-12-03 00:00</small>
+</h3>
+    <div>
+
+        <div>
 <nav id="table-of-contents" role="doc-toc"><h3>Table of Contents</h3>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
@@ -239,19 +485,16 @@ Syntax isn't really awesome, but not utterly unworkable.
 
 <p class="more"><a href="posts/special-blocks-and-emacs-org-mode-export/">Read more…</a></p>
 </div>
-                </div>
-            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2021/10/03/a-local-cmake-workflow-with-docker/" class="u-url">A local CMake workflow with Docker</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/index.php/2021/10/03/a-local-cmake-workflow-with-docker/" rel="bookmark">
-            <time class="published dt-published" datetime="2021-10-03T00:00:00-04:00" itemprop="datePublished" title="2021-10-03 00:00">2021-10-03 00:00</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <div>
+    </div>
+
+    </div>
+    <div class="blog-post">
+    <h3>
+<a href="posts/index.php/2021/10/03/a-local-cmake-workflow-with-docker/">A local CMake workflow with Docker</a><br><small>2021-10-03 00:00</small>
+</h3>
+    <div>
+
+        <div>
 <p> l#+BLOG: sdowney </p>
 
 <p> An outline of a template that provides an automated workflow driving a CMake project in a docker container. </p>
@@ -267,19 +510,16 @@ Syntax isn't really awesome, but not utterly unworkable.
 <p class="more"><a href="posts/index.php/2021/10/03/a-local-cmake-workflow-with-docker/">Read more…</a></p>
 </div>
 </div>
-                </div>
-            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/" class="u-url">std::execution, Sender/Receiver, and the Continuation Monad</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/" rel="bookmark">
-            <time class="published dt-published" datetime="2021-10-03T00:00:00-04:00" itemprop="datePublished" title="2021-10-03 00:00">2021-10-03 00:00</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <div>
+    </div>
+
+    </div>
+    <div class="blog-post">
+    <h3>
+<a href="posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/">std::execution, Sender/Receiver, and the Continuation Monad</a><br><small>2021-10-03 00:00</small>
+</h3>
+    <div>
+
+        <div>
 <p> Some thoughts on the <a href="https://wg21.link/p2300">std::execution</a> proposal and my understanding of the underlying theory. </p>
 
 <div id="outline-container-org6280fb4" class="outline-2">
@@ -307,19 +547,16 @@ Syntax isn't really awesome, but not utterly unworkable.
 </div>
 </div>
 </div>
-                </div>
-            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/" class="u-url">Standard Vocabulary for Algorithms</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/" rel="bookmark">
-            <time class="published dt-published" datetime="2021-01-16T18:22:19-05:00" itemprop="datePublished" title="2021-01-16 18:22">2021-01-16 18:22</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <div>
+    </div>
+
+    </div>
+    <div class="blog-post">
+    <h3>
+<a href="posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/">Standard Vocabulary for Algorithms</a><br><small>2021-01-16 18:22</small>
+</h3>
+    <div>
+
+        <div>
 <p>This is feedback after considering <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2214r0.html">A Plan for C++23 Ranges</a>
 
 Disclosure: I voted in favor of this. It does <b>not</b> suggest work on <a href="https://wg21.link/P1255">views::maybe [P1255R6]​</a>. I'm fine with that priority.
@@ -336,47 +573,26 @@ A component can have std::string or std::vector&lt;int&gt; in its interface with
 </div>
 </div>
 </div>
-                </div>
-            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/index.php/2020/11/28/blog-infrastructure-work/" class="u-url">Blog Infrastructure Work</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/index.php/2020/11/28/blog-infrastructure-work/" rel="bookmark">
-            <time class="published dt-published" datetime="2020-11-28T19:05:00-05:00" itemprop="datePublished" title="2020-11-28 19:05">2020-11-28 19:05</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <div>
-<p> What feels like actual productive work, but is only work adjacent? Fixing up the blog. </p>
+    </div>
 
-<p> I managed to gradually destroy the whole thing after a decade or more of platform migrations and upgrades. This is a new and from (mostly) scratch install, into which I've imported the contents of the old one. Good backups and some hints from the excellent staff at <a href="https://www.panix.com">panix.com</a> got me back in shape. I hope. </p>
+    </div>
 
-<p class="more"><a href="posts/index.php/2020/11/28/blog-infrastructure-work/">Read more…</a></p>
+
+        <div class="column row">
+            <ul class="pagination" role="navigation" aria-label="Pagination">
+<li>
+                    <a href="index-9.html" rel="next">» <span class="show-for-sr">Older posts</span></a>
+                </li>
+            </ul>
 </div>
-                </div>
-            </article><article class="h-entry post-text" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title"><a href="posts/hello-world/" class="u-url">Hello world!</a></h1>
-                <div class="metadata">
-                    <p class="byline author vcard"><span class="byline-name fn" itemprop="author">
-                        Steve Downey
-                    </span></p>
-            <p class="dateline">
-            <a href="posts/hello-world/" rel="bookmark">
-            <time class="published dt-published" datetime="2020-11-27T23:45:53-05:00" itemprop="datePublished" title="2020-11-27 23:45">2020-11-27 23:45</time></a>
-            </p>
-                </div>
-            </header><div class="p-summary entry-summary">
-                    <p>Welcome to WordPress. This is your first post. Edit or delete it, then start writing!</p>
-<!-- /wp:paragraph -->
-                </div>
-            </article>
-</div>
+
+
     
-        <ul class="pager postindexpager clearfix">
-<li class="next"><a href="index-9.html" rel="next">Older posts</a></li>
-        </ul>
-<script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
+
+
+
+        
+        <script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
                 renderMathInElement(document.body,
                     {
                         
@@ -390,25 +606,20 @@ delimiters: [
 
                     }
                 );
-            </script><!--End of body content--><footer id="footer">
-            Contents © 2024         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+            </script><hr>
+<footer id="footer"><p><small>Contents © 2025         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
  <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
- <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a>
-            
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
             
         </footer>
 </div>
-</div>
+
+    
 
 
-        <script src="assets/js/all-nocdn.js"></script><script src="assets/js/luxon.min.js"></script><!-- fancy dates --><script>
-        luxon.Settings.defaultLocale = "en";
-        fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
-        </script><!-- end fancy dates --><script>
-    baguetteBox.run('div#content', {
-        ignoreClass: 'islink',
-        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
-    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());

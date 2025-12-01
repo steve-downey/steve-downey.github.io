@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>https://sdowney.org/</loc>
-  <lastmod>2024-12-02T01:08:00Z</lastmod>
+  <lastmod>2025-01-19T16:27:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/2004/</loc>
@@ -78,8 +78,12 @@
   <lastmod>2024-12-02T01:03:00Z</lastmod>
  </url>
  <url>
+  <loc>https://sdowney.org/2025/</loc>
+  <lastmod>2025-01-19T16:27:00Z</lastmod>
+ </url>
+ <url>
   <loc>https://sdowney.org/archive.html</loc>
-  <lastmod>2024-12-24T19:33:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/categories/</loc>
@@ -99,39 +103,39 @@
  </url>
  <url>
   <loc>https://sdowney.org/index-1.html</loc>
-  <lastmod>2024-12-16T00:26:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-2.html</loc>
-  <lastmod>2024-12-16T00:26:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-3.html</loc>
-  <lastmod>2024-12-16T00:26:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-4.html</loc>
-  <lastmod>2024-12-16T00:26:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-5.html</loc>
-  <lastmod>2024-12-16T00:26:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-6.html</loc>
-  <lastmod>2024-12-16T00:26:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-7.html</loc>
-  <lastmod>2024-12-16T00:26:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-8.html</loc>
-  <lastmod>2024-12-16T00:26:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-9.html</loc>
-  <lastmod>2024-12-24T19:33:00Z</lastmod>
+  <lastmod>2025-12-01T02:34:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index.php/2004/09/08/test-mail-post/</loc>
@@ -638,6 +642,10 @@
   <lastmod>2024-12-16T00:26:00Z</lastmod>
  </url>
  <url>
+  <loc>https://sdowney.org/posts/entry-fountain-pens/</loc>
+  <lastmod>2025-01-19T16:27:00Z</lastmod>
+ </url>
+ <url>
   <loc>https://sdowney.org/posts/hello-world/</loc>
   <lastmod>2024-12-16T00:26:00Z</lastmod>
  </url>
@@ -1008,5 +1016,9 @@
  <url>
   <loc>https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/</loc>
   <lastmod>2024-12-16T00:26:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</loc>
+  <lastmod>2025-11-28T17:31:00Z</lastmod>
  </url>
 </urlset>

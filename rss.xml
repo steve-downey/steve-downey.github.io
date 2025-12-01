@@ -1,9 +1,326 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>What Comes to Mind</title><link>https://sdowney.org/</link><description>Stuff, and more stuff</description><atom:link href="https://sdowney.org/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2024 &lt;a href="mailto:sdowney@sdowney.dev"&gt;Steve Downey&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>What Comes to Mind</title><link>https://sdowney.org/</link><description>Stuff, and more stuff</description><atom:link href="https://sdowney.org/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2025 &lt;a href="mailto:sdowney@sdowney.dev"&gt;Steve Downey&lt;/a&gt; 
  &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
  &lt;img alt="Creative Commons License BY-NC-SA"
  style="border-width:0; margin-bottom:12px;"
- src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Tue, 24 Dec 2024 20:04:51 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Nikola Blog Infrastructure</title><link>https://sdowney.org/posts/nikola-blog-infrastructure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org16323d8"&gt;
+ src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Mon, 01 Dec 2025 02:35:50 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Substitution is Sometimes a Failure</title><link>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org2939d20"&gt;
+&lt;p&gt;
+Why are optional::transform and optional::and_then not constrained by &lt;code&gt;invocable&lt;/code&gt;?
+&lt;/p&gt;
+
+&lt;/div&gt;
+&lt;div id="outline-container-org452148a" class="outline-2"&gt;
+&lt;h2 id="org452148a"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Optional "Monadic" Interface&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+&lt;a href="http://wg21.link/P0798"&gt;Monadic operations for std::optional&lt;/a&gt;
+&lt;/p&gt;
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;&lt;code&gt;transform&lt;/code&gt; is the c++ spelling for &lt;code&gt;map&lt;/code&gt; or &lt;code&gt;fmap&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;and_then&lt;/code&gt; is monadic &lt;code&gt;bind&lt;/code&gt; for optional&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;or_else&lt;/code&gt; is dual to &lt;code&gt;and_then&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+&lt;code&gt;or_else&lt;/code&gt; also has:
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+Constraints: &lt;code&gt;F&lt;/code&gt; models &lt;code&gt;invocable&lt;/code&gt; and &lt;code&gt;T&lt;/code&gt; models &lt;code&gt;{move,copy}_constructible&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;code&gt;transform&lt;/code&gt; and &lt;code&gt;and_then&lt;/code&gt; do not.
+&lt;/p&gt;
+
+&lt;p&gt;
+They don't work if you don't give them invocables, and rely on &lt;code&gt;invoke_result_t&lt;/code&gt; to compute the result. So why not constrain them?
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org95813d0" class="outline-2"&gt;
+&lt;h2 id="org95813d0"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; SFINAE is shallow&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;p&gt;
+The problem is if another template has to be instantiated in order to evaluate the template of interest, and that template has an error, you get an error, not a substitution failure. And, it turns out, lambdas are a common source of the problem and a common case in real use.
+&lt;/p&gt;
+
+&lt;p&gt;
+Consider the code:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;span class="org-type"&gt;void&lt;/span&gt; &lt;span class="org-function-name"&gt;f&lt;/span&gt;(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;);
+
+&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;l&lt;/span&gt; = [](&lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;y&lt;/span&gt;) {
+    f(y);
+    &lt;span class="org-keyword"&gt;return&lt;/span&gt; 42;
+};
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The two important parts are the &lt;code&gt;auto&amp;amp;&lt;/code&gt; parameter and the implicit deduced return type.
+&lt;/p&gt;
+
+&lt;p&gt;
+We can rewrite it, to make things possibly more obvious:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;Func&lt;/span&gt; {
+    &lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
+    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-keyword"&gt;operator&lt;/span&gt;&lt;span class="org-function-name"&gt;()&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;t&lt;/span&gt;) {
+        f(t);
+        &lt;span class="org-keyword"&gt;return&lt;/span&gt; 42;
+    }
+};
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+and to slightly spoil things, the problem code is effectively:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;static_assert(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invocable&lt;/span&gt;&amp;lt;Func, &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp;&amp;gt;);
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+which produces:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&amp;lt;source&amp;gt;: In instantiation of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-constant"&gt;Func&lt;/span&gt;::&lt;span class="org-keyword"&gt;operator&lt;/span&gt;()(&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;amp;) [with T = &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;]&lt;span class="org-warning"&gt;'&lt;/span&gt;:
+type_traits:2565:26:   required by substitution of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Fn&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; ... &lt;span class="org-type"&gt;_Args&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;static&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__result_of_success&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt; (declval&amp;lt;&lt;span class="org-type"&gt;_Fn&lt;/span&gt;&amp;gt;()((&lt;span class="org-type"&gt;declval&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;_Args&lt;/span&gt;&amp;gt;)()...)), &lt;span class="org-constant"&gt;std&lt;/span&gt;::__invoke_other&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;__result_of_other_impl&lt;/span&gt;::_S_test(&lt;span class="org-type"&gt;int&lt;/span&gt;) [with _Fn = Func; _Args = {&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;}]&lt;span class="org-warning"&gt;'&lt;/span&gt;
+type_traits:2576:55:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__result_of_impl&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;false&lt;/span&gt;, &lt;span class="org-constant"&gt;false&lt;/span&gt;, Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
+type_traits:3038:12:   recursively required by substitution of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Result&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Ret&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__is_invocable_impl&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;_Result&lt;/span&gt;, &lt;span class="org-type"&gt;_Ret&lt;/span&gt;, &lt;span class="org-constant"&gt;true&lt;/span&gt;, &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__void_t&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-constant"&gt;_CTp&lt;/span&gt;::&lt;span class="org-type"&gt;type&lt;/span&gt;&amp;gt; &amp;gt; [&lt;span class="org-constant"&gt;with&lt;/span&gt; _Result = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__invoke_result&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;; _Ret = &lt;span class="org-type"&gt;void&lt;/span&gt;]&lt;span class="org-warning"&gt;'&lt;/span&gt;
+type_traits:3038:12:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_invocable&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
+type_traits:3286:71:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_invocable_v&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
+concepts:336:25:   required from &lt;span class="org-type"&gt;here&lt;/span&gt;
+&amp;lt;source&amp;gt;:12:10: error: binding reference of type &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&lt;span class="org-warning"&gt;'&lt;/span&gt; to &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&lt;span class="org-warning"&gt;'&lt;/span&gt; discards qualifiers
+   12 |         f(t);
+      |         ~^~~
+&amp;lt;source&amp;gt;:2:12: note:   initializing argument 1 of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-type"&gt;void&lt;/span&gt; f(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;)&lt;span class="org-warning"&gt;'&lt;/span&gt;
+    2 |     &lt;span class="org-type"&gt;void&lt;/span&gt; f(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;);
+      |            ^~~~
+Compiler returned: 1
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;
+&lt;a href="https://compiler-explorer.com/z/W1jT6bxrf"&gt;Compiler Explorer&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+as the compiler is unhappy about trying to call the function &lt;code&gt;f&lt;/code&gt; with a &lt;code&gt;const int&amp;amp;&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+If the lambda or &lt;code&gt;Func&lt;/code&gt; is changed to have a non-deduced return type, the instantiation errors from the check to &lt;code&gt;invocable&lt;/code&gt; go away, although you still get an error calling either with a &lt;code&gt;const int&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+So why do we run into this with &lt;code&gt;transform&lt;/code&gt; if we were to constrain it with &lt;code&gt;invocable&lt;/code&gt; ?
+&lt;/p&gt;
+
+&lt;p&gt;
+The compiler needs to figure out the overload set in order to resolve which one to use from the set. There are four of them two for the l- and r- value category and two for the const overloads.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &amp;amp;;
+&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; &amp;amp;;
+&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &amp;amp;&amp;amp;;
+&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; &amp;amp;&amp;amp;;
+&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;
+with differing computations of the resulting &lt;code&gt;optional&lt;/code&gt; being returned.
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;F, &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;​::​move(*val))&amp;gt;;
+&lt;span class="org-comment-delimiter"&gt;//&lt;/span&gt;&lt;span class="org-comment"&gt;or
+&lt;/span&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-type"&gt;remove_cv_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;F, &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(*val)&amp;gt;&amp;gt;;
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+So, in order to work out what the templated &lt;code&gt;transform&lt;/code&gt;'s signature really is, it has to compute what the invocable returns, and since the invocable has deduced return type, it needs to instantiate it, and instantiating with &lt;code&gt;const int&lt;/code&gt; causes an error.
+&lt;/p&gt;
+
+&lt;p&gt;
+This is unfortunate.
+&lt;/p&gt;
+
+&lt;p&gt;
+If we constrain &lt;code&gt;transform&lt;/code&gt; we get the same errors as above. &lt;a href="https://compiler-explorer.com/z/r1qbjx4zG"&gt;See here,&lt;/a&gt; with just enough of an &lt;code&gt;optional&lt;/code&gt; to compile.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org7a1b9db" class="outline-2"&gt;
+&lt;h2 id="org7a1b9db"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Constraints, what are they good for&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-3"&gt;
+&lt;p&gt;
+Not absolutely nothing.
+&lt;/p&gt;
+
+&lt;p&gt;
+Constraints in the library:
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+Constraints: the conditions for the function's participation in overload resolution ([over.match]).
+&lt;/p&gt;
+
+&lt;p&gt;
+[Note 1: Failure to meet such a condition results in the function's silent non-viability. — end note]
+&lt;/p&gt;
+
+&lt;p&gt;
+[Example 1: An implementation can express such a condition via a constraint-expression ([temp.constr.decl]). — end example]
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;a href="https://eel.is/c++draft/description#structure.specifications-3.1"&gt;[structure.specifications] 3.1&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+Constraints are for making an overload not exist if the constraint isn't met. It's not a way of signaling an error. Those are &lt;code&gt;Mandates&lt;/code&gt;:
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+Mandates: the conditions that, if not met, render the program ill-formed.
+&lt;/p&gt;
+
+&lt;p&gt;
+[Example 2: An implementation can express such a condition via the constant-expression in a static_assert-declaration ([dcl.pre]). If the diagnostic is to be emitted only after the function has been selected by overload resolution, an implementation can express such a condition via a constraint-expression ([temp.constr.decl]) and also define the function as deleted. — end example]
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;a href="https://eel.is/c++draft/description#structure.specifications-3.2"&gt;[structure.specifications] 3.2&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+Asking to run &lt;code&gt;and_then&lt;/code&gt; on a non-invocable probably ought not to say there is no such function, but instead tell you it can't be invoked. I'm now not convinced that &lt;code&gt;or_else&lt;/code&gt; should be constrained this way. It's not significantly better for &lt;code&gt;o.or_else(5)&lt;/code&gt; to fail to resolve, mentioning &lt;code&gt;invocable&lt;/code&gt;, than produce an error that &lt;code&gt;invoke_result_t&lt;/code&gt; doesn't work, or that &lt;code&gt;f&lt;/code&gt; can't be invoked. The kind of error is a minor detail.
+&lt;/p&gt;
+
+&lt;p&gt;
+Constraints that let you control the choice of alternatives are wonderful, and requires clauses are normal programmer accessible, unlike SFINAE, or even &lt;code&gt;enable_if&lt;/code&gt;. But without an overload set to constrain, there possibly should not be a constraint.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-orgd1b0868" class="outline-2"&gt;
+&lt;h2 id="orgd1b0868"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Can we do better?&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-4"&gt;
+&lt;p&gt;
+There are some notes in &lt;a href="https://wg21.link/P0798"&gt;P0798&lt;/a&gt; that suggest that Deducing This might help, &lt;a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0847r7.html"&gt;P0847&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+The idea would to be to NOT have all the value category overloads that need to be checked, but to just have a single one that deduces what &lt;code&gt;this&lt;/code&gt; is and provide it as a template parameter for further use. The contained parameter could be forwarded using &lt;code&gt;forward_like&amp;lt;Self&amp;gt;&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+P0847 has discussion about how deducing this might be applied to optional. There's also discussion of deducing this and the SFINAE-unfriendly auto at &lt;a href="https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/"&gt;C++23’s Deducing this: what it is, why it is, how to use it&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+With the tools we have today, it looks possible, but still slightly messy. I managed to get my implementation of optional to compile and pass its own tests with.
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;
+    &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(
+        &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invocable&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;,
+                       &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;)
+&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;transform&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; Self&amp;amp;&amp;amp; self, &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;)
+    -&amp;gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;
+        &lt;span class="org-type"&gt;F&lt;/span&gt;,
+        &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;&amp;gt; {
+    &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;,
+                                   &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(
+                                       &lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;;
+    static_assert(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_array_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
+    static_assert(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;in_place_t&lt;/span&gt;&amp;gt;);
+    static_assert(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;nullopt_t&lt;/span&gt;&amp;gt;);
+    static_assert(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_object_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt; || &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_reference_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
+    &lt;span class="org-keyword"&gt;if&lt;/span&gt; (self.has_value()) {
+        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;{&lt;span class="org-constant"&gt;detail&lt;/span&gt;::from_function,
+                           &lt;span class="org-constant"&gt;std&lt;/span&gt;::forward&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt;(f),
+                           &lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(self.value_)};
+    }
+    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;;
+}
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+If there were a &lt;code&gt;std::forward_like_t&lt;/code&gt;, it might be possible to reduce some of the noise in computing the value category used for the &lt;code&gt;T&lt;/code&gt;. I also have not thought extensively about if the requires clause is truly needed in light of the &lt;code&gt;invoke_result_&lt;/code&gt; that can now be used in the trailing return type.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</guid><pubDate>Fri, 28 Nov 2025 17:06:58 GMT</pubDate></item><item><title>Entry Fountain Pens</title><link>https://sdowney.org/posts/entry-fountain-pens/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgd12e55b"&gt;
+&lt;p&gt;
+A list of very good inexpensive fountain pens.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;!-- TEASER_END --&gt;
+
+&lt;p&gt;
+These are all pens I've bought and used myself, and for the most part continue to use. I also have more expensive, and fancier, pens. These are all well made and inexpensive not because they're terrible but because of the magic of mass production.
+&lt;/p&gt;
+&lt;div id="outline-container-orgb6213ad" class="outline-2"&gt;
+&lt;h2 id="orgb6213ad"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Disposable Pens&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org3655014" class="outline-3"&gt;
+&lt;h3 id="org3655014"&gt;&lt;span class="section-number-3"&gt;1.1.&lt;/span&gt; Pilot Varsity&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org6ccfdc0" class="outline-3"&gt;
+&lt;h3 id="org6ccfdc0"&gt;&lt;span class="section-number-3"&gt;1.2.&lt;/span&gt; Zebra Disposable&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org51f732c" class="outline-2"&gt;
+&lt;h2 id="org51f732c"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Cartridge Pens&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-orga57ec42" class="outline-3"&gt;
+&lt;h3 id="orga57ec42"&gt;&lt;span class="section-number-3"&gt;2.1.&lt;/span&gt; Pilot Kakuno&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org63d58c9" class="outline-3"&gt;
+&lt;h3 id="org63d58c9"&gt;&lt;span class="section-number-3"&gt;2.2.&lt;/span&gt; Platinum Preppy&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org7c9abf1" class="outline-3"&gt;
+&lt;h3 id="org7c9abf1"&gt;&lt;span class="section-number-3"&gt;2.3.&lt;/span&gt; Platinum Prefounte&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org4e30103" class="outline-3"&gt;
+&lt;h3 id="org4e30103"&gt;&lt;span class="section-number-3"&gt;2.4.&lt;/span&gt; Platinum Plaisir&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org5d822b7" class="outline-3"&gt;
+&lt;h3 id="org5d822b7"&gt;&lt;span class="section-number-3"&gt;2.5.&lt;/span&gt; Lamy Safari&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org6baedcb" class="outline-3"&gt;
+&lt;h3 id="org6baedcb"&gt;&lt;span class="section-number-3"&gt;2.6.&lt;/span&gt; Pilot Metropolitan&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org254fb62" class="outline-3"&gt;
+&lt;h3 id="org254fb62"&gt;&lt;span class="section-number-3"&gt;2.7.&lt;/span&gt; Pilot Prera&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org646798d" class="outline-3"&gt;
+&lt;h3 id="org646798d"&gt;&lt;span class="section-number-3"&gt;2.8.&lt;/span&gt; Hongdian Black Forest&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org375d6eb" class="outline-3"&gt;
+&lt;h3 id="org375d6eb"&gt;&lt;span class="section-number-3"&gt;2.9.&lt;/span&gt; Pilot Explorer&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org839647d" class="outline-3"&gt;
+&lt;h3 id="org839647d"&gt;&lt;span class="section-number-3"&gt;2.10.&lt;/span&gt; TWSBI Swipe&lt;/h3&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org2f6920c" class="outline-3"&gt;
+&lt;h3 id="org2f6920c"&gt;&lt;span class="section-number-3"&gt;2.11.&lt;/span&gt; Lamy Vista&lt;/h3&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/entry-fountain-pens/</guid><pubDate>Sun, 19 Jan 2025 16:07:50 GMT</pubDate></item><item><title>Nikola Blog Infrastructure</title><link>https://sdowney.org/posts/nikola-blog-infrastructure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org334ae85"&gt;
 &lt;p&gt;
 I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
 &lt;/p&gt;
@@ -11,8 +328,8 @@ I've migrated from WordPress to a static blog generator–Nikola. This is how it
 &lt;/div&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="outline-container-orgdab4ed9" class="outline-2"&gt;
-&lt;h2 id="orgdab4ed9"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Nikola&lt;/h2&gt;
+&lt;div id="outline-container-org71ed231" class="outline-2"&gt;
+&lt;h2 id="org71ed231"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Nikola&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 Nikola is a static site generator written in python. It's mostly boring, which is a very good thing for software meant for use to be. Its home is &lt;a href="https://getnikola.org"&gt;https://getnikola.org&lt;/a&gt; and the source is on github at &lt;a href="https://github.com/getnikola/nikola"&gt;https://github.com/getnikola/nikola&lt;/a&gt;. It's many years old at this point, but not dead.
@@ -31,8 +348,8 @@ Conversion was straightforward using the tools that Nikola provided and &lt;a hr
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-org5552849" class="outline-2"&gt;
-&lt;h2 id="org5552849"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Orgmode plugin&lt;/h2&gt;
+&lt;div id="outline-container-orgad64039" class="outline-2"&gt;
+&lt;h2 id="orgad64039"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Orgmode plugin&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 Pulling a plugin into my working site was easy
@@ -59,8 +376,8 @@ I then updated the source code for the elisp html exporter using code from &lt;a
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-orgaacd786" class="outline-2"&gt;
-&lt;h2 id="orgaacd786"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; LaTeX support via KaTeX&lt;/h2&gt;
+&lt;div id="outline-container-orgfd56a24" class="outline-2"&gt;
+&lt;h2 id="orgfd56a24"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; LaTeX support via KaTeX&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 I've configure Nikola to support LaTeX via KaTeX rather than MathJax. It is supposed to be a bit faster. This means &lt;b&gt;inline&lt;/b&gt; math like \(x^2\) or \(1 &amp;lt; 2\) or with breaks like:
@@ -71,9 +388,9 @@ Or in running text where I want to mention \[ \frac{-b \pm \sqrt{b^2 - 4 a c}}{2
 It does mean I don't have access to latex blocks like
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-latex"&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\begin&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
-&lt;span class="org-font-latex-math"&gt;  n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i+1}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; = &lt;/span&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-font-latex-math"&gt;\frac&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;{n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; (d-i) (e-1)}{(i+1)}&lt;/span&gt;
-&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\end&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
+&lt;pre class="src src-latex"&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\begin&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}&lt;span class="org-font-latex-math"&gt;
+  n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i+1}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; = &lt;/span&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-font-latex-math"&gt;\frac&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;{n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; (d-i) (e-1)}{(i+1)}
+&lt;/span&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\end&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
 &lt;/pre&gt;
 &lt;/div&gt;
 
@@ -2818,91 +3135,4 @@ We should all be able to get behind not calling it &lt;code&gt;accumulate&lt;/co
  Some other time I'll vent about the various &lt;code&gt;fold&lt;/code&gt; operations and how they get extended if your type is a monoid. See Chris Di Bella's work such as &lt;a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1813r0.pdf"&gt;A Concept Design for the Numeric Algorithms&lt;/a&gt;, although this rant suggests that algorithms that operate on different Concepts should have different names. Overloading on concepts with semantic differences can be confusing.
 
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/</guid><pubDate>Sat, 16 Jan 2021 23:22:19 GMT</pubDate></item><item><title>Blog Infrastructure Work</title><link>https://sdowney.org/posts/index.php/2020/11/28/blog-infrastructure-work/</link><dc:creator>Steve Downey</dc:creator><description>&lt;p&gt; What feels like actual productive work, but is only work adjacent? Fixing up the blog. &lt;/p&gt;
-
-&lt;p&gt; I managed to gradually destroy the whole thing after a decade or more of platform migrations and upgrades. This is a new and from (mostly) scratch install, into which I've imported the contents of the old one. Good backups and some hints from the excellent staff at &lt;a href="https://www.panix.com"&gt;panix.com&lt;/a&gt; got me back in shape. I hope. &lt;/p&gt;
-
-&lt;!-- TEASER_END --&gt;
-
-
-&lt;div id="outline-container-org0967571" class="outline-2"&gt;
-&lt;h3 id="org0967571"&gt;Notes to my future self:&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org0967571"&gt;
-&lt;p&gt; Start with a clean and empty database after backing up. In this case moved to the new db server at mysql3, which runs a non-antique version of mysql. &lt;/p&gt;
-
-&lt;p&gt; Shell permissions are tight, so need to chmod anything I create by hand to a+r or it can't be read. &lt;/p&gt;
-
-&lt;p&gt; Installed into root of ~/public_html so as to stop the weird rewrite rules. &lt;/p&gt;
-
-&lt;p&gt; Still have rewrite rules to handle ~sdowney vs sdowney.org. &lt;/p&gt;
-
-&lt;p&gt; Using the wp Twenty Nineteen theme because it's not a narrow column format. Created a child theme, and pasted the custom css into the child/style.css. &lt;/p&gt;
-
-&lt;p&gt; CSS is generated from M-x org-html-htmlize-generate-css in order to get my defaults in code blocks and such from org export. &lt;/p&gt;
-
-&lt;p&gt; Tweaked the .pre.src block to use better fonts. Consider fixing the trendy fonts used in the main theme. &lt;/p&gt;
-
-&lt;p&gt; Latex is on via Jetpack plugin. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-
-&lt;div id="outline-container-org7c18127" class="outline-2"&gt;
-&lt;h3 id="org7c18127"&gt;Testing out posting to blog from emacs&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org7c18127"&gt;
-&lt;p&gt; Using &lt;a href="https://github.com/org2blog/org2blog"&gt;org2blog.&lt;/a&gt; &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-orgfe73d07" class="outline-2"&gt;
-&lt;h3 id="orgfe73d07"&gt;Test LaTex&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgfe73d07"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;The word LaTeX
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;$latex \LaTeX$&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;Inline
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;$latex \sum_{i=0}^n i^2 = \frac{(n^2+n)(2n+1)}{6}$&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;li&gt;Equation
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;&lt;p style="text-align:center"&gt; $latex \sum_{i=0}^n i^2 = \frac{(n^2+n)(2n+1)}{6}$ &lt;/p&gt;&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org23fe210" class="outline-2"&gt;
-&lt;h3 id="org23fe210"&gt;Src blocks&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org23fe210"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgda28895" class="outline-3"&gt;
-&lt;h4 id="orgda28895"&gt;C++&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgda28895"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;windows_1252_convert_view&lt;/span&gt;
-    : &lt;span class="org-keyword"&gt;public&lt;/span&gt; &lt;span class="org-constant"&gt;rng&lt;/span&gt;::&lt;span class="org-type"&gt;view_facade&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;windows_1252_convert_view&lt;/span&gt;&amp;lt;Range&amp;gt;, &lt;span class="org-constant"&gt;rng&lt;/span&gt;::unknown&amp;gt;;
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org262b086" class="outline-3"&gt;
-&lt;h4 id="org262b086"&gt;Python&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org262b086"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-python" id="nil"&gt;&lt;span class="org-keyword"&gt;print&lt;/span&gt; (&lt;span class="org-string"&gt;'Hello, world!'&lt;/span&gt;)
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;</description><category>emacs</category><category>lisp</category><category>org2blog</category><guid>https://sdowney.org/posts/index.php/2020/11/28/blog-infrastructure-work/</guid><pubDate>Sun, 29 Nov 2020 00:05:00 GMT</pubDate></item><item><title>Hello world!</title><link>https://sdowney.org/posts/hello-world/</link><dc:creator>Steve Downey</dc:creator><description>&lt;p&gt;Welcome to WordPress. This is your first post. Edit or delete it, then start writing!&lt;/p&gt;
-&lt;!-- /wp:paragraph --&gt;</description><guid>https://sdowney.org/posts/hello-world/</guid><pubDate>Sat, 28 Nov 2020 04:45:53 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/</guid><pubDate>Sat, 16 Jan 2021 23:22:19 GMT</pubDate></item></channel></rss>
