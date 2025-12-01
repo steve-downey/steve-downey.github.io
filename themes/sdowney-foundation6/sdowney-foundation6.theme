@@ -1,0 +1,7 @@
+[Theme]
+engine = mako
+parent = foundation6
+tags = foundation
+
+[Family]
+family = foundation6

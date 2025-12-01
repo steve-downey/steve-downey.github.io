@@ -1,0 +1,194 @@
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:nil arch:headline author:t
+#+options: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+options: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:nil todo:t |:t
+#+options: html5-fancy:t
+#+TITLE: Substitution is Sometimes a Failure
+#+AUTHOR: Steve Downey
+#+EMAIL: sdowney@gmail.com
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+DESCRIPTION:
+#+KEYWORDS:
+#+SUBTITLE: Or: The Dog That Did Not Bark In The Night.
+#+DATE: {{{modification-time(%Y-%m-%d, VC)}}}
+#+STARTUP: showall
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:nil html-preamble:t
+#+OPTIONS: html-scripts:n html-style:nil html5-fancy:nil tex:t
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD:
+#+HTML_HEAD_EXTRA:
+#+SUBTITLE:
+#+INFOJS_OPT:
+
+
+
+#+begin_abstract
+Why are optional::transform and optional::and_then not constrained by ~invocable~?
+#+end_abstract
+
+* Optional "Monadic" Interface
+[[http://wg21.link/P0798][Monadic operations for std::optional]]
+- ~transform~ is the c++ spelling for ~map~ or ~fmap~
+- ~and_then~ is monadic ~bind~ for optional
+- ~or_else~ is dual to ~and_then~
+
+~or_else~ also has:
+
+#+begin_quote
+Constraints: ~F~ models ~invocable~ and ~T~ models ~{move,copy}_constructible~.
+#+end_quote
+
+~transform~ and ~and_then~ do not.
+
+They don't work if you don't give them invocables, and rely on ~invoke_result_t~ to compute the result. So why not constrain them?
+
+* SFINAE is shallow
+
+The problem is if another template has to be instantiated in order to evaluate the template of interest, and that template has an error, you get an error, not a substitution failure. And, it turns out, lambdas are a common source of the problem and a common case in real use.
+
+Consider the code:
+#+begin_src c++
+void f(int&);
+
+auto l = [](auto& y) {
+    f(y);
+    return 42;
+};
+#+end_src
+
+The two important parts are the ~auto&~ parameter and the implicit deduced return type.
+
+We can rewrite it, to make things possibly more obvious:
+#+begin_src c++
+struct Func {
+    template <typename T>
+    auto operator()(T& t) {
+        f(t);
+        return 42;
+    }
+};
+#+end_src
+
+and to slightly spoil things, the problem code is effectively:
+#+begin_src c++
+static_assert(std::invocable<Func, int const&>);
+#+end_src
+
+which produces:
+#+begin_src c++
+<source>: In instantiation of 'auto Func::operator()(T&) [with T = const int]':
+type_traits:2565:26:   required by substitution of 'template<class _Fn, class ... _Args> static std::__result_of_success<decltype (declval<_Fn>()((declval<_Args>)()...)), std::__invoke_other> std::__result_of_other_impl::_S_test(int) [with _Fn = Func; _Args = {const int&}]'
+type_traits:2576:55:   required from 'struct std::__result_of_impl<false, false, Func, const int&>'
+type_traits:3038:12:   recursively required by substitution of 'template<class _Result, class _Ret> struct std::__is_invocable_impl<_Result, _Ret, true, std::__void_t<typename _CTp::type> > [with _Result = std::__invoke_result<Func, const int&>; _Ret = void]'
+type_traits:3038:12:   required from 'struct std::is_invocable<Func, const int&>'
+type_traits:3286:71:   required from 'constexpr const bool std::is_invocable_v<Func, const int&>'
+concepts:336:25:   required from here
+<source>:12:10: error: binding reference of type 'int&' to 'const int' discards qualifiers
+   12 |         f(t);
+      |         ~^~~
+<source>:2:12: note:   initializing argument 1 of 'void f(int&)'
+    2 |     void f(int&);
+      |            ^~~~
+Compiler returned: 1
+#+end_src
+[[https://compiler-explorer.com/z/W1jT6bxrf][Compiler Explorer]]
+
+as the compiler is unhappy about trying to call the function ~f~ with a ~const int&~.
+
+If the lambda or ~Func~ is changed to have a non-deduced return type, the instantiation errors from the check to ~invocable~ go away, although you still get an error calling either with a ~const int~.
+
+So why do we run into this with ~transform~ if we were to constrain it with ~invocable~ ?
+
+The compiler needs to figure out the overload set in order to resolve which one to use from the set. There are four of them two for the l- and r- value category and two for the const overloads.
+
+#+begin_src c++
+template<class F> constexpr auto transform(F&& f) &;
+template<class F> constexpr auto transform(F&& f) const &;
+template<class F> constexpr auto transform(F&& f) &&;
+template<class F> constexpr auto transform(F&& f) const &&;
+#+end_src
+with differing computations of the resulting ~optional~ being returned.
+#+begin_src c++
+using U = invoke_result_t<F, decltype(std​::​move(*val))>;
+//or
+using U = remove_cv_t<invoke_result_t<F, decltype(*val)>>;
+#+end_src
+
+So, in order to work out what the templated ~transform~'s signature really is, it has to compute what the invocable returns, and since the invocable has deduced return type, it needs to instantiate it, and instantiating with ~const int~ causes an error.
+
+This is unfortunate.
+
+If we constrain ~transform~ we get the same errors as above. [[https://compiler-explorer.com/z/r1qbjx4zG][See here,]] with just enough of an ~optional~ to compile.
+
+* Constraints, what are they good for
+
+Not absolutely nothing.
+
+Constraints in the library:
+
+#+begin_quote
+Constraints: the conditions for the function's participation in overload resolution ([over.match]).
+
+[Note 1: Failure to meet such a condition results in the function's silent non-viability. — end note]
+
+[Example 1: An implementation can express such a condition via a constraint-expression ([temp.constr.decl]). — end example]
+#+end_quote
+
+[[https://eel.is/c++draft/description#structure.specifications-3.1][[structure.specifications] 3.1]]
+
+Constraints are for making an overload not exist if the constraint isn't met. It's not a way of signaling an error. Those are ~Mandates~:
+
+#+begin_quote
+Mandates: the conditions that, if not met, render the program ill-formed.
+
+[Example 2: An implementation can express such a condition via the constant-expression in a static_assert-declaration ([dcl.pre]). If the diagnostic is to be emitted only after the function has been selected by overload resolution, an implementation can express such a condition via a constraint-expression ([temp.constr.decl]) and also define the function as deleted. — end example]
+#+end_quote
+
+[[https://eel.is/c++draft/description#structure.specifications-3.2][[structure.specifications] 3.2]]
+
+Asking to run ~and_then~ on a non-invocable probably ought not to say there is no such function, but instead tell you it can't be invoked. I'm now not convinced that ~or_else~ should be constrained this way. It's not significantly better for ~o.or_else(5)~ to fail to resolve, mentioning ~invocable~, than produce an error that ~invoke_result_t~ doesn't work, or that ~f~ can't be invoked. The kind of error is a minor detail.
+
+Constraints that let you control the choice of alternatives are wonderful, and requires clauses are normal programmer accessible, unlike SFINAE, or even ~enable_if~. But without an overload set to constrain, there possibly should not be a constraint.
+
+* Can we do better?
+There are some notes in [[https://wg21.link/P0798][P0798]] that suggest that Deducing This might help, [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0847r7.html][P0847]].
+
+The idea would to be to NOT have all the value category overloads that need to be checked, but to just have a single one that deduces what ~this~ is and provide it as a template parameter for further use. The contained parameter could be forwarded using ~forward_like<Self>~.
+
+P0847 has discussion about how deducing this might be applied to optional. There's also discussion of deducing this and the SFINAE-unfriendly auto at [[https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/][C++23’s Deducing this: what it is, why it is, how to use it]].
+
+With the tools we have today, it looks possible, but still slightly messy. I managed to get my implementation of optional to compile and pass its own tests with.
+#+begin_src c++
+template <class F, class Self>
+    requires(
+        std::invocable<F,
+                       decltype(std::forward_like<Self>(std::declval<T>()))>)
+constexpr auto transform(this Self&& self, F&& f)
+    -> optional<std::invoke_result_t<
+        F,
+        decltype(std::forward_like<Self>(std::declval<T>()))>> {
+    using U = std::invoke_result_t<F,
+                                   decltype(std::forward_like<Self>(
+                                       std::declval<T>()))>;
+    static_assert(!std::is_array_v<U>);
+    static_assert(!std::is_same_v<U, in_place_t>);
+    static_assert(!std::is_same_v<U, nullopt_t>);
+    static_assert(std::is_object_v<U> || std::is_reference_v<U>);
+    if (self.has_value()) {
+        return optional<U>{detail::from_function,
+                           std::forward<F>(f),
+                           std::forward_like<Self>(self.value_)};
+    }
+    return optional<U>;
+}
+#+end_src
+
+If there were a ~std::forward_like_t~, it might be possible to reduce some of the noise in computing the value category used for the ~T~. I also have not thought extensively about if the requires clause is truly needed in light of the ~invoke_result_~ that can now be used in the trailing return type.

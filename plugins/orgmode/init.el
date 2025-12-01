@@ -61,9 +61,16 @@
 (use-package htmlize
   :ensure t)
 
+(setq org-html-head ""
+      org-html-head-extra ""
+      org-html-head-include-default-style nil
+      org-html-head-include-scripts nil
+      org-html-preamble nil
+      org-html-postamble nil
+      org-html-use-infojs nil)
 
 (setq org-export-global-macros '(
-                                 ("TEASER_END" . "<!-- TEASER_END -->")
+                                 ("TEASER_END" . "#+HTML:<!-- TEASER_END -->")
                                  ))
 ;; (use-package ox-html
 ;;   :after (org)
