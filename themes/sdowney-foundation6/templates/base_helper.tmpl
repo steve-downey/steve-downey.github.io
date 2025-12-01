@@ -67,12 +67,14 @@ lang="${lang}">
 </%def>
 
 <%def name="html_stylesheets()">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     %if use_bundles:
         <link href="/assets/css/all.css" rel="stylesheet" type="text/css">
     %else:
         <link rel="stylesheet" href="/assets/css/rst.min.css" />
         <link rel="stylesheet" href="/assets/css/foundation.min.css" />
         <link rel="stylesheet" href="/assets/css/app.css" />
+        <link rel="stylesheet" href="/assets/css/modus-vivendi-tinted.css" />
         %if has_custom_css:
             <link href="/assets/css/custom.css" rel="stylesheet" type="text/css">
         %endif
