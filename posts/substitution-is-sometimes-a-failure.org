@@ -34,6 +34,8 @@
 Why are optional::transform and optional::and_then not constrained by ~invocable~?
 #+end_abstract
 
+{{{TEASER_END}}}
+
 * Optional "Monadic" Interface
 [[http://wg21.link/P0798][Monadic operations for std::optional]]
 - ~transform~ is the c++ spelling for ~map~ or ~fmap~
