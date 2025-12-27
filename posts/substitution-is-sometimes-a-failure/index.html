@@ -15,11 +15,14 @@
 <link rel="alternate" type="application/atom+xml" title="Atom" href="../../feed.atom">
 <link rel="canonical" href="https://sdowney.org/posts/substitution-is-sometimes-a-failure/">
 <!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Steve Downey">
-<link rel="prev" href="../entry-fountain-pens/" title="Entry Fountain Pens" type="text/html">
+<link rel="prev" href="../nikola-blog-infrastructure/" title="Nikola Blog Infrastructure" type="text/html">
+<link rel="next" href="../building-vcpkg-dependencies-with-project-toolchain/" title="Building vcpkg dependencies with project toolchain" type="text/html">
 <meta property="og:site_name" content="What Comes to Mind">
 <meta property="og:title" content="Substitution is Sometimes a Failure">
 <meta property="og:url" content="https://sdowney.org/posts/substitution-is-sometimes-a-failure/">
 <meta property="og:description" content='Why are optional::transform and optional::and_then not constrained by invocable?
+
+
 
 
 
@@ -30,7 +33,7 @@
 Monadic operations for std::optional
 
 
-transform is the c++ spelling for map or f'>
+transform is the c++ spelling for map or'>
 <meta property="og:type" content="article">
 <meta property="article:published_time" content="2025-11-28T12:06:58-05:00">
 <meta name="twitter:card" content="summary">
@@ -79,14 +82,16 @@ transform is the c++ spelling for map or f'>
     
 
 
-    <div class="abstract" id="org2939d20">
+    <div class="abstract" id="orgda1a411">
 <p>
 Why are optional::transform and optional::and_then not constrained by <code>invocable</code>?
 </p>
 
 </div>
-<div id="outline-container-org452148a" class="outline-2">
-<h2 id="org452148a">
+
+<!-- TEASER_END -->
+<div id="outline-container-orgfd1f7cb" class="outline-2">
+<h2 id="orgfd1f7cb">
 <span class="section-number-2">1.</span> Optional "Monadic" Interface</h2>
 <div class="outline-text-2" id="text-1">
 <p>
@@ -121,8 +126,8 @@ They don't work if you don't give them invocables, and rely on <code>invoke_resu
 </p>
 </div>
 </div>
-<div id="outline-container-org95813d0" class="outline-2">
-<h2 id="org95813d0">
+<div id="outline-container-org8c7b2d9" class="outline-2">
+<h2 id="org8c7b2d9">
 <span class="section-number-2">2.</span> SFINAE is shallow</h2>
 <div class="outline-text-2" id="text-2">
 <p>
@@ -238,8 +243,8 @@ If we constrain <code>transform</code> we get the same errors as above. <a href=
 </p>
 </div>
 </div>
-<div id="outline-container-org7a1b9db" class="outline-2">
-<h2 id="org7a1b9db">
+<div id="outline-container-org5976902" class="outline-2">
+<h2 id="org5976902">
 <span class="section-number-2">3.</span> Constraints, what are they good for</h2>
 <div class="outline-text-2" id="text-3">
 <p>
@@ -295,8 +300,8 @@ Constraints that let you control the choice of alternatives are wonderful, and r
 </p>
 </div>
 </div>
-<div id="outline-container-orgd1b0868" class="outline-2">
-<h2 id="orgd1b0868">
+<div id="outline-container-org388d816" class="outline-2">
+<h2 id="org388d816">
 <span class="section-number-2">4.</span> Can we do better?</h2>
 <div class="outline-text-2" id="text-4">
 <p>
@@ -358,7 +363,10 @@ If there were a <code>std::forward_like_t</code>, it might be possible to reduce
         <div class="column row">
             <ul class="pagination" role="navigation" aria-label="Pagination">
 <li>
-                    <a href="../entry-fountain-pens/" rel="prev" title="Entry Fountain Pens">« <span class="show-for-sr">Previous post</span></a>
+                    <a href="../nikola-blog-infrastructure/" rel="prev" title="Nikola Blog Infrastructure">« <span class="show-for-sr">Previous post</span></a>
+                </li>
+                <li>
+                    <a href="../building-vcpkg-dependencies-with-project-toolchain/" rel="next" title="Building vcpkg dependencies with project toolchain" aria-label="Next page">» <span class="show-for-sr">Next post</span></a>
                 </li>
             </ul>
 </div>

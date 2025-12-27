@@ -3,14 +3,212 @@
  &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
  &lt;img alt="Creative Commons License BY-NC-SA"
  style="border-width:0; margin-bottom:12px;"
- src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Mon, 01 Dec 2025 02:35:50 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Substitution is Sometimes a Failure</title><link>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org2939d20"&gt;
+ src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sat, 27 Dec 2025 19:02:45 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Building vcpkg dependencies with project toolchain</title><link>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgd3f21f0"&gt;
+&lt;p&gt;
+Making sure vcpkg delivers packages built with your toolchain is not hard, but much of the advice on the internet is flat wrong. You need to specify your toolchain both in your project and in the the vcpkg &lt;code&gt;triplet&lt;/code&gt;. There's an airgap between your project and the dependency in &lt;code&gt;vcpkg install&lt;/code&gt;. The CMake settings can't just flow through.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;!-- TEASER_END --&gt;
+&lt;div id="outline-container-org3754f4f" class="outline-2"&gt;
+&lt;h2 id="org3754f4f"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Toolchain is more than just the compiler&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+Inside a link context everything needs to use the same definitions for everything or your program breaks. If you are lucky it will fail to link. If you are unlucky it will link and explode at runtime. Or you might have the worst kind of undefined behavior–working the way you expect it to. For now.
+&lt;/p&gt;
+
+&lt;p&gt;
+The &lt;a href="https://eel.is/c++draft/basic#def.odr-16"&gt;&lt;code&gt;One Definition Rule&lt;/code&gt;&lt;/a&gt; tries to say that all of the definitions in a program must mean the same thing. Using different flags for different translation units is a simple way of giving different meanings to definitions. This can range from preprocessor defines in the flags, to conditional compilation based on the compiler, or standard version, to subtle changes in meaning based on the standard version or other flags, such as the literal encoding to render characters and string constants into.
+&lt;/p&gt;
+
+&lt;p&gt;
+The toolchain should encompass all of the ABI affecting flags, and most flags affect ABI, or at least codegen, in some way. Differing codegen, while not as dangerous as an ABI break, can still be an unpleasant surprise.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-orgc0c2baf" class="outline-2"&gt;
+&lt;h2 id="orgc0c2baf"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Using a toolchain with &lt;code&gt;vcpkg&lt;/code&gt; in-project&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;p&gt;
+There are several techniques for using vcpkg for dependency management and specifying a toolchain to use for compilation of the artifacts in a project. For an open source project, the problem is generally how to do so without locking everyone into &lt;code&gt;vcpkg&lt;/code&gt;. The current theory for CMake is to provide dependency provider hooks via CMAKE_PROJECT_TOP_LEVEL_INCLUDES, which are a list of files cmake will process before anything else, and in particular before the &lt;code&gt;project&lt;/code&gt; statement. The Beman Project has a primitive dependency provider, &lt;a href="https://github.com/bemanproject/infra/blob/main/cmake/use-fetch-content.cmake"&gt;use-fetch-content.cmake&lt;/a&gt;, that converts &lt;code&gt;find_package&lt;/code&gt; into &lt;code&gt;FetchContent&lt;/code&gt; and downloads and builds from Git URLs. This is an alternative to vendoring dependencies in-tree directly using git submodules or git subtrees.
+&lt;/p&gt;
+
+&lt;p&gt;
+As an aside, git submodules are like vice-grips–the wrong tool for every job.
+&lt;/p&gt;
+
+&lt;p&gt;
+For &lt;code&gt;vcpkg&lt;/code&gt;, you can integrate using the same mechanism, setting CMAKE_PROJECT_TOP_LEVEL_INCLUDES to $(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake. This is entirely in place of setting the CMAKE_TOOLCHAIN_FILE to vcpkg.cmake, including vcpkg.cmake in a local toolchain file, or using VCPKG_CHAINLOAD_TOOLCHAIN_FILE to instruct vcpkg.cmake to load a toolchain after processing the &lt;code&gt;triple&lt;/code&gt; file.
+&lt;/p&gt;
+
+&lt;p&gt;
+The initial configure will look something like:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+      -DCMAKE_TOOLCHAIN_FILE=./etc/gcc-16-toolchain.cmake &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+      -B .build -S .
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+With the gcc-16 toolchain file looking something like:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-cmake"&gt;&lt;span class="org-function-name"&gt;include_guard&lt;/span&gt;(GLOBAL)
+
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_C_COMPILER gcc-16)
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_COMPILER g++-16)
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(GCOV_EXECUTABLE &lt;span class="org-string"&gt;"gcov-16"&lt;/span&gt; CACHE STRING &lt;span class="org-string"&gt;"GCOV executable"&lt;/span&gt; FORCE)
+
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_STANDARD 26)
+
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS
+    &lt;span class="org-string"&gt;"-Wall -Wextra -std=gnu++26 -Wno-maybe-uninitialized"&lt;/span&gt;
+    CACHE STRING
+    &lt;span class="org-string"&gt;"CXX_FLAGS"&lt;/span&gt;
+    FORCE)
+
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_DEBUG
+    &lt;span class="org-string"&gt;"-O0 -fno-inline -g3"&lt;/span&gt;
+    CACHE STRING
+    &lt;span class="org-string"&gt;"C++ DEBUG Flags"&lt;/span&gt;
+    FORCE
+)
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_RELEASE
+    &lt;span class="org-string"&gt;"-Ofast -g0 -DNDEBUG"&lt;/span&gt;
+    CACHE STRING
+    &lt;span class="org-string"&gt;"C++ Release Flags"&lt;/span&gt;
+    FORCE
+)
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    &lt;span class="org-string"&gt;"-O3 -g -DNDEBUG"&lt;/span&gt;
+    CACHE STRING
+    &lt;span class="org-string"&gt;"C++ RelWithDebInfo Flags"&lt;/span&gt;
+    FORCE
+)
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_TSAN
+    &lt;span class="org-string"&gt;"-O3 -g -fsanitize=thread"&lt;/span&gt;
+    CACHE STRING
+    &lt;span class="org-string"&gt;"C++ TSAN Flags"&lt;/span&gt;
+    FORCE
+)
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_ASAN
+    &lt;span class="org-string"&gt;"-O3 -g -fsanitize=address,undefined,leak"&lt;/span&gt;
+    CACHE STRING
+    &lt;span class="org-string"&gt;"C++ ASAN Flags"&lt;/span&gt;
+    FORCE
+)
+
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_GCOV
+    &lt;span class="org-string"&gt;"-O0 -fno-default-inline -fno-inline -g --coverage -fprofile-abs-path"&lt;/span&gt;
+    CACHE STRING
+    &lt;span class="org-string"&gt;"C++ GCOV Flags"&lt;/span&gt;
+    FORCE
+)
+
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_LINKER_FLAGS_GCOV &lt;span class="org-string"&gt;"--coverage"&lt;/span&gt; CACHE STRING &lt;span class="org-string"&gt;"Linker GCOV Flags"&lt;/span&gt; FORCE)
+
+&lt;span class="org-function-name"&gt;get_filename_component&lt;/span&gt;(RPATH &lt;span class="org-string"&gt;"~/.local/lib64"&lt;/span&gt; ABSOLUTE)
+
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_EXE_LINKER_FLAGS
+    &lt;span class="org-string"&gt;"-Wl,-rpath,${&lt;/span&gt;&lt;span class="org-variable-name"&gt;RPATH&lt;/span&gt;&lt;span class="org-string"&gt;}"&lt;/span&gt;
+    CACHE STRING
+    &lt;span class="org-string"&gt;"CMAKE_EXE_LINKER_FLAGS"&lt;/span&gt;
+    FORCE
+)
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+This provides CMake build types &lt;code&gt;DEBUG&lt;/code&gt;, &lt;code&gt;RELEASE&lt;/code&gt;, &lt;code&gt;RELWITHDEBINFO&lt;/code&gt;, &lt;code&gt;TSAN&lt;/code&gt;, &lt;code&gt;ASAN&lt;/code&gt;, and &lt;code&gt;GCOV&lt;/code&gt;, overriding the built-in default flags. It exports the coverage processor to use, picked up by my project, and adds rpath to the linked executable to where I have the gcc-16 libstdc++.so.6 installed. GCC recently bumped the &lt;code&gt;GLIBCXX&lt;/code&gt; version number to 35, so it is no longer compatible with the system &lt;code&gt;libstdc++.so.6&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+Note that it doesn't have any vcpkg variables or includes.
+&lt;/p&gt;
+
+&lt;p&gt;
+Building with the &lt;code&gt;cmake&lt;/code&gt; command line flags above will end up calling vcpkg for any packages mentioned in the &lt;code&gt;vcpkg.json&lt;/code&gt; file and providing them to be found by &lt;code&gt;find_package&lt;/code&gt; calls. It's not quite how a cmake dependency provider works, but functions very much the same. However, &lt;code&gt;vcpkg&lt;/code&gt; will build dependencies the way the system &lt;code&gt;triple&lt;/code&gt; defines things, which will be with the system compiler and default flags, and may be entirely incompatible with your project.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org03fa23e" class="outline-2"&gt;
+&lt;h2 id="org03fa23e"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Building Dependencies with your Toolchain.&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-3"&gt;
+&lt;p&gt;
+The mechanism &lt;code&gt;vcpkg&lt;/code&gt; provides for injecting a toolchain into a dependency is a custom &lt;code&gt;triple&lt;/code&gt; that provides a VCPKG_CHAINLOAD_TOOLCHAIN_FILE. Because of the intermediate invocation of &lt;code&gt;vcpkg&lt;/code&gt;, setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project does not affect how &lt;code&gt;vcpkg&lt;/code&gt; builds or provides anything.
+&lt;/p&gt;
+
+&lt;p&gt;
+We can, however, smuggle the variable we need through the environment.
+&lt;/p&gt;
+
+&lt;p&gt;
+The custom &lt;code&gt;triple&lt;/code&gt; I'm using, &lt;code&gt;x64-linux-custom.cmake&lt;/code&gt;,  looks like:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-cmake"&gt;&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_TARGET_ARCHITECTURE x64)
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_CRT_LINKAGE dynamic)
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_LIBRARY_LINKAGE static)
+
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_CMAKE_SYSTEM_NAME Linux)
+
+&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_CHAINLOAD_TOOLCHAIN_FILE &lt;span class="org-string"&gt;"$ENV{PROJECT_VCPKG_TOOLCHAIN}"&lt;/span&gt;)
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+And I make sure to export PROJECT_VCPKG_TOOLCHAIN into the environment as part of my build. I use a Makefile to drive my project workflow, so it's straightforward to set and export. Other workflow mechanisms are an exercise for the reader.
+&lt;/p&gt;
+
+&lt;p&gt;
+The cmake invocation picks up flags and environment:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;&lt;span class="org-builtin"&gt;export&lt;/span&gt; &lt;span class="org-variable-name"&gt;PROJECT_VCPKG_TOOLCHAIN&lt;/span&gt;=$(realpath ./etc/gcc-16-toolchain.cmake)
+cmake -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_VCPKG_TOOLCHAIN) &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+      -DVCPKG_OVERLAY_TRIPLETS=$(realpath ./cmake) &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+      -DVCPKG_TARGET_TRIPLET=x64-linux-custom &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+      -B .build -S .
+&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+With this, &lt;code&gt;vcpkg&lt;/code&gt; will use the toolchain I specify to build dependencies. It also treats the VCPKG_CHAINLOAD_TOOLCHAIN_FILE as ABI significant for its build caching. This means that if you include other files into your toolchain, the contents of those files do not count. A small issue if you are using layered toolchain files, sharing some flags between them such as for gcc-15 vs gcc-16 in e.g. a gcc-flags.cmake file. But I also know switching between many compilers is a very minority use case.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-orgfc18b50" class="outline-2"&gt;
+&lt;h2 id="orgfc18b50"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Someone is Wrong on the Internet&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-4"&gt;
+&lt;p&gt;
+This took far longer to work out than it should because there is much advice that is flat out wrong.
+&lt;/p&gt;
+
+&lt;p&gt;
+In particular from AI generated summaries and articles.
+&lt;/p&gt;
+
+&lt;p&gt;
+Setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project or on the &lt;code&gt;cmake&lt;/code&gt; command line &lt;b&gt;cannot&lt;/b&gt; affect how &lt;code&gt;vcpkg&lt;/code&gt; builds and retrieves dependencies.
+&lt;/p&gt;
+
+&lt;p&gt;
+You must set a custom &lt;code&gt;triple&lt;/code&gt; file that sets VCPKG_CHAINLOAD_TOOLCHAIN_FILE in order to use that CMake toolchain with &lt;code&gt;vcpkg&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</guid><pubDate>Sat, 27 Dec 2025 17:03:15 GMT</pubDate></item><item><title>Substitution is Sometimes a Failure</title><link>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgda1a411"&gt;
 &lt;p&gt;
 Why are optional::transform and optional::and_then not constrained by &lt;code&gt;invocable&lt;/code&gt;?
 &lt;/p&gt;
 
 &lt;/div&gt;
-&lt;div id="outline-container-org452148a" class="outline-2"&gt;
-&lt;h2 id="org452148a"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Optional "Monadic" Interface&lt;/h2&gt;
+
+&lt;!-- TEASER_END --&gt;
+&lt;div id="outline-container-orgfd1f7cb" class="outline-2"&gt;
+&lt;h2 id="orgfd1f7cb"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Optional "Monadic" Interface&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 &lt;a href="http://wg21.link/P0798"&gt;Monadic operations for std::optional&lt;/a&gt;
@@ -40,8 +238,8 @@ They don't work if you don't give them invocables, and rely on &lt;code&gt;invok
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-org95813d0" class="outline-2"&gt;
-&lt;h2 id="org95813d0"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; SFINAE is shallow&lt;/h2&gt;
+&lt;div id="outline-container-org8c7b2d9" class="outline-2"&gt;
+&lt;h2 id="org8c7b2d9"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; SFINAE is shallow&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 The problem is if another template has to be instantiated in order to evaluate the template of interest, and that template has an error, you get an error, not a substitution failure. And, it turns out, lambdas are a common source of the problem and a common case in real use.
@@ -156,8 +354,8 @@ If we constrain &lt;code&gt;transform&lt;/code&gt; we get the same errors as abo
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-org7a1b9db" class="outline-2"&gt;
-&lt;h2 id="org7a1b9db"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Constraints, what are they good for&lt;/h2&gt;
+&lt;div id="outline-container-org5976902" class="outline-2"&gt;
+&lt;h2 id="org5976902"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Constraints, what are they good for&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 Not absolutely nothing.
@@ -212,8 +410,8 @@ Constraints that let you control the choice of alternatives are wonderful, and r
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-orgd1b0868" class="outline-2"&gt;
-&lt;h2 id="orgd1b0868"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Can we do better?&lt;/h2&gt;
+&lt;div id="outline-container-org388d816" class="outline-2"&gt;
+&lt;h2 id="org388d816"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Can we do better?&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-4"&gt;
 &lt;p&gt;
 There are some notes in &lt;a href="https://wg21.link/P0798"&gt;P0798&lt;/a&gt; that suggest that Deducing This might help, &lt;a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0847r7.html"&gt;P0847&lt;/a&gt;.
@@ -260,67 +458,7 @@ With the tools we have today, it looks possible, but still slightly messy. I man
 If there were a &lt;code&gt;std::forward_like_t&lt;/code&gt;, it might be possible to reduce some of the noise in computing the value category used for the &lt;code&gt;T&lt;/code&gt;. I also have not thought extensively about if the requires clause is truly needed in light of the &lt;code&gt;invoke_result_&lt;/code&gt; that can now be used in the trailing return type.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</guid><pubDate>Fri, 28 Nov 2025 17:06:58 GMT</pubDate></item><item><title>Entry Fountain Pens</title><link>https://sdowney.org/posts/entry-fountain-pens/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgd12e55b"&gt;
-&lt;p&gt;
-A list of very good inexpensive fountain pens.
-&lt;/p&gt;
-
-&lt;/div&gt;
-
-&lt;!-- TEASER_END --&gt;
-
-&lt;p&gt;
-These are all pens I've bought and used myself, and for the most part continue to use. I also have more expensive, and fancier, pens. These are all well made and inexpensive not because they're terrible but because of the magic of mass production.
-&lt;/p&gt;
-&lt;div id="outline-container-orgb6213ad" class="outline-2"&gt;
-&lt;h2 id="orgb6213ad"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Disposable Pens&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-1"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org3655014" class="outline-3"&gt;
-&lt;h3 id="org3655014"&gt;&lt;span class="section-number-3"&gt;1.1.&lt;/span&gt; Pilot Varsity&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org6ccfdc0" class="outline-3"&gt;
-&lt;h3 id="org6ccfdc0"&gt;&lt;span class="section-number-3"&gt;1.2.&lt;/span&gt; Zebra Disposable&lt;/h3&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org51f732c" class="outline-2"&gt;
-&lt;h2 id="org51f732c"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Cartridge Pens&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-2"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orga57ec42" class="outline-3"&gt;
-&lt;h3 id="orga57ec42"&gt;&lt;span class="section-number-3"&gt;2.1.&lt;/span&gt; Pilot Kakuno&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org63d58c9" class="outline-3"&gt;
-&lt;h3 id="org63d58c9"&gt;&lt;span class="section-number-3"&gt;2.2.&lt;/span&gt; Platinum Preppy&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org7c9abf1" class="outline-3"&gt;
-&lt;h3 id="org7c9abf1"&gt;&lt;span class="section-number-3"&gt;2.3.&lt;/span&gt; Platinum Prefounte&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org4e30103" class="outline-3"&gt;
-&lt;h3 id="org4e30103"&gt;&lt;span class="section-number-3"&gt;2.4.&lt;/span&gt; Platinum Plaisir&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org5d822b7" class="outline-3"&gt;
-&lt;h3 id="org5d822b7"&gt;&lt;span class="section-number-3"&gt;2.5.&lt;/span&gt; Lamy Safari&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org6baedcb" class="outline-3"&gt;
-&lt;h3 id="org6baedcb"&gt;&lt;span class="section-number-3"&gt;2.6.&lt;/span&gt; Pilot Metropolitan&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org254fb62" class="outline-3"&gt;
-&lt;h3 id="org254fb62"&gt;&lt;span class="section-number-3"&gt;2.7.&lt;/span&gt; Pilot Prera&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org646798d" class="outline-3"&gt;
-&lt;h3 id="org646798d"&gt;&lt;span class="section-number-3"&gt;2.8.&lt;/span&gt; Hongdian Black Forest&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org375d6eb" class="outline-3"&gt;
-&lt;h3 id="org375d6eb"&gt;&lt;span class="section-number-3"&gt;2.9.&lt;/span&gt; Pilot Explorer&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org839647d" class="outline-3"&gt;
-&lt;h3 id="org839647d"&gt;&lt;span class="section-number-3"&gt;2.10.&lt;/span&gt; TWSBI Swipe&lt;/h3&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org2f6920c" class="outline-3"&gt;
-&lt;h3 id="org2f6920c"&gt;&lt;span class="section-number-3"&gt;2.11.&lt;/span&gt; Lamy Vista&lt;/h3&gt;
-&lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/entry-fountain-pens/</guid><pubDate>Sun, 19 Jan 2025 16:07:50 GMT</pubDate></item><item><title>Nikola Blog Infrastructure</title><link>https://sdowney.org/posts/nikola-blog-infrastructure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org334ae85"&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</guid><pubDate>Fri, 28 Nov 2025 17:06:58 GMT</pubDate></item><item><title>Nikola Blog Infrastructure</title><link>https://sdowney.org/posts/nikola-blog-infrastructure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org334ae85"&gt;
 &lt;p&gt;
 I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
 &lt;/p&gt;

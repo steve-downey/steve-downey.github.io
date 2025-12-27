@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>https://sdowney.org/</loc>
-  <lastmod>2025-01-19T16:27:00Z</lastmod>
+  <lastmod>2025-12-02T12:29:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/2004/</loc>
@@ -83,7 +83,7 @@
  </url>
  <url>
   <loc>https://sdowney.org/archive.html</loc>
-  <lastmod>2025-12-01T02:34:00Z</lastmod>
+  <lastmod>2025-12-27T19:02:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/categories/</loc>
@@ -135,7 +135,7 @@
  </url>
  <url>
   <loc>https://sdowney.org/index-9.html</loc>
-  <lastmod>2025-12-01T02:34:00Z</lastmod>
+  <lastmod>2025-12-27T19:02:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index.php/2004/09/08/test-mail-post/</loc>
@@ -642,8 +642,8 @@
   <lastmod>2024-12-16T00:26:00Z</lastmod>
  </url>
  <url>
-  <loc>https://sdowney.org/posts/entry-fountain-pens/</loc>
-  <lastmod>2025-01-19T16:27:00Z</lastmod>
+  <loc>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</loc>
+  <lastmod>2025-12-27T19:02:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/posts/hello-world/</loc>

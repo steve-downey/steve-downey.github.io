@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " vocab="http://ogp.me/ns" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>Building vcpkg dependencies with project toolchain | What Comes to Mind</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="../../assets/css/rst.min.css">
+<link rel="stylesheet" href="../../assets/css/foundation.min.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/modus-vivendi-tinted.css">
+<link href="../../assets/css/custom.css" rel="stylesheet" type="text/css">
+<meta content="#5670d4" name="theme-color">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="../../feed.atom">
+<link rel="canonical" href="https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Steve Downey">
+<link rel="prev" href="../substitution-is-sometimes-a-failure/" title="Substitution is Sometimes a Failure" type="text/html">
+<meta property="og:site_name" content="What Comes to Mind">
+<meta property="og:title" content="Building vcpkg dependencies with project toolchain">
+<meta property="og:url" content="https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/">
+<meta property="og:description" content="Making sure vcpkg delivers packages built with your toolchain is not hard, but much of the advice on the internet is flat wrong. You need to specify your toolchain both in your project and in the the ">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2025-12-27T12:03:15-05:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@sdowney.org">
+<meta name="twitter:creator" content="@sdowney">
+</head>
+<body>
+
+    
+
+    
+<div class="top-bar">
+<div class="top-bar-left">
+<ul class="menu">
+<li class="menu-text"><a href="https://sdowney.org/" title="What Comes to Mind" rel="home">What Comes to Mind</a></li>
+                <li><a href="../../archive.html">Archives</a></li>
+                <li><a href="../../categories/index.html">Tags</a></li>
+                <li><a href="mailto:sdowney@sdowney.dev"><i class="fa fa-envelope"></i></a></li>
+                <li><a href="https://github.com/steve-downey">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                <li><a href="https://mastodon.social/@Sdowney">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                <li><a href="https://bsky.app/profile/sdowney.bsky.social">Bluesky <i class="fa-brands fa-square-bluesky"></i></a></li>
+                <li><a href="../../feed.atom">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                <li><a href="../../rss.xml">RSS <i class="fa-solid fa-rss"></i></a></li>
+    
+    
+    </ul>
+</div>
+</div>
+
+    
+
+<div class="callout large primary">
+<div class="row column text-center">
+
+    <h1>Building vcpkg dependencies with project toolchain</h1>
+    <h2 class="subheader"><small>2025-12-27 12:03</small></h2>
+
+</div>
+</div>
+
+<div class="row medium-8 large-7 columns">
+
+<div class="blog-post">
+    
+    
+
+
+    <div class="abstract" id="orgd3f21f0">
+<p>
+Making sure vcpkg delivers packages built with your toolchain is not hard, but much of the advice on the internet is flat wrong. You need to specify your toolchain both in your project and in the the vcpkg <code>triplet</code>. There's an airgap between your project and the dependency in <code>vcpkg install</code>. The CMake settings can't just flow through.
+</p>
+
+</div>
+
+<!-- TEASER_END -->
+<div id="outline-container-org3754f4f" class="outline-2">
+<h2 id="org3754f4f">
+<span class="section-number-2">1.</span> Toolchain is more than just the compiler</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Inside a link context everything needs to use the same definitions for everything or your program breaks. If you are lucky it will fail to link. If you are unlucky it will link and explode at runtime. Or you might have the worst kind of undefined behavior–working the way you expect it to. For now.
+</p>
+
+<p>
+The <a href="https://eel.is/c++draft/basic#def.odr-16"><code>One Definition Rule</code></a> tries to say that all of the definitions in a program must mean the same thing. Using different flags for different translation units is a simple way of giving different meanings to definitions. This can range from preprocessor defines in the flags, to conditional compilation based on the compiler, or standard version, to subtle changes in meaning based on the standard version or other flags, such as the literal encoding to render characters and string constants into.
+</p>
+
+<p>
+The toolchain should encompass all of the ABI affecting flags, and most flags affect ABI, or at least codegen, in some way. Differing codegen, while not as dangerous as an ABI break, can still be an unpleasant surprise.
+</p>
+</div>
+</div>
+<div id="outline-container-orgc0c2baf" class="outline-2">
+<h2 id="orgc0c2baf">
+<span class="section-number-2">2.</span> Using a toolchain with <code>vcpkg</code> in-project</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+There are several techniques for using vcpkg for dependency management and specifying a toolchain to use for compilation of the artifacts in a project. For an open source project, the problem is generally how to do so without locking everyone into <code>vcpkg</code>. The current theory for CMake is to provide dependency provider hooks via CMAKE_PROJECT_TOP_LEVEL_INCLUDES, which are a list of files cmake will process before anything else, and in particular before the <code>project</code> statement. The Beman Project has a primitive dependency provider, <a href="https://github.com/bemanproject/infra/blob/main/cmake/use-fetch-content.cmake">use-fetch-content.cmake</a>, that converts <code>find_package</code> into <code>FetchContent</code> and downloads and builds from Git URLs. This is an alternative to vendoring dependencies in-tree directly using git submodules or git subtrees.
+</p>
+
+<p>
+As an aside, git submodules are like vice-grips–the wrong tool for every job.
+</p>
+
+<p>
+For <code>vcpkg</code>, you can integrate using the same mechanism, setting CMAKE_PROJECT_TOP_LEVEL_INCLUDES to $(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake. This is entirely in place of setting the CMAKE_TOOLCHAIN_FILE to vcpkg.cmake, including vcpkg.cmake in a local toolchain file, or using VCPKG_CHAINLOAD_TOOLCHAIN_FILE to instruct vcpkg.cmake to load a toolchain after processing the <code>triple</code> file.
+</p>
+
+<p>
+The initial configure will look something like:
+</p>
+<div class="org-src-container">
+<pre class="src src-shell">cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake <span class="org-sh-escaped-newline">\</span>
+      -DCMAKE_TOOLCHAIN_FILE=./etc/gcc-16-toolchain.cmake <span class="org-sh-escaped-newline">\</span>
+      -B .build -S .
+</pre>
+</div>
+
+<p>
+With the gcc-16 toolchain file looking something like:
+</p>
+<div class="org-src-container">
+<pre class="src src-cmake"><span class="org-function-name">include_guard</span>(GLOBAL)
+
+<span class="org-function-name">set</span>(CMAKE_C_COMPILER gcc-16)
+<span class="org-function-name">set</span>(CMAKE_CXX_COMPILER g++-16)
+<span class="org-function-name">set</span>(GCOV_EXECUTABLE <span class="org-string">"gcov-16"</span> CACHE STRING <span class="org-string">"GCOV executable"</span> FORCE)
+
+<span class="org-function-name">set</span>(CMAKE_CXX_STANDARD 26)
+
+<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS
+    <span class="org-string">"-Wall -Wextra -std=gnu++26 -Wno-maybe-uninitialized"</span>
+    CACHE STRING
+    <span class="org-string">"CXX_FLAGS"</span>
+    FORCE)
+
+<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_DEBUG
+    <span class="org-string">"-O0 -fno-inline -g3"</span>
+    CACHE STRING
+    <span class="org-string">"C++ DEBUG Flags"</span>
+    FORCE
+)
+<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_RELEASE
+    <span class="org-string">"-Ofast -g0 -DNDEBUG"</span>
+    CACHE STRING
+    <span class="org-string">"C++ Release Flags"</span>
+    FORCE
+)
+<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    <span class="org-string">"-O3 -g -DNDEBUG"</span>
+    CACHE STRING
+    <span class="org-string">"C++ RelWithDebInfo Flags"</span>
+    FORCE
+)
+<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_TSAN
+    <span class="org-string">"-O3 -g -fsanitize=thread"</span>
+    CACHE STRING
+    <span class="org-string">"C++ TSAN Flags"</span>
+    FORCE
+)
+<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_ASAN
+    <span class="org-string">"-O3 -g -fsanitize=address,undefined,leak"</span>
+    CACHE STRING
+    <span class="org-string">"C++ ASAN Flags"</span>
+    FORCE
+)
+
+<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_GCOV
+    <span class="org-string">"-O0 -fno-default-inline -fno-inline -g --coverage -fprofile-abs-path"</span>
+    CACHE STRING
+    <span class="org-string">"C++ GCOV Flags"</span>
+    FORCE
+)
+
+<span class="org-function-name">set</span>(CMAKE_LINKER_FLAGS_GCOV <span class="org-string">"--coverage"</span> CACHE STRING <span class="org-string">"Linker GCOV Flags"</span> FORCE)
+
+<span class="org-function-name">get_filename_component</span>(RPATH <span class="org-string">"~/.local/lib64"</span> ABSOLUTE)
+
+<span class="org-function-name">set</span>(CMAKE_EXE_LINKER_FLAGS
+    <span class="org-string">"-Wl,-rpath,${</span><span class="org-variable-name">RPATH</span><span class="org-string">}"</span>
+    CACHE STRING
+    <span class="org-string">"CMAKE_EXE_LINKER_FLAGS"</span>
+    FORCE
+)
+</pre>
+</div>
+
+<p>
+This provides CMake build types <code>DEBUG</code>, <code>RELEASE</code>, <code>RELWITHDEBINFO</code>, <code>TSAN</code>, <code>ASAN</code>, and <code>GCOV</code>, overriding the built-in default flags. It exports the coverage processor to use, picked up by my project, and adds rpath to the linked executable to where I have the gcc-16 libstdc++.so.6 installed. GCC recently bumped the <code>GLIBCXX</code> version number to 35, so it is no longer compatible with the system <code>libstdc++.so.6</code>.
+</p>
+
+<p>
+Note that it doesn't have any vcpkg variables or includes.
+</p>
+
+<p>
+Building with the <code>cmake</code> command line flags above will end up calling vcpkg for any packages mentioned in the <code>vcpkg.json</code> file and providing them to be found by <code>find_package</code> calls. It's not quite how a cmake dependency provider works, but functions very much the same. However, <code>vcpkg</code> will build dependencies the way the system <code>triple</code> defines things, which will be with the system compiler and default flags, and may be entirely incompatible with your project.
+</p>
+</div>
+</div>
+<div id="outline-container-org03fa23e" class="outline-2">
+<h2 id="org03fa23e">
+<span class="section-number-2">3.</span> Building Dependencies with your Toolchain.</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+The mechanism <code>vcpkg</code> provides for injecting a toolchain into a dependency is a custom <code>triple</code> that provides a VCPKG_CHAINLOAD_TOOLCHAIN_FILE. Because of the intermediate invocation of <code>vcpkg</code>, setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project does not affect how <code>vcpkg</code> builds or provides anything.
+</p>
+
+<p>
+We can, however, smuggle the variable we need through the environment.
+</p>
+
+<p>
+The custom <code>triple</code> I'm using, <code>x64-linux-custom.cmake</code>,  looks like:
+</p>
+<div class="org-src-container">
+<pre class="src src-cmake"><span class="org-function-name">set</span>(VCPKG_TARGET_ARCHITECTURE x64)
+<span class="org-function-name">set</span>(VCPKG_CRT_LINKAGE dynamic)
+<span class="org-function-name">set</span>(VCPKG_LIBRARY_LINKAGE static)
+
+<span class="org-function-name">set</span>(VCPKG_CMAKE_SYSTEM_NAME Linux)
+
+<span class="org-function-name">set</span>(VCPKG_CHAINLOAD_TOOLCHAIN_FILE <span class="org-string">"$ENV{PROJECT_VCPKG_TOOLCHAIN}"</span>)
+</pre>
+</div>
+
+<p>
+And I make sure to export PROJECT_VCPKG_TOOLCHAIN into the environment as part of my build. I use a Makefile to drive my project workflow, so it's straightforward to set and export. Other workflow mechanisms are an exercise for the reader.
+</p>
+
+<p>
+The cmake invocation picks up flags and environment:
+</p>
+<div class="org-src-container">
+<pre class="src src-shell"><span class="org-builtin">export</span> <span class="org-variable-name">PROJECT_VCPKG_TOOLCHAIN</span>=$(realpath ./etc/gcc-16-toolchain.cmake)
+cmake -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_VCPKG_TOOLCHAIN) <span class="org-sh-escaped-newline">\</span>
+      -DVCPKG_OVERLAY_TRIPLETS=$(realpath ./cmake) <span class="org-sh-escaped-newline">\</span>
+      -DVCPKG_TARGET_TRIPLET=x64-linux-custom <span class="org-sh-escaped-newline">\</span>
+      -B .build -S .
+</pre>
+</div>
+
+<p>
+With this, <code>vcpkg</code> will use the toolchain I specify to build dependencies. It also treats the VCPKG_CHAINLOAD_TOOLCHAIN_FILE as ABI significant for its build caching. This means that if you include other files into your toolchain, the contents of those files do not count. A small issue if you are using layered toolchain files, sharing some flags between them such as for gcc-15 vs gcc-16 in e.g. a gcc-flags.cmake file. But I also know switching between many compilers is a very minority use case.
+</p>
+</div>
+</div>
+<div id="outline-container-orgfc18b50" class="outline-2">
+<h2 id="orgfc18b50">
+<span class="section-number-2">4.</span> Someone is Wrong on the Internet</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+This took far longer to work out than it should because there is much advice that is flat out wrong.
+</p>
+
+<p>
+In particular from AI generated summaries and articles.
+</p>
+
+<p>
+Setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project or on the <code>cmake</code> command line <b>cannot</b> affect how <code>vcpkg</code> builds and retrieves dependencies.
+</p>
+
+<p>
+You must set a custom <code>triple</code> file that sets VCPKG_CHAINLOAD_TOOLCHAIN_FILE in order to use that CMake toolchain with <code>vcpkg</code>.
+</p>
+</div>
+</div>
+
+    <div class="callout">
+    <ul class="menu simple">
+<li>Author: Steve Downey</li>
+
+    </ul>
+</div>
+    
+
+    
+        <div class="column row">
+            <ul class="pagination" role="navigation" aria-label="Pagination">
+<li>
+                    <a href="../substitution-is-sometimes-a-failure/" rel="prev" title="Substitution is Sometimes a Failure">« <span class="show-for-sr">Previous post</span></a>
+                </li>
+            </ul>
+</div>
+
+    
+    
+
+
+</div>
+
+
+
+<hr>
+<footer id="footer"><p><small>Contents © 2025         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+ <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
+            
+        </footer>
+</div>
+
+    
+
+
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VGV27RDN3E');
+</script>
+</body>
+</html>
