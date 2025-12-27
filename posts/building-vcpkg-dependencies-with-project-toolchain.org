@@ -1,0 +1,166 @@
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:nil arch:headline author:t
+#+options: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+options: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:nil todo:t |:t
+#+options: html5-fancy:t
+#+TITLE: ~vcpkg~ and the Project Toolchain
+#+AUTHOR: Steve Downey
+#+EMAIL: sdowney@gmail.com
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+DESCRIPTION:
+#+KEYWORDS:
+#+SUBTITLE: The Two VCPKG_CHAINLOAD_TOOLCHAIN_FILE Uses
+#+DATE: {{{modification-time(%Y-%m-%d, VC)}}}
+#+STARTUP: showall
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:nil html-preamble:t
+#+OPTIONS: html-scripts:n html-style:nil html5-fancy:nil tex:t
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD:
+#+HTML_HEAD_EXTRA:
+#+SUBTITLE:
+#+INFOJS_OPT:
+
+#+begin_abstract
+Making sure vcpkg delivers packages built with your toolchain is not hard, but much of the advice on the internet is flat wrong. You need to specify your toolchain both in your project and in the the vcpkg ~triplet~. There's an airgap between your project and the dependency in ~vcpkg install~. The CMake settings can't just flow through.
+#+end_abstract
+
+{{{TEASER_END}}}
+
+* Toolchain is more than just the compiler
+Inside a link context everything needs to use the same definitions for everything or your program breaks. If you are lucky it will fail to link. If you are unlucky it will link and explode at runtime. Or you might have the worst kind of undefined behavior--working the way you expect it to. For now.
+
+The [[https://eel.is/c++draft/basic#def.odr-16][~One Definition Rule~]] tries to say that all of the definitions in a program must mean the same thing. Using different flags for different translation units is a simple way of giving different meanings to definitions. This can range from preprocessor defines in the flags, to conditional compilation based on the compiler, or standard version, to subtle changes in meaning based on the standard version or other flags, such as the literal encoding to render characters and string constants into.
+
+The toolchain should encompass all of the ABI affecting flags, and most flags affect ABI, or at least codegen, in some way. Differing codegen, while not as dangerous as an ABI break, can still be an unpleasant surprise.
+
+* Using a toolchain with ~vcpkg~ in-project
+There are several techniques for using vcpkg for dependency management and specifying a toolchain to use for compilation of the artifacts in a project. For an open source project, the problem is generally how to do so without locking everyone into ~vcpkg~. The current theory for CMake is to provide dependency provider hooks via CMAKE_PROJECT_TOP_LEVEL_INCLUDES, which are a list of files cmake will process before anything else, and in particular before the ~project~ statement. The Beman Project has a primitive dependency provider, [[https://github.com/bemanproject/infra/blob/main/cmake/use-fetch-content.cmake][use-fetch-content.cmake]], that converts ~find_package~ into ~FetchContent~ and downloads and builds from Git URLs. This is an alternative to vendoring dependencies in-tree directly using git submodules or git subtrees.
+
+As an aside, git submodules are like vice-grips--the wrong tool for every job.
+
+For ~vcpkg~, you can integrate using the same mechanism, setting CMAKE_PROJECT_TOP_LEVEL_INCLUDES to $(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake. This is entirely in place of setting the CMAKE_TOOLCHAIN_FILE to vcpkg.cmake, including vcpkg.cmake in a local toolchain file, or using VCPKG_CHAINLOAD_TOOLCHAIN_FILE to instruct vcpkg.cmake to load a toolchain after processing the ~triple~ file.
+
+The initial configure will look something like:
+#+begin_src shell
+cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake \
+      -DCMAKE_TOOLCHAIN_FILE=./etc/gcc-16-toolchain.cmake \
+      -B .build -S .
+#+end_src
+
+With the gcc-16 toolchain file looking something like:
+#+begin_src cmake
+include_guard(GLOBAL)
+
+set(CMAKE_C_COMPILER gcc-16)
+set(CMAKE_CXX_COMPILER g++-16)
+set(GCOV_EXECUTABLE "gcov-16" CACHE STRING "GCOV executable" FORCE)
+
+set(CMAKE_CXX_STANDARD 26)
+
+set(CMAKE_CXX_FLAGS
+    "-Wall -Wextra -std=gnu++26 -Wno-maybe-uninitialized"
+    CACHE STRING
+    "CXX_FLAGS"
+    FORCE)
+
+set(CMAKE_CXX_FLAGS_DEBUG
+    "-O0 -fno-inline -g3"
+    CACHE STRING
+    "C++ DEBUG Flags"
+    FORCE
+)
+set(CMAKE_CXX_FLAGS_RELEASE
+    "-Ofast -g0 -DNDEBUG"
+    CACHE STRING
+    "C++ Release Flags"
+    FORCE
+)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    "-O3 -g -DNDEBUG"
+    CACHE STRING
+    "C++ RelWithDebInfo Flags"
+    FORCE
+)
+set(CMAKE_CXX_FLAGS_TSAN
+    "-O3 -g -fsanitize=thread"
+    CACHE STRING
+    "C++ TSAN Flags"
+    FORCE
+)
+set(CMAKE_CXX_FLAGS_ASAN
+    "-O3 -g -fsanitize=address,undefined,leak"
+    CACHE STRING
+    "C++ ASAN Flags"
+    FORCE
+)
+
+set(CMAKE_CXX_FLAGS_GCOV
+    "-O0 -fno-default-inline -fno-inline -g --coverage -fprofile-abs-path"
+    CACHE STRING
+    "C++ GCOV Flags"
+    FORCE
+)
+
+set(CMAKE_LINKER_FLAGS_GCOV "--coverage" CACHE STRING "Linker GCOV Flags" FORCE)
+
+get_filename_component(RPATH "~/.local/lib64" ABSOLUTE)
+
+set(CMAKE_EXE_LINKER_FLAGS
+    "-Wl,-rpath,${RPATH}"
+    CACHE STRING
+    "CMAKE_EXE_LINKER_FLAGS"
+    FORCE
+)
+#+end_src
+
+This provides CMake build types ~DEBUG~, ~RELEASE~, ~RELWITHDEBINFO~, ~TSAN~, ~ASAN~, and ~GCOV~, overriding the built-in default flags. It exports the coverage processor to use, picked up by my project, and adds rpath to the linked executable to where I have the gcc-16 libstdc++.so.6 installed. GCC recently bumped the ~GLIBCXX~ version number to 35, so it is no longer compatible with the system ~libstdc++.so.6~.
+
+Note that it doesn't have any vcpkg variables or includes.
+
+Building with the ~cmake~ command line flags above will end up calling vcpkg for any packages mentioned in the ~vcpkg.json~ file and providing them to be found by ~find_package~ calls. It's not quite how a cmake dependency provider works, but functions very much the same. However, ~vcpkg~ will build dependencies the way the system ~triple~ defines things, which will be with the system compiler and default flags, and may be entirely incompatible with your project.
+
+* Building Dependencies with your Toolchain.
+The mechanism ~vcpkg~ provides for injecting a toolchain into a dependency is a custom ~triple~ that provides a VCPKG_CHAINLOAD_TOOLCHAIN_FILE. Because of the intermediate invocation of ~vcpkg~, setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project does not affect how ~vcpkg~ builds or provides anything.
+
+We can, however, smuggle the variable we need through the environment.
+
+The custom ~triple~ I'm using, ~x64-linux-custom.cmake~,  looks like:
+#+begin_src cmake
+set(VCPKG_TARGET_ARCHITECTURE x64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
+
+set(VCPKG_CMAKE_SYSTEM_NAME Linux)
+
+set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "$ENV{PROJECT_VCPKG_TOOLCHAIN}")
+#+end_src
+
+And I make sure to export PROJECT_VCPKG_TOOLCHAIN into the environment as part of my build. I use a Makefile to drive my project workflow, so it's straightforward to set and export. Other workflow mechanisms are an exercise for the reader.
+
+The cmake invocation picks up flags and environment:
+#+begin_src shell
+export PROJECT_VCPKG_TOOLCHAIN=$(realpath ./etc/gcc-16-toolchain.cmake)
+cmake -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_VCPKG_TOOLCHAIN) \
+      -DVCPKG_OVERLAY_TRIPLETS=$(realpath ./cmake) \
+      -DVCPKG_TARGET_TRIPLET=x64-linux-custom \
+      -B .build -S .
+#+end_src
+
+With this, ~vcpkg~ will use the toolchain I specify to build dependencies. It also treats the VCPKG_CHAINLOAD_TOOLCHAIN_FILE as ABI significant for its build caching. This means that if you include other files into your toolchain, the contents of those files do not count. A small issue if you are using layered toolchain files, sharing some flags between them such as for gcc-15 vs gcc-16 in e.g. a gcc-flags.cmake file. But I also know switching between many compilers is a very minority use case.
+
+* Someone is Wrong on the Internet
+This took far longer to work out than it should because there is much advice that is flat out wrong.
+
+In particular from AI generated summaries and articles.
+
+Setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project or on the ~cmake~ command line *cannot* affect how ~vcpkg~ builds and retrieves dependencies.
+
+You must set a custom ~triple~ file that sets VCPKG_CHAINLOAD_TOOLCHAIN_FILE in order to use that CMake toolchain with ~vcpkg~.
