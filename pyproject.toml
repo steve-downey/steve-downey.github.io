@@ -8,8 +8,9 @@ dependencies = []
 
 [dependency-groups]
 dev = [
-    "cmake==4.2.1",
-    "clang-format==18.1.8",
-    "pre-commit>=3.7.1",
-    "Nikola[extras]"
+  "cmake==4.2.1",
+  "clang-format==18.1.8",
+  "pre-commit>=3.7.1",
+  "Nikola[extras]",
+  "google-yamlfmt"
 ]
