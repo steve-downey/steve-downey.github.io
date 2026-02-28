@@ -12,4 +12,3 @@ Author = Puneeth Chaganti
 Version = 0.3
 Website = http://plugins.getnikola.com/#orgmode
 Description = Compile org-mode markup into HTML using emacs.
-
