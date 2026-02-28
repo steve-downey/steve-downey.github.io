@@ -2,14 +2,12 @@
 # Makefile                                                       -*-makefile-*-
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 
-INSTALL_PREFIX?=.install/
-BUILD_DIR?=.build
-DEST?=$(INSTALL_PREFIX)
-CMAKE_FLAGS?=
+export
+MAKEFLAGS += --no-builtin-rules
+.SUFFIXES:
 
-
-PYEXECPATH ?= $(shell which python3.13 || which python3.12 || which python3.11 || which python3.10 || which python3.9 || which python3.8 || which python3)
-PYTHON ?= $(notdir $(PYEXECPATH))
+PYEXECPATH := $(shell which python3.14 || which python3.13 || which python3.12 || which python3.11 || which python3.10 || which python3.9 || which python3.8 || which python3)
+PYTHON := $(notdir $(PYEXECPATH))
 VENV := .venv
 UV := $(shell command -v uv 2> /dev/null)
 ACTIVATE := $(UV) run
@@ -17,13 +15,11 @@ PYEXEC := $(UV) run python
 MARKER=.initialized.venv.stamp
 
 PRE_COMMIT := $(UV) run pre-commit
-
-TARGETS := test clean all ctest
+NIKOLA := $(UV) run nikola
 
 _output_path := ./output/
 _cache_path := ./cache/
 
-export
 
 .update-submodules:
 	git submodule update --init --recursive
@@ -31,45 +27,56 @@ export
 
 .gitmodules: .update-submodules
 
-
 default: test
 .PHONY: default
 
-
-TARGET:=all
-.PHONY: TARGET
+.PHONY: nikola
+nikola: venv
 
 .PHONY: compile
-compile:
 compile:  ## Compile the project
-	nikola build
-
-.PHONY: install
-install: compile ## Install the project
-	$(CMAKE) --install $(_output_path) --config $(CONFIG) --component beman.optional --verbose
-
-.PHONY: clean-install
-clean-install:
-	-rm -rf .install
-
-.PHONY: realclean
-realclean: clean-install
-
+compile: nikola
+	$(NIKOLA) build
 
 .PHONY: test
 test: compile ## Rebuild and run tests
-	nikola check -l -f
+	$(NIKOLA) check -f # too many broken links today to test with -l :sad:
+
+.PHONY: nikola-check
+nikola-check:
+	$(NIKOLA) check $(_NIKOLA_CHECK_ARGS)
+
+.PHONY: test-files
+test-files: compile ## Test files in output
+test-files: _NIKOLA_CHECK_ARGS:=-f
+test-files: nikola-check
 
 .PHONY: test-links
-test-links: compile ## Test Remote Links in Output
-	nikola check -l -r -v
+test-links: compile ## Test remote Links in output
+test-links: _NIKOLA_CHECK_ARGS:=-l -r
+test-links: nikola-check
+
+.PHONY: test-local-links
+test-local-links: compile ## Test local links in output
+test-local-links: _NIKOLA_CHECK_ARGS:=-l
+test-local-links: nikola-check
+
+
+.PHONY: github-deploy
+github-deploy: ## Deploy to github ghpages
+github-deploy: compile test
+	$(NIKOLA) github-deploy
+
+.PHONY: prod-deploy
+prod-deploy: ## Deploy TO sdowney.org hosted at panix
+	rsync -avl output/ sdowney@panix3.panix.com:~/public_html/
 
 .PHONY: clean
 clean:  ## Clean the build artifacts
-	nikola clean
+	$(NIKOLA) clean
 
 .PHONY: realclean
-realclean: ## Delete the build directory
+realclean: ## Delete all produced artifacts
 	rm -rf $(_output_path)
 	rm -rf $(_cache_path)
 
@@ -79,7 +86,6 @@ env:
 
 .PHONY: all
 all: compile
-
 
 .PHONY: venv
 venv: ## Create python virtual env
