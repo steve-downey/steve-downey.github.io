@@ -1,4 +1,4 @@
-;; Init file to use with the orgmode plugin.
+;; Init file to use with the orgmode plugin.  -*- lexical-binding: t; -*-
 
 ;; Load org-mode
 
