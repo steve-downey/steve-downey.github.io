@@ -6,3 +6,7 @@ output
 .doit.db*
 .venv
 nikolaserve.pid
+/plugins/orgmode/eln-cache/
+/plugins/orgmode/elpa-*/
+/plugins/orgmode/elpa/
+/uv.lock
