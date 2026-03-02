@@ -12,18 +12,18 @@
 <div id="outline-container-orgheadline1" class="outline-2">
 <h2 id="orgheadline1"><span class="section-number-2">1</span> Why notes</h2>
 <div class="outline-text-2" id="text-1">
- Making notes so I don't forget, although the key problem is fixed upstream. 
+ Making notes so I don't forget, although the key problem is fixed upstream.
 
- Ubuntu 16.10 (Yakkety Yak) has made a critical change to the system compiler, and everything is by default built with position independent executable support (PIE), in order to get better support for address space layout randomization. Here are the security notes for <a href="https://wiki.ubuntu.com/SecurityTeam/PIE">PIE</a>. Emacs does not dump successfully with this. The compiler option -no-pie needs to be added into CLFAGS. 
+ Ubuntu 16.10 (Yakkety Yak) has made a critical change to the system compiler, and everything is by default built with position independent executable support (PIE), in order to get better support for address space layout randomization. Here are the security notes for <a href="https://wiki.ubuntu.com/SecurityTeam/PIE">PIE</a>. Emacs does not dump successfully with this. The compiler option -no-pie needs to be added into CLFAGS.
 
- The option also means that static libraries you've built before will probably need to be rebuilt. See the link above for typical errors. 
+ The option also means that static libraries you've built before will probably need to be rebuilt. See the link above for typical errors.
 </div>
 </div>
 
 <div id="outline-container-orgheadline2" class="outline-2">
 <h2 id="orgheadline2"><span class="section-number-2">2</span> Getting Ready</h2>
 <div class="outline-text-2" id="text-2">
- First get dpkg-dev, g++, gcc, libc, make: 
+ First get dpkg-dev, g++, gcc, libc, make:
 
 <div class="org-src-container">
 
@@ -31,7 +31,7 @@
 </pre>
 </div>
 
- Then get the full set of build dependencies for last emacs, emacs24: 
+ Then get the full set of build dependencies for last emacs, emacs24:
 
 <div class="org-src-container">
 
@@ -39,7 +39,7 @@
 </pre>
 </div>
 
- Decide if you want to build just this version, or track emacs. I track from git, because. So I have a directory for emacs where I have master, emacs25, and build directories. I try to avoid building in src dirs. It makes it easier to try out different options without polluting the src. 
+ Decide if you want to build just this version, or track emacs. I track from git, because. So I have a directory for emacs where I have master, emacs25, and build directories. I try to avoid building in src dirs. It makes it easier to try out different options without polluting the src.
 
 <div class="org-src-container">
 
@@ -58,7 +58,7 @@ mkdir bld-25.1
 <div id="outline-container-orgheadline3" class="outline-2">
 <h2 id="orgheadline3"><span class="section-number-2">3</span> Configure and build with magic option</h2>
 <div class="outline-text-2" id="text-3">
- Now configure in the build directory: 
+ Now configure in the build directory:
 
 <div class="org-src-container">
 
@@ -71,9 +71,9 @@ mkdir bld-25.1
 </pre>
 </div>
 
- I built with xwidget support to play with the embedded webkit widget. It's not really useable as a browser, but has uses for rendering. I also install into a local program directory, under my homedir. 
+ I built with xwidget support to play with the embedded webkit widget. It's not really usable as a browser, but has uses for rendering. I also install into a local program directory, under my homedir.
 
- Build and install: 
+ Build and install:
 
 <div class="org-src-container">
 
@@ -82,7 +82,7 @@ make install
 </pre>
 </div>
 
- I have a bin directory early in $PATH so that I can select versions of local software ahead of system software. 
+ I have a bin directory early in $PATH so that I can select versions of local software ahead of system software.
 
 <div class="org-src-container">
 
@@ -92,6 +92,6 @@ ln -s ~/install/emacs-25.1/bin/emacsclient
 </pre>
 </div>
 
- Now you should have a working emacs 25.1 available. 
+ Now you should have a working emacs 25.1 available.
 </div>
 </div></body></html>

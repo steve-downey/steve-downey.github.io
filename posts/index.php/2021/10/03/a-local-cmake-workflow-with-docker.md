@@ -7,7 +7,7 @@
 <div id="outline-container-orge73d9dc" class="outline-2">
 <h2 id="orge73d9dc">Routine process should be automated</h2>
 <div class="outline-text-2" id="text-orge73d9dc">
-<p> Building a project that uses cmake runs through a predictable lifecycle that you should be able to pick up where you left off without remembering, and for which you should be able to state your goal, not the step you are on. <code>make</code> is designed for this, and can drive the processs. </p>
+<p> Building a project that uses cmake runs through a predictable lifecycle that you should be able to pick up where you left off without remembering, and for which you should be able to state your goal, not the step you are on. <code>make</code> is designed for this, and can drive the process. </p>
 </div>
 
 <!-- TEASER_END -->
@@ -21,7 +21,7 @@
 <li>Run cmake with that toolchain in the build area</li>
 <li>Run the build in the build area</li>
 <li>Run tests, either dependent or independent of rebuild</li>
-<li>Run the intall</li>
+<li>Run the install</li>
 <li>(optionally) Clean the build</li>
 <li>(optionally) Clean the configuration</li>
 </ul>
@@ -102,9 +102,9 @@
 <div id="outline-container-orgd013026" class="outline-2">
 <h2 id="orgd013026">To Docker or Not to Docker</h2>
 <div class="outline-text-2" id="text-orgd013026">
-<p> The reason for the separate <code>targets.mk</code> file is to simplify running the build purely locally in the host, or in a docker containter. The structure of the build is the same either way. In fact, before I dockerized this template project, there was a single makefile which was mostly the current contents of targets.mk. However, splitting does make the template easier, as project specific targets can naturally be placed in <code>targets</code>. </p>
+<p> The reason for the separate <code>targets.mk</code> file is to simplify running the build purely locally in the host, or in a docker container. The structure of the build is the same either way. In fact, before I dockerized this template project, there was a single makefile which was mostly the current contents of targets.mk. However, splitting does make the template easier, as project specific targets can naturally be placed in <code>targets</code>. </p>
 
-<p> Tha outer <code>Makefile</code> is responsible for checking if Docker has been requested and for making sure the container is ready. The makefile has a handful of targets of its own, but otherwide defers everything to <code>targets.mk</code>. </p>
+<p> The outer <code>Makefile</code> is responsible for checking if Docker has been requested and for making sure the container is ready. The makefile has a handful of targets of its own, but otherwide defers everything to <code>targets.mk</code>. </p>
 
 <dl class="org-dl">
 <dt>use-docker</dt><dd>set a flag file, USE_DOCKER_FILE, indicating to forward to docker</dd>
@@ -124,9 +124,9 @@
 
 <p> The intent of the image is to provide compilation services and operate as an lsp server using clangd. Mine doesn't provide X, editors, IDEs, etc. The intent isn't a VM, it's a controlled compiler installation. </p>
 
-<p> Compiler installations bleed in to each other. Mutliple compilers installed onto the same base system can't be assumed to behave the same way as a compier installed as the only compiler. The ABI libraries vary, as do the standard libaries. Deployment just makes this all an even worse problem. As a Rule I use for production Red Hat's DTS compilers and only deploy on later OSs than I've built on, with strict controls on OS deployments and statically linking everything I possibly can. </p>
+<p> Compiler installations bleed in to each other. Multiple compilers installed onto the same base system can't be assumed to behave the same way as a compiler installed as the only compiler. The ABI libraries vary, as do the standard libraries. Deployment just makes this all an even worse problem. As a Rule I use for production Red Hat's DTS compilers and only deploy on later OSs than I've built on, with strict controls on OS deployments and statically linking everything I possibly can. </p>
 
-<p> The base image I am using here, steve-downey/cxx-dev, works for me, and is avaiable at <a href="https://github.com/steve-downey/docker-cxx-dev">https://github.com/steve-downey/docker-cxx-dev</a> as a definition as well. </p>
+<p> The base image I am using here, steve-downey/cxx-dev, works for me, and is available at <a href="https://github.com/steve-downey/docker-cxx-dev">https://github.com/steve-downey/docker-cxx-dev</a> as a definition as well. </p>
 
 <p> It is based on current Ubuntu (jammy), installs gcc-12 from the ubuntu repositories, adds the LLVM repos and installs clang-14 from them based on how <a href="https://apt.llvm.org/llvm.sh">https://apt.llvm.org/llvm.sh</a> does. </p>
 
