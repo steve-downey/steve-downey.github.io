@@ -30,8 +30,11 @@ _cache_path := ./cache/
 default: test
 .PHONY: default
 
+wg21.bib:
+	curl https://wg21.link/index.bib > wg21.bib
+
 .PHONY: nikola
-nikola: venv
+nikola: venv wg21.bib
 
 .PHONY: compile
 compile:  ## Compile the project
