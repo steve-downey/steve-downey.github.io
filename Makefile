@@ -68,7 +68,7 @@ test-local-links: nikola-check
 .PHONY: github-deploy
 github-deploy: ## Deploy to github ghpages
 github-deploy: compile test
-	$(NIKOLA) github-deploy
+	$(NIKOLA) github_deploy
 
 .PHONY: prod-deploy
 prod-deploy: ## Deploy TO sdowney.org hosted at panix
