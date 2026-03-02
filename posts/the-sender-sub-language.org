@@ -27,7 +27,8 @@
 #+HTML_HEAD_EXTRA:
 #+SUBTITLE:
 #+INFOJS_OPT:
-#+MACRO: TEASER_END  "#+HTML:<!-- TEASER_END -->"
+#+MACRO: TEASER_END #+HTML:<!-- TEASER_END -->
+
 
 
 #+begin_abstract
@@ -35,7 +36,6 @@ The paper [[http://wg21.link/P4014R0][The Sender Sub-Language]] by Vinnie Falco 
 
 Nonetheless, we come to different overall conclusions about the Sender/Receiver framework.
 
-This post gathers together the new papers I found of interest and what I was investigating and concluding in my 2023 research about the sender framework.
 #+end_abstract
 
 {{{TEASER_END}}}
@@ -61,17 +61,16 @@ The papers which I am looking at
 These quotes are drawn from their respective papers to provide context.
 ** P2583R0: Symmetric Transfer and Sender Composition
 *** Abstract
-C++20 provides symmetric transfer ([[https://wg21.link/P0913R1][P0913R1]]) - a mechanism where await_suspend returns acoroutine_handle<> and the compiler resumes the designated coroutine as a tail call. Coroutine chains execute in constant stack space. std::execution ([[https://wg21.link/P2300R10][P2300R10]]) composes asynchronous operations through sender algorithms. These algorithms create receivers that are structs, not coroutines. No coroutine_handle<> exists at any intermediate point in a sender pipeline. When a coroutine co_await s a sender that completes synchronously, the stack grows by one frame per completion. [[https://wg21.link/P3552R3][P3552R3]]’s std::execution::task inherits this property. The sender model’s zero-allocation composition property and symmetric transfer’s constant-stack property cannot both be satisfied. One requires structs. The other requires coroutines. This paper describes the mechanism, provides implementation experience, and documents the tradeoff.
+C++20 provides symmetric transfer ([[https://wg21.link/P0913R1][P0913R1]]) - a mechanism where ~await_suspend~ returns a ~coroutine_handle<>~ and the compiler resumes the designated coroutine as a tail call. Coroutine chains execute in constant stack space. ~std::execution~ ([[https://wg21.link/P2300R10][P2300R10]]) composes asynchronous operations through sender algorithms. These algorithms create receivers that are structs, not coroutines. No ~coroutine_handle<>~ exists at any intermediate point in a sender pipeline. When a coroutine ~co_await~ s a sender that completes synchronously, the stack grows by one frame per completion. [[https://wg21.link/P3552R3][P3552R3]]’s ~std::execution::task~ inherits this property. The sender model’s zero-allocation composition property and symmetric transfer’s constant-stack property cannot both be satisfied. One requires structs. The other requires coroutines. This paper describes the mechanism, provides implementation experience, and documents the tradeoff.
 
 ** P4003R0: Coroutines for I/O
 *** Abstract
-C++20 coroutines have five properties that, taken together, make them uniquely suited to asynchronous I/O: type erasure through coroutine_handle<> , customization through promise_type , stackless independentlyresumable frames, symmetric transfer through await_suspend , and compiler-managed state that persists across suspension points. Each was designed for generality. Their conjunction yields something no single property suggests: the optimal basis for byte-oriented I/O.
+C++20 coroutines have five properties that, taken together, make them uniquely suited to asynchronous I/O: type erasure through ~coroutine_handle<>~ , customization through promise_type , stackless independently resumable frames, symmetric transfer through await_suspend , and compiler-managed state that persists across suspension points. Each was designed for generality. Their conjunction yields something no single property suggests: the optimal basis for byte-oriented I/O.
 
 We used C++20 coroutines directly for I/O - timers, sockets, DNS, TLS, HTTP - and observed what the language already provides. The protocol that emerged is the IoAwaitable: a system for associating a coroutine with an executor, stop token, and frame allocator, and  propagating this context forward through a coroutine chain to the operating system API boundary where asynchronous operations are performed.
 
 *** Suggested Straw Polls
 SG4 polled at Kona (November 2023) on [[https://wg21.link/P2762R2][P2762R2]] “Sender/Receiver Interface For Networking”
-[9]
 #+begin_quote
 “Networking should support only a sender/receiver model for asynchronous operations; the
 Networking TS’s executor model should be removed”
@@ -89,7 +88,7 @@ Poll 2. New research into coroutine-native I/O, not available at the time of the
 
 ** P4007R0: Senders and Coroutines
 *** Abstract
-std::execution serves its domain well. Different asynchronous domains have different costs, and a single model cannot minimize all of them simultaneously. This paper identifies four structural gaps where the sender model meets coroutines: three at the boundary - error reporting, error returns, and frame allocator propagation - and one inside the composition mechanism - the symmetric transfer gap documented in [[https://wg21.link/P2583R0][P2583R0]]. Each gap is the cost of a property the sender model requires for compile-time analysis ([[https://wg21.link/P2300R10][P2300R10]], [[https://wg21.link/P4014R0][P4014R0]] ). They are not design defects, they are tradeoffs. Mandating that standard networking be built on the sender model would force coroutine I/O users to pay these costs. A coroutine-native I/O research report ([[https://wg21.link/P4003R0][P4003R0]]) made the gaps visible by showing that partial results, error returns, cancellation, and frame allocator propagation emerge naturally when I/O is designed for coroutines. The findings hold regardless of that report’s specific design. This paper recommends: ship std::execution for C++26, defer task ([[https://wg21.link/P3552R3][P3552R3]], “Add a Coroutine Task Type”) to C++29, and explore coroutine-native I/O designs alongside sender-based designs.
+~std::execution~ serves its domain well. Different asynchronous domains have different costs, and a single model cannot minimize all of them simultaneously. This paper identifies four structural gaps where the sender model meets coroutines: three at the boundary - error reporting, error returns, and frame allocator propagation - and one inside the composition mechanism - the symmetric transfer gap documented in [[https://wg21.link/P2583R0][P2583R0]]. Each gap is the cost of a property the sender model requires for compile-time analysis ([[https://wg21.link/P2300R10][P2300R10]], [[https://wg21.link/P4014R0][P4014R0]] ). They are not design defects, they are tradeoffs. Mandating that standard networking be built on the sender model would force coroutine I/O users to pay these costs. A coroutine-native I/O research report ([[https://wg21.link/P4003R0][P4003R0]]) made the gaps visible by showing that partial results, error returns, cancellation, and frame allocator propagation emerge naturally when I/O is designed for coroutines. The findings hold regardless of that report’s specific design. This paper recommends: ship ~std::execution~ for C++26, defer task ([[https://wg21.link/P3552R3][P3552R3]], “Add a Coroutine Task Type”) to C++29, and explore coroutine-native I/O designs alongside sender-based designs.
 
 *** Suggested Straw Polls
 1. “I/O completions that carry both an error code and a byte count present a design challenge for the three-channel completion model.”
@@ -98,7 +97,7 @@ std::execution serves its domain well. Different asynchronous domains have diffe
 
 ** P4014R0: The Sender Sub-Language
 *** Abstract
-C++26 introduces a rich sub-language for asynchronous programming through std::execution (P2300R10) [1]. Sender pipelines replace C++’s control flow, variable binding, error handling, and iteration with library-level equivalents rooted in continuation-passing style and monadic composition. This paper is a guide to the Sender SubLanguage: its theoretical foundations, the programming model it provides, and the engineering trade-offs it makes. The trade-offs serve specific domains well. The question is whether other domains deserve the same freedom to choose the model that serves them.
+C++26 introduces a rich sub-language for asynchronous programming through ~std::execution~ (P2300R10) . Sender pipelines replace C++’s control flow, variable binding, error handling, and iteration with library-level equivalents rooted in continuation-passing style and monadic composition. This paper is a guide to the Sender SubLanguage: its theoretical foundations, the programming model it provides, and the engineering trade-offs it makes. The trade-offs serve specific domains well. The question is whether other domains deserve the same freedom to choose the model that serves them.
 
 *** Suggested Straw Polls
 1. “ std::execution serves coroutine-driven async I/O less ideally than heterogeneous compute.”
@@ -132,3 +131,6 @@ A sender is somewhat more difficult, as it is new so there is less documentation
 My question was not, what is missing that can be added. That is self evidently lots of things. We are still adding range algorithms and new ranges after years of work and more are in the pipeline for C++29 already. My question was, can real applications be created with nothing more than what is easily available in senders, and can an application programmer who does not wish to create a sender today, still deliver a sender graph of async work.
 
 That was, and is, clearly, to me, yes.
+
+
+Exported: {{{time(%Y-%m-%d %T)}}}

@@ -21,6 +21,8 @@
 (setq use-package-always-ensure t)
 (setq use-package-compute-statistics t)
 
+(use-package citeproc)
+
 (use-package org
   :commands (org-mode)
   :mode (("\\.org\\'" . org-mode))
