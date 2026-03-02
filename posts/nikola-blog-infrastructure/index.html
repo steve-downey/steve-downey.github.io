@@ -79,7 +79,7 @@ Nikola is a static site generator written in python. It's mostly boring, which i
     
 
 
-    <div class="abstract" id="org334ae85">
+    <div class="abstract" id="orge4ae46e">
 <p>
 I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
 </p>
@@ -87,8 +87,8 @@ I've migrated from WordPress to a static blog generator–Nikola. This is how it
 </div>
 
 <!-- TEASER_END -->
-<div id="outline-container-org71ed231" class="outline-2">
-<h2 id="org71ed231">
+<div id="outline-container-orgbb78d42" class="outline-2">
+<h2 id="orgbb78d42">
 <span class="section-number-2">1.</span> Nikola</h2>
 <div class="outline-text-2" id="text-1">
 <p>
@@ -108,28 +108,28 @@ Conversion was straightforward using the tools that Nikola provided and <a href=
 </p>
 </div>
 </div>
-<div id="outline-container-orgad64039" class="outline-2">
-<h2 id="orgad64039">
+<div id="outline-container-orgda2d485" class="outline-2">
+<h2 id="orgda2d485">
 <span class="section-number-2">2.</span> Orgmode plugin</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Pulling a plugin into my working site was easy
 </p>
 <div class="org-src-container">
-<pre class="src src-zsh">nikola plugin -i orgmode
-</pre>
+<pre class="src src-zsh"><code>nikola plugin -i orgmode
+</code></pre>
 </div>
 <p>
 copied the code from <a href="https://github.com/getnikola/plugins/tree/master/v8/orgmode">https://github.com/getnikola/plugins/tree/master/v8/orgmode</a> and I just had to update the main configuration file, <code>conf.py</code>, to map org files to the orgmode compiler.
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span class="org-variable-name">COMPILERS</span> <span class="org-operator">=</span> {
+<pre class="src src-python"><code><span class="org-variable-name">COMPILERS</span> <span class="org-operator">=</span> {
     <span class="org-string">"rest"</span>: [<span class="org-string">'.txt'</span>, <span class="org-string">'.rst'</span>],
     <span class="org-string">"markdown"</span>: [<span class="org-string">'.md'</span>, <span class="org-string">'.mdown'</span>, <span class="org-string">'.markdown'</span>],
     <span class="org-string">"html"</span>: [<span class="org-string">'.html'</span>, <span class="org-string">'.htm'</span>],
     <span class="org-string">"orgmode"</span>: [<span class="org-string">'.org'</span>],
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -137,8 +137,8 @@ I then updated the source code for the elisp html exporter using code from <a hr
 </p>
 </div>
 </div>
-<div id="outline-container-orgfd56a24" class="outline-2">
-<h2 id="orgfd56a24">
+<div id="outline-container-org0727f4a" class="outline-2">
+<h2 id="org0727f4a">
 <span class="section-number-2">3.</span> LaTeX support via KaTeX</h2>
 <div class="outline-text-2" id="text-3">
 <p>
@@ -150,10 +150,10 @@ Or in running text where I want to mention \[ \frac{-b \pm \sqrt{b^2 - 4 a c}}{2
 It does mean I don't have access to latex blocks like
 </p>
 <div class="org-src-container">
-<pre class="src src-latex"><span class="org-font-latex-sedate"><span class="org-keyword">\begin</span></span>{<span class="org-function-name">equation</span>}<span class="org-font-latex-math">
-  n</span><span class="org-font-latex-math"><span class="org-font-latex-script-char">_{i+1}</span></span><span class="org-font-latex-math"> = </span><span class="org-font-latex-sedate"><span class="org-font-latex-math">\frac</span></span><span class="org-font-latex-math">{n</span><span class="org-font-latex-math"><span class="org-font-latex-script-char">_{i}</span></span><span class="org-font-latex-math"> (d-i) (e-1)}{(i+1)}
-</span><span class="org-font-latex-sedate"><span class="org-keyword">\end</span></span>{<span class="org-function-name">equation</span>}
-</pre>
+<pre class="src src-latex"><code><span class="org-keyword">\begin</span>{<span class="org-function-name">equation</span>}
+  n_{i+1} = <span class="org-keyword">\frac</span>{n_{i} (d-i) (e-1)}{(i+1)}
+<span class="org-keyword">\end</span>{<span class="org-function-name">equation</span>}
+</code></pre>
 </div>
 
 <p>
@@ -204,7 +204,7 @@ delimiters: [
                     }
                 );
             </script><hr>
-<footer id="footer"><p><small>Contents © 2025         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+<footer id="footer"><p><small>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
  <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
  <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
             

@@ -16,6 +16,7 @@
 <link rel="canonical" href="https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/">
 <!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Steve Downey">
 <link rel="prev" href="../substitution-is-sometimes-a-failure/" title="Substitution is Sometimes a Failure" type="text/html">
+<link rel="next" href="../the-sender-sub-language/" title="The Sender Sub-Language" type="text/html">
 <meta property="og:site_name" content="What Comes to Mind">
 <meta property="og:title" content="Building vcpkg dependencies with project toolchain">
 <meta property="og:url" content="https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/">
@@ -67,7 +68,7 @@
     
 
 
-    <div class="abstract" id="orgd3f21f0">
+    <div class="abstract" id="org311b0dc">
 <p>
 Making sure vcpkg delivers packages built with your toolchain is not hard, but much of the advice on the internet is flat wrong. You need to specify your toolchain both in your project and in the the vcpkg <code>triplet</code>. There's an airgap between your project and the dependency in <code>vcpkg install</code>. The CMake settings can't just flow through.
 </p>
@@ -75,8 +76,8 @@ Making sure vcpkg delivers packages built with your toolchain is not hard, but m
 </div>
 
 <!-- TEASER_END -->
-<div id="outline-container-org3754f4f" class="outline-2">
-<h2 id="org3754f4f">
+<div id="outline-container-org2322169" class="outline-2">
+<h2 id="org2322169">
 <span class="section-number-2">1.</span> Toolchain is more than just the compiler</h2>
 <div class="outline-text-2" id="text-1">
 <p>
@@ -92,8 +93,8 @@ The toolchain should encompass all of the ABI affecting flags, and most flags af
 </p>
 </div>
 </div>
-<div id="outline-container-orgc0c2baf" class="outline-2">
-<h2 id="orgc0c2baf">
+<div id="outline-container-orgb2eab37" class="outline-2">
+<h2 id="orgb2eab37">
 <span class="section-number-2">2.</span> Using a toolchain with <code>vcpkg</code> in-project</h2>
 <div class="outline-text-2" id="text-2">
 <p>
@@ -112,79 +113,79 @@ For <code>vcpkg</code>, you can integrate using the same mechanism, setting CMAK
 The initial configure will look something like:
 </p>
 <div class="org-src-container">
-<pre class="src src-shell">cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake <span class="org-sh-escaped-newline">\</span>
+<pre class="src src-shell"><code>cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake <span class="org-sh-escaped-newline">\</span>
       -DCMAKE_TOOLCHAIN_FILE=./etc/gcc-16-toolchain.cmake <span class="org-sh-escaped-newline">\</span>
       -B .build -S .
-</pre>
+</code></pre>
 </div>
 
 <p>
 With the gcc-16 toolchain file looking something like:
 </p>
 <div class="org-src-container">
-<pre class="src src-cmake"><span class="org-function-name">include_guard</span>(GLOBAL)
+<pre class="src src-cmake"><code>include_guard(GLOBAL)
 
-<span class="org-function-name">set</span>(CMAKE_C_COMPILER gcc-16)
-<span class="org-function-name">set</span>(CMAKE_CXX_COMPILER g++-16)
-<span class="org-function-name">set</span>(GCOV_EXECUTABLE <span class="org-string">"gcov-16"</span> CACHE STRING <span class="org-string">"GCOV executable"</span> FORCE)
+set(CMAKE_C_COMPILER gcc-16)
+set(CMAKE_CXX_COMPILER g++-16)
+set(GCOV_EXECUTABLE "gcov-16" CACHE STRING "GCOV executable" FORCE)
 
-<span class="org-function-name">set</span>(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD 26)
 
-<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS
-    <span class="org-string">"-Wall -Wextra -std=gnu++26 -Wno-maybe-uninitialized"</span>
+set(CMAKE_CXX_FLAGS
+    "-Wall -Wextra -std=gnu++26 -Wno-maybe-uninitialized"
     CACHE STRING
-    <span class="org-string">"CXX_FLAGS"</span>
+    "CXX_FLAGS"
     FORCE)
 
-<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_DEBUG
-    <span class="org-string">"-O0 -fno-inline -g3"</span>
+set(CMAKE_CXX_FLAGS_DEBUG
+    "-O0 -fno-inline -g3"
     CACHE STRING
-    <span class="org-string">"C++ DEBUG Flags"</span>
+    "C++ DEBUG Flags"
     FORCE
 )
-<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_RELEASE
-    <span class="org-string">"-Ofast -g0 -DNDEBUG"</span>
+set(CMAKE_CXX_FLAGS_RELEASE
+    "-Ofast -g0 -DNDEBUG"
     CACHE STRING
-    <span class="org-string">"C++ Release Flags"</span>
+    "C++ Release Flags"
     FORCE
 )
-<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_RELWITHDEBINFO
-    <span class="org-string">"-O3 -g -DNDEBUG"</span>
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    "-O3 -g -DNDEBUG"
     CACHE STRING
-    <span class="org-string">"C++ RelWithDebInfo Flags"</span>
+    "C++ RelWithDebInfo Flags"
     FORCE
 )
-<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_TSAN
-    <span class="org-string">"-O3 -g -fsanitize=thread"</span>
+set(CMAKE_CXX_FLAGS_TSAN
+    "-O3 -g -fsanitize=thread"
     CACHE STRING
-    <span class="org-string">"C++ TSAN Flags"</span>
+    "C++ TSAN Flags"
     FORCE
 )
-<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_ASAN
-    <span class="org-string">"-O3 -g -fsanitize=address,undefined,leak"</span>
+set(CMAKE_CXX_FLAGS_ASAN
+    "-O3 -g -fsanitize=address,undefined,leak"
     CACHE STRING
-    <span class="org-string">"C++ ASAN Flags"</span>
-    FORCE
-)
-
-<span class="org-function-name">set</span>(CMAKE_CXX_FLAGS_GCOV
-    <span class="org-string">"-O0 -fno-default-inline -fno-inline -g --coverage -fprofile-abs-path"</span>
-    CACHE STRING
-    <span class="org-string">"C++ GCOV Flags"</span>
+    "C++ ASAN Flags"
     FORCE
 )
 
-<span class="org-function-name">set</span>(CMAKE_LINKER_FLAGS_GCOV <span class="org-string">"--coverage"</span> CACHE STRING <span class="org-string">"Linker GCOV Flags"</span> FORCE)
-
-<span class="org-function-name">get_filename_component</span>(RPATH <span class="org-string">"~/.local/lib64"</span> ABSOLUTE)
-
-<span class="org-function-name">set</span>(CMAKE_EXE_LINKER_FLAGS
-    <span class="org-string">"-Wl,-rpath,${</span><span class="org-variable-name">RPATH</span><span class="org-string">}"</span>
+set(CMAKE_CXX_FLAGS_GCOV
+    "-O0 -fno-default-inline -fno-inline -g --coverage -fprofile-abs-path"
     CACHE STRING
-    <span class="org-string">"CMAKE_EXE_LINKER_FLAGS"</span>
+    "C++ GCOV Flags"
     FORCE
 )
-</pre>
+
+set(CMAKE_LINKER_FLAGS_GCOV "--coverage" CACHE STRING "Linker GCOV Flags" FORCE)
+
+get_filename_component(RPATH "~/.local/lib64" ABSOLUTE)
+
+set(CMAKE_EXE_LINKER_FLAGS
+    "-Wl,-rpath,${RPATH}"
+    CACHE STRING
+    "CMAKE_EXE_LINKER_FLAGS"
+    FORCE
+)
+</code></pre>
 </div>
 
 <p>
@@ -200,8 +201,8 @@ Building with the <code>cmake</code> command line flags above will end up callin
 </p>
 </div>
 </div>
-<div id="outline-container-org03fa23e" class="outline-2">
-<h2 id="org03fa23e">
+<div id="outline-container-orgeb25aa9" class="outline-2">
+<h2 id="orgeb25aa9">
 <span class="section-number-2">3.</span> Building Dependencies with your Toolchain.</h2>
 <div class="outline-text-2" id="text-3">
 <p>
@@ -216,14 +217,14 @@ We can, however, smuggle the variable we need through the environment.
 The custom <code>triple</code> I'm using, <code>x64-linux-custom.cmake</code>,  looks like:
 </p>
 <div class="org-src-container">
-<pre class="src src-cmake"><span class="org-function-name">set</span>(VCPKG_TARGET_ARCHITECTURE x64)
-<span class="org-function-name">set</span>(VCPKG_CRT_LINKAGE dynamic)
-<span class="org-function-name">set</span>(VCPKG_LIBRARY_LINKAGE static)
+<pre class="src src-cmake"><code>set(VCPKG_TARGET_ARCHITECTURE x64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
 
-<span class="org-function-name">set</span>(VCPKG_CMAKE_SYSTEM_NAME Linux)
+set(VCPKG_CMAKE_SYSTEM_NAME Linux)
 
-<span class="org-function-name">set</span>(VCPKG_CHAINLOAD_TOOLCHAIN_FILE <span class="org-string">"$ENV{PROJECT_VCPKG_TOOLCHAIN}"</span>)
-</pre>
+set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "$ENV{PROJECT_VCPKG_TOOLCHAIN}")
+</code></pre>
 </div>
 
 <p>
@@ -234,12 +235,12 @@ And I make sure to export PROJECT_VCPKG_TOOLCHAIN into the environment as part o
 The cmake invocation picks up flags and environment:
 </p>
 <div class="org-src-container">
-<pre class="src src-shell"><span class="org-builtin">export</span> <span class="org-variable-name">PROJECT_VCPKG_TOOLCHAIN</span>=$(realpath ./etc/gcc-16-toolchain.cmake)
+<pre class="src src-shell"><code><span class="org-builtin">export</span> <span class="org-variable-name">PROJECT_VCPKG_TOOLCHAIN</span>=$(realpath ./etc/gcc-16-toolchain.cmake)
 cmake -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_VCPKG_TOOLCHAIN) <span class="org-sh-escaped-newline">\</span>
       -DVCPKG_OVERLAY_TRIPLETS=$(realpath ./cmake) <span class="org-sh-escaped-newline">\</span>
       -DVCPKG_TARGET_TRIPLET=x64-linux-custom <span class="org-sh-escaped-newline">\</span>
       -B .build -S .
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -247,8 +248,8 @@ With this, <code>vcpkg</code> will use the toolchain I specify to build dependen
 </p>
 </div>
 </div>
-<div id="outline-container-orgfc18b50" class="outline-2">
-<h2 id="orgfc18b50">
+<div id="outline-container-org05c3ea1" class="outline-2">
+<h2 id="org05c3ea1">
 <span class="section-number-2">4.</span> Someone is Wrong on the Internet</h2>
 <div class="outline-text-2" id="text-4">
 <p>
@@ -283,6 +284,9 @@ You must set a custom <code>triple</code> file that sets VCPKG_CHAINLOAD_TOOLCHA
 <li>
                     <a href="../substitution-is-sometimes-a-failure/" rel="prev" title="Substitution is Sometimes a Failure">« <span class="show-for-sr">Previous post</span></a>
                 </li>
+                <li>
+                    <a href="../the-sender-sub-language/" rel="next" title="The Sender Sub-Language" aria-label="Next page">» <span class="show-for-sr">Next post</span></a>
+                </li>
             </ul>
 </div>
 
@@ -295,7 +299,7 @@ You must set a custom <code>triple</code> file that sets VCPKG_CHAINLOAD_TOOLCHA
 
 
 <hr>
-<footer id="footer"><p><small>Contents © 2025         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+<footer id="footer"><p><small>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
  <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
  <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
             

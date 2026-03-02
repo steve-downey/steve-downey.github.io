@@ -1,9 +1,312 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>What Comes to Mind</title><link>https://sdowney.org/</link><description>Stuff, and more stuff</description><atom:link href="https://sdowney.org/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2025 &lt;a href="mailto:sdowney@sdowney.dev"&gt;Steve Downey&lt;/a&gt; 
+<?xml-stylesheet type="text/xsl" href="assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>What Comes to Mind</title><link>https://sdowney.org/</link><description>Stuff, and more stuff</description><atom:link href="https://sdowney.org/rss.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2026 &lt;a href="mailto:sdowney@sdowney.dev"&gt;Steve Downey&lt;/a&gt; 
  &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
  &lt;img alt="Creative Commons License BY-NC-SA"
  style="border-width:0; margin-bottom:12px;"
- src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sat, 27 Dec 2025 19:02:45 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Building vcpkg dependencies with project toolchain</title><link>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgd3f21f0"&gt;
+ src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Mon, 02 Mar 2026 02:13:44 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>The Sender Sub-Language</title><link>https://sdowney.org/posts/the-sender-sub-language/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgddef4ee"&gt;
+&lt;p&gt;
+The paper &lt;a href="http://wg21.link/P4014R0"&gt;The Sender Sub-Language&lt;/a&gt; by Vinnie Falco &amp;lt;vinnie.falco@gmail.com&amp;gt; and Mungo Gill &amp;lt;mungo.gill@me.com&amp;gt; makes extensive use of my work at &lt;a href="https://github.com/steve-downey/sender-examples"&gt;https://github.com/steve-downey/sender-examples&lt;/a&gt;.  The code is also the basis for my talk at C++Now 2023, &lt;a href="https://youtu.be/xXncLUD-4bA?si=tFXFFYLUxia9WW-c"&gt;Using the C++ Sender/Receiver Framework: Implement Control Flow for Async Processing&lt;/a&gt;. They present the code accurately and fairly, and I am very happy they found it useful in describing and understanding the capabilities of Senders in the framework. There is no higher praise than someone finding your work useful to build upon.
+&lt;/p&gt;
+
+&lt;p&gt;
+Nonetheless, we come to different overall conclusions about the Sender/Receiver framework.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;!-- TEASER_END --&gt;
+
+&lt;p&gt;
+There are several papers in the February 2026 pre-Croydon mailing which are, taken together, asking to reconsider the sender / receiver framework, generally and especially in the context of networking. As this is the meeting in which C++26 will be finalized for publication, this is the last chance for any objections to anything being included. It would definitely have been better to have these objections and any new information earlier, but, since changing anything after the standard is shipped is far more difficult, even sustained opposition with new information is important to consider.
+&lt;/p&gt;
+
+&lt;p&gt;
+This post, however, is not my consideration of the new papers.
+&lt;/p&gt;
+
+&lt;p&gt;
+I simply wish to put the work I did in 2022 and 2023 in context.
+&lt;/p&gt;
+&lt;div id="outline-container-orgd03696b" class="outline-2"&gt;
+&lt;h2 id="orgd03696b"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; The Papers&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+The papers which I am looking at
+&lt;/p&gt;
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+
+&lt;colgroup&gt;
+&lt;col class="org-left"&gt;
+
+&lt;col class="org-left"&gt;
+
+&lt;col class="org-left"&gt;
+
+&lt;col class="org-left"&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th scope="col" class="org-left"&gt;Number&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;Title&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;Author&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;Subgroup&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;&lt;a href="https://wg21.link/P2583R0"&gt;P2583R0&lt;/a&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;Symmetric Transfer and Sender Composition&lt;/td&gt;
+&lt;td class="org-left"&gt;Mungo Gill, Vinnie Falco&lt;/td&gt;
+&lt;td class="org-left"&gt;LEWG Library Evolution&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;&lt;a href="https://wg21.link/P4003R0"&gt;P4003R0&lt;/a&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;Coroutines for I/O&lt;/td&gt;
+&lt;td class="org-left"&gt;Vinnie Falco, Mungo Gill, Steve Gerbino&lt;/td&gt;
+&lt;td class="org-left"&gt;LEWGI SG18: LEWG Incubator,LEWG Library Evolution&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;&lt;a href="https://wg21.link/P4007R0"&gt;P4007R0&lt;/a&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;Senders and Coroutines&lt;/td&gt;
+&lt;td class="org-left"&gt;Vinnie Falco, Mungo Gill&lt;/td&gt;
+&lt;td class="org-left"&gt;LEWG Library Evolution&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;&lt;a href="https://wg21.link/P4014R0"&gt;P4014R0&lt;/a&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;The Sender Sub-Language&lt;/td&gt;
+&lt;td class="org-left"&gt;Vinnie Falco, Mungo Gill&lt;/td&gt;
+&lt;td class="org-left"&gt;LEWG Library Evolution&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;&lt;a href="https://wg21.link/P4029R0"&gt;P4029R0&lt;/a&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;The SG14 Priority List for C++29/32&lt;/td&gt;
+&lt;td class="org-left"&gt;Michael Wong&lt;/td&gt;
+&lt;td class="org-left"&gt;SG14 Low Latency&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org3ddafc9" class="outline-2"&gt;
+&lt;h2 id="org3ddafc9"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Abstracts and Suggested Polls&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;p&gt;
+These quotes are drawn from their respective papers to provide context.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org522ae0e" class="outline-3"&gt;
+&lt;h3 id="org522ae0e"&gt;&lt;span class="section-number-3"&gt;2.1.&lt;/span&gt; P2583R0: Symmetric Transfer and Sender Composition&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-2-1"&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-orgfc9a8b2" class="outline-4"&gt;
+&lt;h4 id="orgfc9a8b2"&gt;&lt;span class="section-number-4"&gt;2.1.1.&lt;/span&gt; Abstract&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-1-1"&gt;
+&lt;p&gt;
+C++20 provides symmetric transfer (&lt;a href="https://wg21.link/P0913R1"&gt;P0913R1&lt;/a&gt;) - a mechanism where &lt;code&gt;await_suspend&lt;/code&gt; returns a &lt;code&gt;coroutine_handle&amp;lt;&amp;gt;&lt;/code&gt; and the compiler resumes the designated coroutine as a tail call. Coroutine chains execute in constant stack space. &lt;code&gt;std::execution&lt;/code&gt; (&lt;a href="https://wg21.link/P2300R10"&gt;P2300R10&lt;/a&gt;) composes asynchronous operations through sender algorithms. These algorithms create receivers that are structs, not coroutines. No &lt;code&gt;coroutine_handle&amp;lt;&amp;gt;&lt;/code&gt; exists at any intermediate point in a sender pipeline. When a coroutine &lt;code&gt;co_await&lt;/code&gt; s a sender that completes synchronously, the stack grows by one frame per completion. &lt;a href="https://wg21.link/P3552R3"&gt;P3552R3&lt;/a&gt;’s &lt;code&gt;std::execution::task&lt;/code&gt; inherits this property. The sender model’s zero-allocation composition property and symmetric transfer’s constant-stack property cannot both be satisfied. One requires structs. The other requires coroutines. This paper describes the mechanism, provides implementation experience, and documents the tradeoff.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org4ba4e57" class="outline-3"&gt;
+&lt;h3 id="org4ba4e57"&gt;&lt;span class="section-number-3"&gt;2.2.&lt;/span&gt; P4003R0: Coroutines for I/O&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-2-2"&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org6d0a791" class="outline-4"&gt;
+&lt;h4 id="org6d0a791"&gt;&lt;span class="section-number-4"&gt;2.2.1.&lt;/span&gt; Abstract&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-2-1"&gt;
+&lt;p&gt;
+C++20 coroutines have five properties that, taken together, make them uniquely suited to asynchronous I/O: type erasure through &lt;code&gt;coroutine_handle&amp;lt;&amp;gt;&lt;/code&gt; , customization through promise_type , stackless independently resumable frames, symmetric transfer through await_suspend , and compiler-managed state that persists across suspension points. Each was designed for generality. Their conjunction yields something no single property suggests: the optimal basis for byte-oriented I/O.
+&lt;/p&gt;
+
+&lt;p&gt;
+We used C++20 coroutines directly for I/O - timers, sockets, DNS, TLS, HTTP - and observed what the language already provides. The protocol that emerged is the IoAwaitable: a system for associating a coroutine with an executor, stop token, and frame allocator, and  propagating this context forward through a coroutine chain to the operating system API boundary where asynchronous operations are performed.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org80117c6" class="outline-4"&gt;
+&lt;h4 id="org80117c6"&gt;&lt;span class="section-number-4"&gt;2.2.2.&lt;/span&gt; Suggested Straw Polls&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-2-2"&gt;
+&lt;p&gt;
+SG4 polled at Kona (November 2023) on &lt;a href="https://wg21.link/P2762R2"&gt;P2762R2&lt;/a&gt; “Sender/Receiver Interface For Networking”
+&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;
+“Networking should support only a sender/receiver model for asynchronous operations; the
+Networking TS’s executor model should be removed”
+&lt;/p&gt;
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+
+&lt;colgroup&gt;
+&lt;col class="org-right"&gt;
+
+&lt;col class="org-right"&gt;
+
+&lt;col class="org-right"&gt;
+
+&lt;col class="org-right"&gt;
+
+&lt;col class="org-right"&gt;
+&lt;/colgroup&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-right"&gt;SF&lt;/td&gt;
+&lt;td class="org-right"&gt;F&lt;/td&gt;
+&lt;td class="org-right"&gt;N&lt;/td&gt;
+&lt;td class="org-right"&gt;A&lt;/td&gt;
+&lt;td class="org-right"&gt;SA&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class="org-right"&gt;5&lt;/td&gt;
+&lt;td class="org-right"&gt;5&lt;/td&gt;
+&lt;td class="org-right"&gt;1&lt;/td&gt;
+&lt;td class="org-right"&gt;0&lt;/td&gt;
+&lt;td class="org-right"&gt;1&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;
+Consensus.
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+The approach described in this paper - a coroutine-native I/O model using C++20 language features - was not among the alternatives considered.
+&lt;/p&gt;
+
+&lt;p&gt;
+Poll 1. A coroutine-native I/O model is a distinct approach from both the Networking TS executor model and the sender/receiver model.
+&lt;/p&gt;
+
+&lt;p&gt;
+Poll 2. New research into coroutine-native I/O, not available at the time of the Kona poll, warrants consideration.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org7b46ccf" class="outline-3"&gt;
+&lt;h3 id="org7b46ccf"&gt;&lt;span class="section-number-3"&gt;2.3.&lt;/span&gt; P4007R0: Senders and Coroutines&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-2-3"&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org1b2730a" class="outline-4"&gt;
+&lt;h4 id="org1b2730a"&gt;&lt;span class="section-number-4"&gt;2.3.1.&lt;/span&gt; Abstract&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-3-1"&gt;
+&lt;p&gt;
+&lt;code&gt;std::execution&lt;/code&gt; serves its domain well. Different asynchronous domains have different costs, and a single model cannot minimize all of them simultaneously. This paper identifies four structural gaps where the sender model meets coroutines: three at the boundary - error reporting, error returns, and frame allocator propagation - and one inside the composition mechanism - the symmetric transfer gap documented in &lt;a href="https://wg21.link/P2583R0"&gt;P2583R0&lt;/a&gt;. Each gap is the cost of a property the sender model requires for compile-time analysis (&lt;a href="https://wg21.link/P2300R10"&gt;P2300R10&lt;/a&gt;, &lt;a href="https://wg21.link/P4014R0"&gt;P4014R0&lt;/a&gt; ). They are not design defects, they are tradeoffs. Mandating that standard networking be built on the sender model would force coroutine I/O users to pay these costs. A coroutine-native I/O research report (&lt;a href="https://wg21.link/P4003R0"&gt;P4003R0&lt;/a&gt;) made the gaps visible by showing that partial results, error returns, cancellation, and frame allocator propagation emerge naturally when I/O is designed for coroutines. The findings hold regardless of that report’s specific design. This paper recommends: ship &lt;code&gt;std::execution&lt;/code&gt; for C++26, defer task (&lt;a href="https://wg21.link/P3552R3"&gt;P3552R3&lt;/a&gt;, “Add a Coroutine Task Type”) to C++29, and explore coroutine-native I/O designs alongside sender-based designs.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org32f26aa" class="outline-4"&gt;
+&lt;h4 id="org32f26aa"&gt;&lt;span class="section-number-4"&gt;2.3.2.&lt;/span&gt; Suggested Straw Polls&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-3-2"&gt;
+&lt;ol class="org-ol"&gt;
+&lt;li&gt;“I/O completions that carry both an error code and a byte count present a design challenge for the three-channel completion model.”&lt;/li&gt;
+&lt;li&gt;“The coroutine integration in std::execution has open design questions that would benefit from further iteration.”&lt;/li&gt;
+&lt;li&gt;“WG21 should explore coroutine-native I/O designs alongside sender-based designs.”&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org91ef3a4" class="outline-3"&gt;
+&lt;h3 id="org91ef3a4"&gt;&lt;span class="section-number-3"&gt;2.4.&lt;/span&gt; P4014R0: The Sender Sub-Language&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-2-4"&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org21e78fa" class="outline-4"&gt;
+&lt;h4 id="org21e78fa"&gt;&lt;span class="section-number-4"&gt;2.4.1.&lt;/span&gt; Abstract&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-4-1"&gt;
+&lt;p&gt;
+C++26 introduces a rich sub-language for asynchronous programming through &lt;code&gt;std::execution&lt;/code&gt; (P2300R10) . Sender pipelines replace C++’s control flow, variable binding, error handling, and iteration with library-level equivalents rooted in continuation-passing style and monadic composition. This paper is a guide to the Sender SubLanguage: its theoretical foundations, the programming model it provides, and the engineering trade-offs it makes. The trade-offs serve specific domains well. The question is whether other domains deserve the same freedom to choose the model that serves them.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-orgc6e3ab8" class="outline-4"&gt;
+&lt;h4 id="orgc6e3ab8"&gt;&lt;span class="section-number-4"&gt;2.4.2.&lt;/span&gt; Suggested Straw Polls&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-4-2"&gt;
+&lt;ol class="org-ol"&gt;
+&lt;li&gt;“ std::execution serves coroutine-driven async I/O less ideally than heterogeneous compute.”&lt;/li&gt;
+&lt;li&gt;“Coroutine-driven async I/O should have the same freedom to optimize for its domain as heterogeneous compute did&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-orgc573cc9" class="outline-3"&gt;
+&lt;h3 id="orgc573cc9"&gt;&lt;span class="section-number-3"&gt;2.5.&lt;/span&gt; P4029R0: The SG14 Priority List for C++29/32&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-2-5"&gt;
+&lt;p&gt;
+This paper is a forward looking priority list for SG14 Low Latency. It has overlapping concerns about the sender / receiver model with the other papers.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org3784f20" class="outline-4"&gt;
+&lt;h4 id="org3784f20"&gt;&lt;span class="section-number-4"&gt;2.5.1.&lt;/span&gt; Executors/coroutine backward flow + lazy execution vs direct forward flow model for CPU-bound I/O and Networking.&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-5-1"&gt;
+&lt;ol class="org-ol"&gt;
+&lt;li&gt;Decouple Networking from std::execution SG14 advise that Networking (SG4) should not be built on top of &lt;a href="https://wg21.link/P2300"&gt;P2300&lt;/a&gt;. The allocation patterns required by &lt;a href="https://wg21.link/P2300"&gt;P2300&lt;/a&gt; are incompatible with low-latency networking requirements.&lt;/li&gt;
+&lt;li&gt;Standardize "Direct Style" I/O Prioritize &lt;a href="https://wg21.link/P4003"&gt;P4003&lt;/a&gt; (or similar Direct Style concepts) as the C++29 Networking model. It offers the performance of Asio/Beast with the ergonomics of Coroutines, maintaining the "Zero-Overhead" principle.&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="outline-container-org111aa17" class="outline-2"&gt;
+&lt;h2 id="org111aa17"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; The Sender Model&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-3"&gt;
+&lt;p&gt;
+As described in my earlier papers and talks, and accurately summarized by &lt;a href="https://wg21.link/P4014R0"&gt;P4014R0: The Sender Sub-Language&lt;/a&gt;, senders are a framework for working with continuations and for supporting &lt;a href="https://en.wikipedia.org/wiki/Continuation-passing_style"&gt;Continuation Passing Style&lt;/a&gt;, or CPS. The CPS formalism is a full model of computation, Turing complete, and equivalent in expressiveness to Single Static Assignment, the current, common, model that compilers use for lowering programming languages. CPS used to be far more common, and is still in use in some language implementations today. The reasons for choosing one over the other is entirely out of scope for this discussion.
+&lt;/p&gt;
+
+&lt;p&gt;
+The Sender model is also closely tied to the &lt;code&gt;Cont&lt;/code&gt; monad. For background see &lt;a href="https://hackage-content.haskell.org/package/mtl-2.3.2/docs/Control-Monad-Cont.html"&gt;Control.Monad.Cont&lt;/a&gt;, &lt;a href="https://en.wikibooks.org/wiki/Haskell/Continuation_passing_style"&gt;Haskell/Continuation passing style&lt;/a&gt;, and &lt;a href="https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/the-mother-of-all-monads"&gt;The Mother of all Monads&lt;/a&gt;. The monad abstracts away the chaining and connection of the results to the eventual receiver. Senders augment the model by adding the three channels used to communicate between the processes, allowing for propagation of values, errors, and cancellation requests throughout the graph.
+&lt;/p&gt;
+
+&lt;p&gt;
+The Sender / Receiver framework is also a model of Structured Concurrency, &lt;a href="https://www.250bpm.com/p/structured-concurrency"&gt;Structured Concurrency, Martin Sustrik&lt;/a&gt;, &lt;a href="https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/"&gt;Notes on structured concurrency, or: Go statement considered harmful – Nathaniel J. Smith&lt;/a&gt;, a system for ensuring that concurrent operations have clear entry and exit points and will all complete before exiting. It does so in part by also using delimited continuations, ones that have fixed, rather than unbounded, end points, &lt;a href="https://okmij.org/ftp/continuations/index.html"&gt;Continuations and Delimited Control – Oleg Kiselyov&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+In evaluating a library, particularly one that will be frozen in the C++ standard, where good libraries go to die, I want to know if what is being offered is complete, and if it is not, if what is offered has everything necessary and sufficient to base further work on outside the library. We made this mistake, for example, with the initial Ranges work where there was no mechanism for a user to write a pipe-able algorithm with what was specified. This was quickly rectified, fortunately. With &lt;code&gt;format&lt;/code&gt;, the ability to statically check the format string was back-filled, and was not ABI compatible, causing vendors much distress in shipping the new component.
+&lt;/p&gt;
+
+&lt;p&gt;
+It was with this in mind that I was looking at what was well specified and available in the original P2300 papers. In general I prefer systems that have firm theory behind them over ones that merely, pragmatically, appear to work. As an industry we were all burned badly by the pthreads library, which appeared to work, but we now know can not by itself. The pthread model is also one that we have demonstrated, repeatedly, that human beings can not reason about. On the other hand, object orientation still has no good theory, but has been demonstrably successful. The abstractions it provides allow humans to reason at a much higher level about the complex systems we are producing.
+&lt;/p&gt;
+
+&lt;p&gt;
+The work in 2022 and 2023 was with the goal in mind of showing that the end user facing parts of the model, senders and the basic adapters in the proposal, were necessary and sufficient as a basis for further work. That the primitives would not need to be scrapped or changed in ways that would break code once written. This is not the same as saying there need be no other adapters or algorithms provided, or that the sender primitives are the most efficient implementations. The question was how far can the model be pushed without having to work with &lt;code&gt;operational state&lt;/code&gt; directly.
+&lt;/p&gt;
+
+&lt;p&gt;
+The base sender operations, &lt;code&gt;just&lt;/code&gt;, &lt;code&gt;then&lt;/code&gt;, and &lt;code&gt;let_value&lt;/code&gt;, allow all structured programming constructs to be created, including structured concurrency. The model is complete and well founded.
+&lt;/p&gt;
+
+&lt;p&gt;
+The proposal, as adopted, also provides for user implementation and inter-operation of types that have operational states, senders and sender adapters themselves. Analogously to how the standard allows for user written containers to participate in the containers/iterators/algorithms triad that comprised the original &lt;a href="https://www.stepanovpapers.com/STL/DOC.PDF"&gt;STL proposal&lt;/a&gt;. Users may not write new containers or iterators often, but there is no particular magic involved, and writing one should be well within the capabilities of most C++ programmers.
+&lt;/p&gt;
+
+&lt;p&gt;
+A sender is somewhat more difficult, as it is new so there is less documentation, but it is not intrinsically hard. In addition, the APIs tend to encourage correct and safe use. Senders describe the shape of work and should be generally reusable. Programmers will work with senders and sender adaptors several orders of magnitude more than they will write a sender or sender adapter from scratch.
+&lt;/p&gt;
+
+&lt;p&gt;
+My question was not, what is missing that can be added. That is self evidently lots of things. We are still adding range algorithms and new ranges after years of work and more are in the pipeline for C++29 already. My question was, can real applications be created with nothing more than what is easily available in senders, and can an application programmer who does not wish to create a sender today, still deliver a sender graph of async work.
+&lt;/p&gt;
+
+&lt;p&gt;
+That was, and is, clearly, to me, yes.
+&lt;/p&gt;
+
+
+&lt;p&gt;
+Exported: 2026-03-01 21:13:43
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/the-sender-sub-language/</guid><pubDate>Sat, 28 Feb 2026 23:40:21 GMT</pubDate></item><item><title>Building vcpkg dependencies with project toolchain</title><link>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org311b0dc"&gt;
 &lt;p&gt;
 Making sure vcpkg delivers packages built with your toolchain is not hard, but much of the advice on the internet is flat wrong. You need to specify your toolchain both in your project and in the the vcpkg &lt;code&gt;triplet&lt;/code&gt;. There's an airgap between your project and the dependency in &lt;code&gt;vcpkg install&lt;/code&gt;. The CMake settings can't just flow through.
 &lt;/p&gt;
@@ -11,8 +314,8 @@ Making sure vcpkg delivers packages built with your toolchain is not hard, but m
 &lt;/div&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="outline-container-org3754f4f" class="outline-2"&gt;
-&lt;h2 id="org3754f4f"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Toolchain is more than just the compiler&lt;/h2&gt;
+&lt;div id="outline-container-org2322169" class="outline-2"&gt;
+&lt;h2 id="org2322169"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Toolchain is more than just the compiler&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 Inside a link context everything needs to use the same definitions for everything or your program breaks. If you are lucky it will fail to link. If you are unlucky it will link and explode at runtime. Or you might have the worst kind of undefined behavior–working the way you expect it to. For now.
@@ -27,8 +330,8 @@ The toolchain should encompass all of the ABI affecting flags, and most flags af
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-orgc0c2baf" class="outline-2"&gt;
-&lt;h2 id="orgc0c2baf"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Using a toolchain with &lt;code&gt;vcpkg&lt;/code&gt; in-project&lt;/h2&gt;
+&lt;div id="outline-container-orgb2eab37" class="outline-2"&gt;
+&lt;h2 id="orgb2eab37"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Using a toolchain with &lt;code&gt;vcpkg&lt;/code&gt; in-project&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 There are several techniques for using vcpkg for dependency management and specifying a toolchain to use for compilation of the artifacts in a project. For an open source project, the problem is generally how to do so without locking everyone into &lt;code&gt;vcpkg&lt;/code&gt;. The current theory for CMake is to provide dependency provider hooks via CMAKE_PROJECT_TOP_LEVEL_INCLUDES, which are a list of files cmake will process before anything else, and in particular before the &lt;code&gt;project&lt;/code&gt; statement. The Beman Project has a primitive dependency provider, &lt;a href="https://github.com/bemanproject/infra/blob/main/cmake/use-fetch-content.cmake"&gt;use-fetch-content.cmake&lt;/a&gt;, that converts &lt;code&gt;find_package&lt;/code&gt; into &lt;code&gt;FetchContent&lt;/code&gt; and downloads and builds from Git URLs. This is an alternative to vendoring dependencies in-tree directly using git submodules or git subtrees.
@@ -46,79 +349,79 @@ For &lt;code&gt;vcpkg&lt;/code&gt;, you can integrate using the same mechanism, 
 The initial configure will look something like:
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-shell"&gt;cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+&lt;pre class="src src-shell"&gt;&lt;code&gt;cmake -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=$(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
       -DCMAKE_TOOLCHAIN_FILE=./etc/gcc-16-toolchain.cmake &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
       -B .build -S .
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
 With the gcc-16 toolchain file looking something like:
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-cmake"&gt;&lt;span class="org-function-name"&gt;include_guard&lt;/span&gt;(GLOBAL)
+&lt;pre class="src src-cmake"&gt;&lt;code&gt;include_guard(GLOBAL)
 
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_C_COMPILER gcc-16)
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_COMPILER g++-16)
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(GCOV_EXECUTABLE &lt;span class="org-string"&gt;"gcov-16"&lt;/span&gt; CACHE STRING &lt;span class="org-string"&gt;"GCOV executable"&lt;/span&gt; FORCE)
+set(CMAKE_C_COMPILER gcc-16)
+set(CMAKE_CXX_COMPILER g++-16)
+set(GCOV_EXECUTABLE "gcov-16" CACHE STRING "GCOV executable" FORCE)
 
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_STANDARD 26)
+set(CMAKE_CXX_STANDARD 26)
 
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS
-    &lt;span class="org-string"&gt;"-Wall -Wextra -std=gnu++26 -Wno-maybe-uninitialized"&lt;/span&gt;
+set(CMAKE_CXX_FLAGS
+    "-Wall -Wextra -std=gnu++26 -Wno-maybe-uninitialized"
     CACHE STRING
-    &lt;span class="org-string"&gt;"CXX_FLAGS"&lt;/span&gt;
+    "CXX_FLAGS"
     FORCE)
 
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_DEBUG
-    &lt;span class="org-string"&gt;"-O0 -fno-inline -g3"&lt;/span&gt;
+set(CMAKE_CXX_FLAGS_DEBUG
+    "-O0 -fno-inline -g3"
     CACHE STRING
-    &lt;span class="org-string"&gt;"C++ DEBUG Flags"&lt;/span&gt;
+    "C++ DEBUG Flags"
     FORCE
 )
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_RELEASE
-    &lt;span class="org-string"&gt;"-Ofast -g0 -DNDEBUG"&lt;/span&gt;
+set(CMAKE_CXX_FLAGS_RELEASE
+    "-Ofast -g0 -DNDEBUG"
     CACHE STRING
-    &lt;span class="org-string"&gt;"C++ Release Flags"&lt;/span&gt;
+    "C++ Release Flags"
     FORCE
 )
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_RELWITHDEBINFO
-    &lt;span class="org-string"&gt;"-O3 -g -DNDEBUG"&lt;/span&gt;
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    "-O3 -g -DNDEBUG"
     CACHE STRING
-    &lt;span class="org-string"&gt;"C++ RelWithDebInfo Flags"&lt;/span&gt;
+    "C++ RelWithDebInfo Flags"
     FORCE
 )
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_TSAN
-    &lt;span class="org-string"&gt;"-O3 -g -fsanitize=thread"&lt;/span&gt;
+set(CMAKE_CXX_FLAGS_TSAN
+    "-O3 -g -fsanitize=thread"
     CACHE STRING
-    &lt;span class="org-string"&gt;"C++ TSAN Flags"&lt;/span&gt;
+    "C++ TSAN Flags"
     FORCE
 )
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_ASAN
-    &lt;span class="org-string"&gt;"-O3 -g -fsanitize=address,undefined,leak"&lt;/span&gt;
+set(CMAKE_CXX_FLAGS_ASAN
+    "-O3 -g -fsanitize=address,undefined,leak"
     CACHE STRING
-    &lt;span class="org-string"&gt;"C++ ASAN Flags"&lt;/span&gt;
-    FORCE
-)
-
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_CXX_FLAGS_GCOV
-    &lt;span class="org-string"&gt;"-O0 -fno-default-inline -fno-inline -g --coverage -fprofile-abs-path"&lt;/span&gt;
-    CACHE STRING
-    &lt;span class="org-string"&gt;"C++ GCOV Flags"&lt;/span&gt;
+    "C++ ASAN Flags"
     FORCE
 )
 
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_LINKER_FLAGS_GCOV &lt;span class="org-string"&gt;"--coverage"&lt;/span&gt; CACHE STRING &lt;span class="org-string"&gt;"Linker GCOV Flags"&lt;/span&gt; FORCE)
-
-&lt;span class="org-function-name"&gt;get_filename_component&lt;/span&gt;(RPATH &lt;span class="org-string"&gt;"~/.local/lib64"&lt;/span&gt; ABSOLUTE)
-
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(CMAKE_EXE_LINKER_FLAGS
-    &lt;span class="org-string"&gt;"-Wl,-rpath,${&lt;/span&gt;&lt;span class="org-variable-name"&gt;RPATH&lt;/span&gt;&lt;span class="org-string"&gt;}"&lt;/span&gt;
+set(CMAKE_CXX_FLAGS_GCOV
+    "-O0 -fno-default-inline -fno-inline -g --coverage -fprofile-abs-path"
     CACHE STRING
-    &lt;span class="org-string"&gt;"CMAKE_EXE_LINKER_FLAGS"&lt;/span&gt;
+    "C++ GCOV Flags"
     FORCE
 )
-&lt;/pre&gt;
+
+set(CMAKE_LINKER_FLAGS_GCOV "--coverage" CACHE STRING "Linker GCOV Flags" FORCE)
+
+get_filename_component(RPATH "~/.local/lib64" ABSOLUTE)
+
+set(CMAKE_EXE_LINKER_FLAGS
+    "-Wl,-rpath,${RPATH}"
+    CACHE STRING
+    "CMAKE_EXE_LINKER_FLAGS"
+    FORCE
+)
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
@@ -134,8 +437,8 @@ Building with the &lt;code&gt;cmake&lt;/code&gt; command line flags above will e
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-org03fa23e" class="outline-2"&gt;
-&lt;h2 id="org03fa23e"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Building Dependencies with your Toolchain.&lt;/h2&gt;
+&lt;div id="outline-container-orgeb25aa9" class="outline-2"&gt;
+&lt;h2 id="orgeb25aa9"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Building Dependencies with your Toolchain.&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 The mechanism &lt;code&gt;vcpkg&lt;/code&gt; provides for injecting a toolchain into a dependency is a custom &lt;code&gt;triple&lt;/code&gt; that provides a VCPKG_CHAINLOAD_TOOLCHAIN_FILE. Because of the intermediate invocation of &lt;code&gt;vcpkg&lt;/code&gt;, setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project does not affect how &lt;code&gt;vcpkg&lt;/code&gt; builds or provides anything.
@@ -149,14 +452,14 @@ We can, however, smuggle the variable we need through the environment.
 The custom &lt;code&gt;triple&lt;/code&gt; I'm using, &lt;code&gt;x64-linux-custom.cmake&lt;/code&gt;,  looks like:
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-cmake"&gt;&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_TARGET_ARCHITECTURE x64)
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_CRT_LINKAGE dynamic)
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_LIBRARY_LINKAGE static)
+&lt;pre class="src src-cmake"&gt;&lt;code&gt;set(VCPKG_TARGET_ARCHITECTURE x64)
+set(VCPKG_CRT_LINKAGE dynamic)
+set(VCPKG_LIBRARY_LINKAGE static)
 
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_CMAKE_SYSTEM_NAME Linux)
+set(VCPKG_CMAKE_SYSTEM_NAME Linux)
 
-&lt;span class="org-function-name"&gt;set&lt;/span&gt;(VCPKG_CHAINLOAD_TOOLCHAIN_FILE &lt;span class="org-string"&gt;"$ENV{PROJECT_VCPKG_TOOLCHAIN}"&lt;/span&gt;)
-&lt;/pre&gt;
+set(VCPKG_CHAINLOAD_TOOLCHAIN_FILE "$ENV{PROJECT_VCPKG_TOOLCHAIN}")
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
@@ -167,12 +470,12 @@ And I make sure to export PROJECT_VCPKG_TOOLCHAIN into the environment as part o
 The cmake invocation picks up flags and environment:
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-shell"&gt;&lt;span class="org-builtin"&gt;export&lt;/span&gt; &lt;span class="org-variable-name"&gt;PROJECT_VCPKG_TOOLCHAIN&lt;/span&gt;=$(realpath ./etc/gcc-16-toolchain.cmake)
+&lt;pre class="src src-shell"&gt;&lt;code&gt;&lt;span class="org-builtin"&gt;export&lt;/span&gt; &lt;span class="org-variable-name"&gt;PROJECT_VCPKG_TOOLCHAIN&lt;/span&gt;=$(realpath ./etc/gcc-16-toolchain.cmake)
 cmake -DCMAKE_TOOLCHAIN_FILE=$(PROJECT_VCPKG_TOOLCHAIN) &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
       -DVCPKG_OVERLAY_TRIPLETS=$(realpath ./cmake) &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
       -DVCPKG_TARGET_TRIPLET=x64-linux-custom &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
       -B .build -S .
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
@@ -180,8 +483,8 @@ With this, &lt;code&gt;vcpkg&lt;/code&gt; will use the toolchain I specify to bu
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-orgfc18b50" class="outline-2"&gt;
-&lt;h2 id="orgfc18b50"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Someone is Wrong on the Internet&lt;/h2&gt;
+&lt;div id="outline-container-org05c3ea1" class="outline-2"&gt;
+&lt;h2 id="org05c3ea1"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Someone is Wrong on the Internet&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-4"&gt;
 &lt;p&gt;
 This took far longer to work out than it should because there is much advice that is flat out wrong.
@@ -199,7 +502,7 @@ Setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project or on the &lt;code&gt;cma
 You must set a custom &lt;code&gt;triple&lt;/code&gt; file that sets VCPKG_CHAINLOAD_TOOLCHAIN_FILE in order to use that CMake toolchain with &lt;code&gt;vcpkg&lt;/code&gt;.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</guid><pubDate>Sat, 27 Dec 2025 17:03:15 GMT</pubDate></item><item><title>Substitution is Sometimes a Failure</title><link>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgda1a411"&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</guid><pubDate>Sat, 27 Dec 2025 17:03:15 GMT</pubDate></item><item><title>Substitution is Sometimes a Failure</title><link>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org97d5a3c"&gt;
 &lt;p&gt;
 Why are optional::transform and optional::and_then not constrained by &lt;code&gt;invocable&lt;/code&gt;?
 &lt;/p&gt;
@@ -207,8 +510,8 @@ Why are optional::transform and optional::and_then not constrained by &lt;code&g
 &lt;/div&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="outline-container-orgfd1f7cb" class="outline-2"&gt;
-&lt;h2 id="orgfd1f7cb"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Optional "Monadic" Interface&lt;/h2&gt;
+&lt;div id="outline-container-orgddf97f8" class="outline-2"&gt;
+&lt;h2 id="orgddf97f8"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Optional "Monadic" Interface&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 &lt;a href="http://wg21.link/P0798"&gt;Monadic operations for std::optional&lt;/a&gt;
@@ -238,8 +541,8 @@ They don't work if you don't give them invocables, and rely on &lt;code&gt;invok
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-org8c7b2d9" class="outline-2"&gt;
-&lt;h2 id="org8c7b2d9"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; SFINAE is shallow&lt;/h2&gt;
+&lt;div id="outline-container-org5046b45" class="outline-2"&gt;
+&lt;h2 id="org5046b45"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; SFINAE is shallow&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 The problem is if another template has to be instantiated in order to evaluate the template of interest, and that template has an error, you get an error, not a substitution failure. And, it turns out, lambdas are a common source of the problem and a common case in real use.
@@ -249,13 +552,13 @@ The problem is if another template has to be instantiated in order to evaluate t
 Consider the code:
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;span class="org-type"&gt;void&lt;/span&gt; &lt;span class="org-function-name"&gt;f&lt;/span&gt;(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;);
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-type"&gt;void&lt;/span&gt; &lt;span class="org-function-name"&gt;f&lt;/span&gt;(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;);
 
 &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;l&lt;/span&gt; = [](&lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;y&lt;/span&gt;) {
     f(y);
     &lt;span class="org-keyword"&gt;return&lt;/span&gt; 42;
 };
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
@@ -266,29 +569,29 @@ The two important parts are the &lt;code&gt;auto&amp;amp;&lt;/code&gt; parameter
 We can rewrite it, to make things possibly more obvious:
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;Func&lt;/span&gt; {
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;Func&lt;/span&gt; {
     &lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
     &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-keyword"&gt;operator&lt;/span&gt;&lt;span class="org-function-name"&gt;()&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;t&lt;/span&gt;) {
         f(t);
         &lt;span class="org-keyword"&gt;return&lt;/span&gt; 42;
     }
 };
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
 and to slightly spoil things, the problem code is effectively:
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;static_assert(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invocable&lt;/span&gt;&amp;lt;Func, &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp;&amp;gt;);
-&lt;/pre&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invocable&lt;/span&gt;&amp;lt;Func, &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp;&amp;gt;);
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
 which produces:
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&amp;lt;source&amp;gt;: In instantiation of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-constant"&gt;Func&lt;/span&gt;::&lt;span class="org-keyword"&gt;operator&lt;/span&gt;()(&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;amp;) [with T = &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;]&lt;span class="org-warning"&gt;'&lt;/span&gt;:
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&amp;lt;source&amp;gt;: In instantiation of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-constant"&gt;Func&lt;/span&gt;::&lt;span class="org-keyword"&gt;operator&lt;/span&gt;()(&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;amp;) [with T = &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;]&lt;span class="org-warning"&gt;'&lt;/span&gt;:
 type_traits:2565:26:   required by substitution of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Fn&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; ... &lt;span class="org-type"&gt;_Args&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;static&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__result_of_success&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt; (declval&amp;lt;&lt;span class="org-type"&gt;_Fn&lt;/span&gt;&amp;gt;()((&lt;span class="org-type"&gt;declval&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;_Args&lt;/span&gt;&amp;gt;)()...)), &lt;span class="org-constant"&gt;std&lt;/span&gt;::__invoke_other&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;__result_of_other_impl&lt;/span&gt;::_S_test(&lt;span class="org-type"&gt;int&lt;/span&gt;) [with _Fn = Func; _Args = {&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;}]&lt;span class="org-warning"&gt;'&lt;/span&gt;
 type_traits:2576:55:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__result_of_impl&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;false&lt;/span&gt;, &lt;span class="org-constant"&gt;false&lt;/span&gt;, Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
 type_traits:3038:12:   recursively required by substitution of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Result&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Ret&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__is_invocable_impl&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;_Result&lt;/span&gt;, &lt;span class="org-type"&gt;_Ret&lt;/span&gt;, &lt;span class="org-constant"&gt;true&lt;/span&gt;, &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__void_t&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-constant"&gt;_CTp&lt;/span&gt;::&lt;span class="org-type"&gt;type&lt;/span&gt;&amp;gt; &amp;gt; [&lt;span class="org-constant"&gt;with&lt;/span&gt; _Result = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__invoke_result&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;; _Ret = &lt;span class="org-type"&gt;void&lt;/span&gt;]&lt;span class="org-warning"&gt;'&lt;/span&gt;
@@ -302,7 +605,7 @@ concepts:336:25:   required from &lt;span class="org-type"&gt;here&lt;/span&gt;
     2 |     &lt;span class="org-type"&gt;void&lt;/span&gt; f(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;);
       |            ^~~~
 Compiler returned: 1
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;p&gt;
 &lt;a href="https://compiler-explorer.com/z/W1jT6bxrf"&gt;Compiler Explorer&lt;/a&gt;
@@ -325,20 +628,20 @@ The compiler needs to figure out the overload set in order to resolve which one 
 &lt;/p&gt;
 
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &amp;amp;;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &amp;amp;;
 &lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; &amp;amp;;
 &lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &amp;amp;&amp;amp;;
 &lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; &amp;amp;&amp;amp;;
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;p&gt;
 with differing computations of the resulting &lt;code&gt;optional&lt;/code&gt; being returned.
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;F, &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;​::​move(*val))&amp;gt;;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;F, &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;​::​move(*val))&amp;gt;;
 &lt;span class="org-comment-delimiter"&gt;//&lt;/span&gt;&lt;span class="org-comment"&gt;or
 &lt;/span&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-type"&gt;remove_cv_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;F, &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(*val)&amp;gt;&amp;gt;;
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
@@ -354,8 +657,8 @@ If we constrain &lt;code&gt;transform&lt;/code&gt; we get the same errors as abo
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-org5976902" class="outline-2"&gt;
-&lt;h2 id="org5976902"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Constraints, what are they good for&lt;/h2&gt;
+&lt;div id="outline-container-orgec8cd8f" class="outline-2"&gt;
+&lt;h2 id="orgec8cd8f"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Constraints, what are they good for&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 Not absolutely nothing.
@@ -410,8 +713,8 @@ Constraints that let you control the choice of alternatives are wonderful, and r
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-org388d816" class="outline-2"&gt;
-&lt;h2 id="org388d816"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Can we do better?&lt;/h2&gt;
+&lt;div id="outline-container-org44f8b17" class="outline-2"&gt;
+&lt;h2 id="org44f8b17"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Can we do better?&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-4"&gt;
 &lt;p&gt;
 There are some notes in &lt;a href="https://wg21.link/P0798"&gt;P0798&lt;/a&gt; that suggest that Deducing This might help, &lt;a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0847r7.html"&gt;P0847&lt;/a&gt;.
@@ -429,7 +732,7 @@ P0847 has discussion about how deducing this might be applied to optional. There
 With the tools we have today, it looks possible, but still slightly messy. I managed to get my implementation of optional to compile and pass its own tests with.
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;
     &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(
         &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invocable&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;,
                        &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;)
@@ -440,10 +743,10 @@ With the tools we have today, it looks possible, but still slightly messy. I man
     &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;,
                                    &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(
                                        &lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;;
-    static_assert(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_array_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
-    static_assert(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;in_place_t&lt;/span&gt;&amp;gt;);
-    static_assert(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;nullopt_t&lt;/span&gt;&amp;gt;);
-    static_assert(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_object_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt; || &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_reference_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
+    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_array_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
+    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;in_place_t&lt;/span&gt;&amp;gt;);
+    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;nullopt_t&lt;/span&gt;&amp;gt;);
+    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_object_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt; || &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_reference_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
     &lt;span class="org-keyword"&gt;if&lt;/span&gt; (self.has_value()) {
         &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;{&lt;span class="org-constant"&gt;detail&lt;/span&gt;::from_function,
                            &lt;span class="org-constant"&gt;std&lt;/span&gt;::forward&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt;(f),
@@ -451,14 +754,14 @@ With the tools we have today, it looks possible, but still slightly messy. I man
     }
     &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;;
 }
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
 If there were a &lt;code&gt;std::forward_like_t&lt;/code&gt;, it might be possible to reduce some of the noise in computing the value category used for the &lt;code&gt;T&lt;/code&gt;. I also have not thought extensively about if the requires clause is truly needed in light of the &lt;code&gt;invoke_result_&lt;/code&gt; that can now be used in the trailing return type.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</guid><pubDate>Fri, 28 Nov 2025 17:06:58 GMT</pubDate></item><item><title>Nikola Blog Infrastructure</title><link>https://sdowney.org/posts/nikola-blog-infrastructure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org334ae85"&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</guid><pubDate>Fri, 28 Nov 2025 17:06:58 GMT</pubDate></item><item><title>Nikola Blog Infrastructure</title><link>https://sdowney.org/posts/nikola-blog-infrastructure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orge4ae46e"&gt;
 &lt;p&gt;
 I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
 &lt;/p&gt;
@@ -466,8 +769,8 @@ I've migrated from WordPress to a static blog generator–Nikola. This is how it
 &lt;/div&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="outline-container-org71ed231" class="outline-2"&gt;
-&lt;h2 id="org71ed231"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Nikola&lt;/h2&gt;
+&lt;div id="outline-container-orgbb78d42" class="outline-2"&gt;
+&lt;h2 id="orgbb78d42"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Nikola&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 Nikola is a static site generator written in python. It's mostly boring, which is a very good thing for software meant for use to be. Its home is &lt;a href="https://getnikola.org"&gt;https://getnikola.org&lt;/a&gt; and the source is on github at &lt;a href="https://github.com/getnikola/nikola"&gt;https://github.com/getnikola/nikola&lt;/a&gt;. It's many years old at this point, but not dead.
@@ -486,27 +789,27 @@ Conversion was straightforward using the tools that Nikola provided and &lt;a hr
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-orgad64039" class="outline-2"&gt;
-&lt;h2 id="orgad64039"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Orgmode plugin&lt;/h2&gt;
+&lt;div id="outline-container-orgda2d485" class="outline-2"&gt;
+&lt;h2 id="orgda2d485"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Orgmode plugin&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 Pulling a plugin into my working site was easy
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-zsh"&gt;nikola plugin -i orgmode
-&lt;/pre&gt;
+&lt;pre class="src src-zsh"&gt;&lt;code&gt;nikola plugin -i orgmode
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;p&gt;
 copied the code from &lt;a href="https://github.com/getnikola/plugins/tree/master/v8/orgmode"&gt;https://github.com/getnikola/plugins/tree/master/v8/orgmode&lt;/a&gt; and I just had to update the main configuration file, &lt;code&gt;conf.py&lt;/code&gt;, to map org files to the orgmode compiler.
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-python"&gt;&lt;span class="org-variable-name"&gt;COMPILERS&lt;/span&gt; &lt;span class="org-operator"&gt;=&lt;/span&gt; {
+&lt;pre class="src src-python"&gt;&lt;code&gt;&lt;span class="org-variable-name"&gt;COMPILERS&lt;/span&gt; &lt;span class="org-operator"&gt;=&lt;/span&gt; {
     &lt;span class="org-string"&gt;"rest"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.txt'&lt;/span&gt;, &lt;span class="org-string"&gt;'.rst'&lt;/span&gt;],
     &lt;span class="org-string"&gt;"markdown"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.md'&lt;/span&gt;, &lt;span class="org-string"&gt;'.mdown'&lt;/span&gt;, &lt;span class="org-string"&gt;'.markdown'&lt;/span&gt;],
     &lt;span class="org-string"&gt;"html"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.html'&lt;/span&gt;, &lt;span class="org-string"&gt;'.htm'&lt;/span&gt;],
     &lt;span class="org-string"&gt;"orgmode"&lt;/span&gt;: [&lt;span class="org-string"&gt;'.org'&lt;/span&gt;],
 }
-&lt;/pre&gt;
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
@@ -514,8 +817,8 @@ I then updated the source code for the elisp html exporter using code from &lt;a
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="outline-container-orgfd56a24" class="outline-2"&gt;
-&lt;h2 id="orgfd56a24"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; LaTeX support via KaTeX&lt;/h2&gt;
+&lt;div id="outline-container-org0727f4a" class="outline-2"&gt;
+&lt;h2 id="org0727f4a"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; LaTeX support via KaTeX&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 I've configure Nikola to support LaTeX via KaTeX rather than MathJax. It is supposed to be a bit faster. This means &lt;b&gt;inline&lt;/b&gt; math like \(x^2\) or \(1 &amp;lt; 2\) or with breaks like:
@@ -526,10 +829,10 @@ Or in running text where I want to mention \[ \frac{-b \pm \sqrt{b^2 - 4 a c}}{2
 It does mean I don't have access to latex blocks like
 &lt;/p&gt;
 &lt;div class="org-src-container"&gt;
-&lt;pre class="src src-latex"&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\begin&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}&lt;span class="org-font-latex-math"&gt;
-  n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i+1}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; = &lt;/span&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-font-latex-math"&gt;\frac&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;{n&lt;/span&gt;&lt;span class="org-font-latex-math"&gt;&lt;span class="org-font-latex-script-char"&gt;_{i}&lt;/span&gt;&lt;/span&gt;&lt;span class="org-font-latex-math"&gt; (d-i) (e-1)}{(i+1)}
-&lt;/span&gt;&lt;span class="org-font-latex-sedate"&gt;&lt;span class="org-keyword"&gt;\end&lt;/span&gt;&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
-&lt;/pre&gt;
+&lt;pre class="src src-latex"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;\begin&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
+  n_{i+1} = &lt;span class="org-keyword"&gt;\frac&lt;/span&gt;{n_{i} (d-i) (e-1)}{(i+1)}
+&lt;span class="org-keyword"&gt;\end&lt;/span&gt;{&lt;span class="org-function-name"&gt;equation&lt;/span&gt;}
+&lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 
 &lt;p&gt;
@@ -3103,174 +3406,4 @@ I have not done a good job at allocating names to the various bits and pieces. P
 
 &lt;p&gt; &lt;a href="https://github.com/steve-downey/what-comes-to-mind/blob/master/send-rec.org"&gt;Source For Blog&lt;/a&gt; &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/</guid><pubDate>Sun, 03 Oct 2021 04:00:00 GMT</pubDate></item><item><title>Standard Vocabulary for Algorithms</title><link>https://sdowney.org/posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/</link><dc:creator>Steve Downey</dc:creator><description>&lt;p&gt;This is feedback after considering &lt;a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2214r0.html"&gt;A Plan for C++23 Ranges&lt;/a&gt;
-
-Disclosure: I voted in favor of this. It does &lt;b&gt;not&lt;/b&gt; suggest work on &lt;a href="https://wg21.link/P1255"&gt;views::maybe [P1255R6]​&lt;/a&gt;. I'm fine with that priority.
-&lt;/p&gt;&lt;div id="outline-container-orga27da53" class="outline-2"&gt;
-&lt;h3 id="orga27da53"&gt;Vocabulary is not just Types between Components&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orga27da53"&gt;
-
- There's broad agreement that 'vocabulary types' belong in the standard. Domain independent types that can be used between otherwise uncoupled facilities. They each depend on facilities provided by Standard C++ and can thus be developed independently. Each component can rely on the API of a core vocabulary type not changing. This allows facilities to communicate effectively.
-
-A component can have std::string or std::vector&amp;lt;int&amp;gt; in its interface with little concern. The STL parts of the standard library have always relied on concepts for constraining template parameters implicitly, requiring an Iterator of particular category in places, or specializing algorithms based on such. Composition of container types has also been natural. No one is confused by a std::unordered_map&amp;lt;std::string, std::vector&amp;lt;my::person&amp;gt;&amp;gt;.
-
-&lt;!-- TEASER_END --&gt;
-
-The new C++20 range facilities allow composition of algorithms, which means that the names of algorithms will, and must, become part of the vocabulary of C++ programmers. Algorithms, and the names for them, are far broader than the linear containers supported by C++ today. It is a particular problem because C++ has named core algorithms badly, as they were not, until recently, first class entities.
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org1dee97c" class="outline-2"&gt;
-&lt;h3 id="org1dee97c"&gt;Algorithms are now first class entities&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org1dee97c"&gt;
-
- Functions are a terribly overloaded term in C++. Overloaded is an overloaded term.
-
-With respect to ranges and views, however, it should be clear that the adaptors, transformers, and other entities we apply to ranges and views to produce new ranges, views, and values, are now first class entities in their own right.
-
-The important thing, for programmers, is that moving up the ladder of abstraction should not be conceptually more difficult than dealing with existing libraries of functions. We have algorithms that deal with generic types rather than functions that deal with concrete types, but keeping them in mind should not be fundamentally more difficult.
-
-Naming is therefore critical.
-
-As are chosing the algorithms that are primitive, that is, the ones that compose into others in useful ways.
-
-I have some concerns about providing fused algorithms that a sufficiently smart compiler could optimize. On the other hand, I doubt how imminent sufficiently smart compilers are.
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org116280c" class="outline-2"&gt;
-&lt;h3 id="org116280c"&gt;Why Haskell keeps coming up&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org116280c"&gt;
-
- Python was the answer to "Why can't I just write pseudo-code?"
-
-I have text books where the authors seriously discussed writing out your algorithm into pseudo code, and then translating it into actual programming language. Programming languages were too high ceremony to discuss what you wanted to do, while normal English was not structured enough. "Scripting" languages gave precise higher level semantics that were implicit in the pseudo code, or it would have been impossible to translate by hand to other computer languages.
-
-Haskell was designed to do that for algorithm research. The primary goal was to be able to give direct executable form to a research paper. This was early replicable research. The paper provided, on its own, the mechanism to test and reproduce the result. Haskell source code can be embedded in LaTeX and given directly to a Haskell compiler. Every interesting algorithms paper for the last 30 years or so has implicitly included the prelude.
-
-Haskell itself is not a terribly complex language. Much of it is specified as sugar where a form is translated into a more primitive expression, as range for loops are in C++. Its power for researchers is in its inherent laziness, that an expression is not evaluated unless it is required, and its purity, that values are immutable. These properties make it straightforward to reason with and about. The core property of lazy evaluation has forced it to be pure, not allowing side-effects. This has forced it to be exemplary, and evolutionary, in supporting value oriented programming.
-
-These factors are why we end up often looking to Haskell.
-
-Value oriented programming has been an emerging style in modern C++. The new Range facilities embody the style. Being able to crib proveably correct facilities from modern programming language research is a benefit.
-
-There was a long period, in which C++ grew up, that academic research lagged behind the pragmatic craft of programming. This has, in retrospect, not been an unqualified success. Parallelism and concurrency were widely implemented without theoretic underpnnings. We are still trying to put C++'s memory model on firm footing. Many constructs regularly used in the past are now understood to be unsound, in explicable ways. Multi-threading should not be an experimental science.
-
-Object orientation is an area which still does not have satisfying theoretic backing. There are various theories that provide many of the same benefits, allowing abstraction and encapsulation. In OO, however, objects have identity and state, which implies that equational reasoning can fail, as two equivalent object may have distinct identity and then different behavior. Temporal calculus formalisms are still open research.
-
-The manifest success of OO{A,D,P} with limited underlying theory has allowed many practitioners to believe that academic research is irrelevant. To the extent of dismissing rigor. Jokes about the "M-word" are emblematic.
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org37a9e88" class="outline-2"&gt;
-&lt;h3 id="org37a9e88"&gt;Sidebar: Monads are boring&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org37a9e88"&gt;
-
- A monad is a generic type with a few operations, some of which can be expressed in terms of the others, that follow a few fundamental and fairly trivial rules. They allow predictable composition of entities that model monad.
-
-It is not about `then`. Although `then` does tend to fall out.
-
-The interesting thing is that algorithms can be built that take generic types that follow some "Laws", and they will do, something, correctly. For some kinds of generic type, what happens may be surprising, even interesting. The surprises will, however, not break anything. That's the point of the semantic guarantees surrounding the operations.
-
-C++ has philosophically adopted semantics surrounding Concepts. A Concept is entitled to demand behavior and laws in addition to the checkable syntax that can be enforced.
-
-The utility for an algorithm writer is that reasoning can be applied at a much higher level. Even beyond the abstraction that this is a Container, or Range, or View, being able reason about the operations for anything that provides a set of well defined operations means that the algorithm is correct, even if the details when applied to a new kind are obscure.
-
-Iterators provide a way for algorithms to work with many containers. Those same, correct, algorithms should be able to work with things that aren't Iterable, or Containers. It turns out having a named way of converting a Type&amp;lt;Type&amp;lt;Value&amp;gt;&amp;gt; to a Type&amp;lt;Value&amp;gt; opens up many algorithms to broader use. Flattening a vector of vectors into a linear vector is not the only use of a `concat`.
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org6725794" class="outline-2"&gt;
-&lt;h3 id="org6725794"&gt;Fold: In Which I Become Cranky About Names&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org6725794"&gt;
-
- One of the most primitive and yet powerful algorithms is `fold`. Fold takes a binary operation and interposes it between elements in an iterable data type. It replaces the commas {a, b, c, d, …} with `op`, resulting in {a op b op c op d … }
-
-Except that is slightly ambiguous. Is that (a op (b op (c op (d)))) or ((((a) op b) op c) op d)
-
-Right or left evaluation of the terms.
-
-Folding right is strictly more general, at least in the lambda calculus. Left fold can be implemented as a right fold, but not vice-versa.
-
-However, in C++, the normal implementation of folds is not as general as it might be, because C++ is strict in evaluating function arguments. This means that even though a fold whose operation might not need to evaluate one of its arguments in order to return a value, will still do so, because the argument is evaluated before being passed to the operation. This mean, in particular, that we can't simply undo fold by using a `cons` operation, reconstructing the list. The entire, indeterminate and possibly infinite, list must be evaluated even though all that is necesary is the first element.
-
-Left folding is tail recursive, and so can be converted to a loop. This is why it seems natural in C++.
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-function-name"&gt;fold_left&lt;/span&gt;(&lt;span class="org-type"&gt;Range&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;r&lt;/span&gt;, &lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-variable-name"&gt;init&lt;/span&gt;, &lt;span class="org-type"&gt;BinaryOperation&lt;/span&gt; &lt;span class="org-variable-name"&gt;op&lt;/span&gt;) {
-    &lt;span class="org-type"&gt;range_iterator_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;Range&lt;/span&gt;&amp;gt; &lt;span class="org-variable-name"&gt;b&lt;/span&gt; = begin(r);
-    &lt;span class="org-type"&gt;range_sentinel_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;Range&lt;/span&gt;&amp;gt; &lt;span class="org-variable-name"&gt;e&lt;/span&gt; = end(r);
-    &lt;span class="org-keyword"&gt;for&lt;/span&gt; (; b != e; ++b) {
-        init = op(&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(init), *b);
-    }
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; init;
-&lt;/pre&gt;
-&lt;/div&gt;
-Right fold is not generally tail recursive, although for finite sequences in C++, using reverse iterators, foldr is also a loop.
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;fold_right_loop&lt;/span&gt;(&lt;span class="org-type"&gt;Range&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;r&lt;/span&gt;, &lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-variable-name"&gt;init&lt;/span&gt;, &lt;span class="org-type"&gt;BinaryOperation&lt;/span&gt; &lt;span class="org-variable-name"&gt;op&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;result_of&lt;/span&gt;&amp;lt;&amp;gt;{
-    &lt;span class="org-type"&gt;range_iterator_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;Range&lt;/span&gt;&amp;gt; &lt;span class="org-variable-name"&gt;b&lt;/span&gt; = begin(r);
-    &lt;span class="org-type"&gt;range_sentinel_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;Range&lt;/span&gt;&amp;gt; &lt;span class="org-variable-name"&gt;e&lt;/span&gt; = end(r);
-    &lt;span class="org-keyword"&gt;for&lt;/span&gt; (; b != e; ++b) {
-        init = op(&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(init), *b);
-    }
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; init;
-&lt;/pre&gt;
-&lt;/div&gt;
-To make the diagrams below pretty, we assume that foldl over a sequence of T takes a single value of type Z and an op of Z -&amp;gt; T -&amp;gt; Z, while foldr over a sequence of T takes an op of type T -&amp;gt; Z -&amp;gt; Z and a value of type Z. For a left fold, the value is given to the op that takes the first element in the sequence, while for a right fold, it is given to the op that takes the last element in the sequence.
-&lt;div id="org00eb67f" class="figure"&gt;
-
-&lt;img src="http://sdowney.org/wp-content/uploads/2021/01/list.png" alt="list.png"&gt;
-
-&lt;/div&gt;
-&lt;div id="org5f93c72" class="figure"&gt;
-
-&lt;img src="http://sdowney.org/wp-content/uploads/2021/01/left-fold.png" alt="left-fold.png"&gt;
-
-&lt;/div&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;result = op(op(op(op(op(op(op(op(z, a), b), c), d), e), f), g), h);
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div id="orge028fbf" class="figure"&gt;
-
-&lt;img src="http://sdowney.org/wp-content/uploads/2021/01/right-fold.png" alt="right-fold.png"&gt;
-
-&lt;/div&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;result = op(a, op(b, op(c, op(d, op(e, op(f, op(g, op(h, z))))))));
-&lt;/pre&gt;
-&lt;/div&gt;
-So, left fold piles up the ops on the left and right fold piles them up on the right. The 'zero' or init value is with the last value for a right fold, and the first on a left fold. In converting to iteration, which is important, left fold is in the natural direction, and right fold is reversed, which means it can't be used that way on some sequences.
-
-So which one should be &lt;b&gt;the&lt;/b&gt; &lt;code&gt;fold&lt;/code&gt;. It's an important question because short names are implicitly privileged. Programmers assume that the short name is the best one, and longer names indicate more specialized usage. This isn't true for C++, but not really on purpose. We did think that `map` was a good choice. The programmers should probably reach for `unordered_map` instead is unfortunate, but at this point unfixable.
-
-Since C++ is strict, it would seem that left fold is the fold you mostly want, so it would be OK to call it &lt;code&gt;fold&lt;/code&gt;.
-
-Haskell, as lazy as it is, has issues with folds on ranges with indeterminate bounds. &lt;code&gt;foldl&lt;/code&gt; vs &lt;code&gt;foldr&lt;/code&gt; vs &lt;code&gt;foldl'&lt;/code&gt; is a constant question. &lt;a href="https://wiki.haskell.org/Foldr_Foldl_Foldl'"&gt;Foldr Foldl Foldl'&lt;/a&gt; Memory consumption of either stack or unevaluated expressions will surprise programmers.
-
-But in the literature, fold is right fold. In the pure lambda calculus, right fold is strictly more expressive. Tail recursion is a subset of primitive recursion, and left is tail recursive while right is not. If we call our left fold, &lt;code&gt;fold&lt;/code&gt;, we will confuse people.
-
-Further, the forward iteration is somewhat balanced by the fact that the normal addition to a sequence is &lt;code&gt;emplace_back&lt;/code&gt; or &lt;code&gt;push_back&lt;/code&gt;, which means that left fold will tend to reverse lists if the operation is accumulation into a sequence, if for example the op were &lt;code&gt;[](auto t){v.emplace_back(t);}&lt;/code&gt;.
-
-More, we have started to introduce lazy features into the language, with coroutines. Although we won't get them soon, the C++ standard library should eventually have good lazy algorithms. It would be unfortunate if we have to teach that you can't use &lt;code&gt;co_fold&lt;/code&gt; in place of &lt;code&gt;fold&lt;/code&gt; because they are opposite, or that &lt;code&gt;co_fold_left&lt;/code&gt; is how you spell the coroutine &lt;code&gt;fold&lt;/code&gt;. [Note co_ prefixes are mildly sarcastic.]
-
-C++ has a long history of setting defaults and realizing later that they are a problem.
-
-I would much prefer we not make a choice about which &lt;code&gt;fold&lt;/code&gt; is the fold, and just spell them as &lt;code&gt;fold_left&lt;/code&gt; and &lt;code&gt;fold_right&lt;/code&gt;.
-
-We should all be able to get behind not calling it &lt;code&gt;accumulate&lt;/code&gt;, even if we must live with &lt;code&gt;transform&lt;/code&gt;.
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org7f754e7" class="outline-2"&gt;
-&lt;h3 id="org7f754e7"&gt;Monoid&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org7f754e7"&gt;
-
- Some other time I'll vent about the various &lt;code&gt;fold&lt;/code&gt; operations and how they get extended if your type is a monoid. See Chris Di Bella's work such as &lt;a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1813r0.pdf"&gt;A Concept Design for the Numeric Algorithms&lt;/a&gt;, although this rant suggests that algorithms that operate on different Concepts should have different names. Overloading on concepts with semantic differences can be confusing.
-
-&lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/</guid><pubDate>Sat, 16 Jan 2021 23:22:19 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/</guid><pubDate>Sun, 03 Oct 2021 04:00:00 GMT</pubDate></item></channel></rss>

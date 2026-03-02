@@ -16,7 +16,7 @@
 <link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
 <link rel="canonical" href="https://sdowney.org/">
 <link rel="next" href="index-9.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/building-vcpkg-dependencies-with-project-toolchain/" type="text/html">
+<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]--><link rel="prefetch" href="posts/the-sender-sub-language/" type="text/html">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
 </head>
 <body>
@@ -58,12 +58,35 @@
 
     <div class="blog-post">
     <h3>
+<a href="posts/the-sender-sub-language/">The Sender Sub-Language</a><br><small>2026-02-28 18:40</small>
+</h3>
+    <div>
+
+        <div>
+<div class="abstract" id="orgddef4ee">
+<p>
+The paper <a href="http://wg21.link/P4014R0">The Sender Sub-Language</a> by Vinnie Falco &lt;vinnie.falco@gmail.com&gt; and Mungo Gill &lt;mungo.gill@me.com&gt; makes extensive use of my work at <a href="https://github.com/steve-downey/sender-examples">https://github.com/steve-downey/sender-examples</a>.  The code is also the basis for my talk at C++Now 2023, <a href="https://youtu.be/xXncLUD-4bA?si=tFXFFYLUxia9WW-c">Using the C++ Sender/Receiver Framework: Implement Control Flow for Async Processing</a>. They present the code accurately and fairly, and I am very happy they found it useful in describing and understanding the capabilities of Senders in the framework. There is no higher praise than someone finding your work useful to build upon.
+</p>
+
+<p>
+Nonetheless, we come to different overall conclusions about the Sender/Receiver framework.
+</p>
+
+</div>
+
+<p class="more"><a href="posts/the-sender-sub-language/">Read more…</a></p>
+</div>
+    </div>
+
+    </div>
+    <div class="blog-post">
+    <h3>
 <a href="posts/building-vcpkg-dependencies-with-project-toolchain/">Building vcpkg dependencies with project toolchain</a><br><small>2025-12-27 12:03</small>
 </h3>
     <div>
 
         <div>
-<div class="abstract" id="orgd3f21f0">
+<div class="abstract" id="org311b0dc">
 <p>
 Making sure vcpkg delivers packages built with your toolchain is not hard, but much of the advice on the internet is flat wrong. You need to specify your toolchain both in your project and in the the vcpkg <code>triplet</code>. There's an airgap between your project and the dependency in <code>vcpkg install</code>. The CMake settings can't just flow through.
 </p>
@@ -82,7 +105,7 @@ Making sure vcpkg delivers packages built with your toolchain is not hard, but m
     <div>
 
         <div>
-<div class="abstract" id="orgda1a411">
+<div class="abstract" id="org97d5a3c">
 <p>
 Why are optional::transform and optional::and_then not constrained by <code>invocable</code>?
 </p>
@@ -101,7 +124,7 @@ Why are optional::transform and optional::and_then not constrained by <code>invo
     <div>
 
         <div>
-<div class="abstract" id="org334ae85">
+<div class="abstract" id="orge4ae46e">
 <p>
 I've migrated from WordPress to a static blog generator–Nikola. This is how it works.
 </p>
@@ -294,32 +317,6 @@ Syntax isn't really awesome, but not utterly unworkable.
     </div>
 
     </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/">Standard Vocabulary for Algorithms</a><br><small>2021-01-16 18:22</small>
-</h3>
-    <div>
-
-        <div>
-<p>This is feedback after considering <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2214r0.html">A Plan for C++23 Ranges</a>
-
-Disclosure: I voted in favor of this. It does <b>not</b> suggest work on <a href="https://wg21.link/P1255">views::maybe [P1255R6]​</a>. I'm fine with that priority.
-</p>
-<div id="outline-container-orga27da53" class="outline-2">
-<h3 id="orga27da53">Vocabulary is not just Types between Components</h3>
-<div class="outline-text-2" id="text-orga27da53">
-
- There's broad agreement that 'vocabulary types' belong in the standard. Domain independent types that can be used between otherwise uncoupled facilities. They each depend on facilities provided by Standard C++ and can thus be developed independently. Each component can rely on the API of a core vocabulary type not changing. This allows facilities to communicate effectively.
-
-A component can have std::string or std::vector&lt;int&gt; in its interface with little concern. The STL parts of the standard library have always relied on concepts for constraining template parameters implicitly, requiring an Iterator of particular category in places, or specializing algorithms based on such. Composition of container types has also been natural. No one is confused by a std::unordered_map&lt;std::string, std::vector&lt;my::person&gt;&gt;.
-
-<p class="more"><a href="posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/">Read more…</a></p>
-</div>
-</div>
-</div>
-    </div>
-
-    </div>
 
 
         <div class="column row">
@@ -351,7 +348,7 @@ delimiters: [
                     }
                 );
             </script><hr>
-<footer id="footer"><p><small>Contents © 2025         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+<footer id="footer"><p><small>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
  <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
  <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
             

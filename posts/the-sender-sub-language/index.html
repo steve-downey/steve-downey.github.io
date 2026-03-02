@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " vocab="http://ogp.me/ns" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+<title>The Sender Sub-Language | What Comes to Mind</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link rel="stylesheet" href="../../assets/css/rst.min.css">
+<link rel="stylesheet" href="../../assets/css/foundation.min.css">
+<link rel="stylesheet" href="../../assets/css/app.css">
+<link rel="stylesheet" href="../../assets/css/modus-vivendi-tinted.css">
+<link href="../../assets/css/custom.css" rel="stylesheet" type="text/css">
+<meta content="#5670d4" name="theme-color">
+<link rel="alternate" type="application/rss+xml" title="RSS" href="../../rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="../../feed.atom">
+<link rel="canonical" href="https://sdowney.org/posts/the-sender-sub-language/">
+<!--[if lt IE 9]><script src="../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Steve Downey">
+<link rel="prev" href="../building-vcpkg-dependencies-with-project-toolchain/" title="Building vcpkg dependencies with project toolchain" type="text/html">
+<meta property="og:site_name" content="What Comes to Mind">
+<meta property="og:title" content="The Sender Sub-Language">
+<meta property="og:url" content="https://sdowney.org/posts/the-sender-sub-language/">
+<meta property="og:description" content="The paper The Sender Sub-Language by Vinnie Falco &lt;vinnie.falco@gmail.com&gt; and Mungo Gill &lt;mungo.gill@me.com&gt; makes extensive use of my work at https://github.com/steve-downey/sender-examples.  The co">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2026-02-28T18:40:21-05:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@sdowney.org">
+<meta name="twitter:creator" content="@sdowney">
+</head>
+<body>
+
+    
+
+    
+<div class="top-bar">
+<div class="top-bar-left">
+<ul class="menu">
+<li class="menu-text"><a href="https://sdowney.org/" title="What Comes to Mind" rel="home">What Comes to Mind</a></li>
+                <li><a href="../../archive.html">Archives</a></li>
+                <li><a href="../../categories/index.html">Tags</a></li>
+                <li><a href="mailto:sdowney@sdowney.dev"><i class="fa fa-envelope"></i></a></li>
+                <li><a href="https://github.com/steve-downey">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                <li><a href="https://mastodon.social/@Sdowney">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                <li><a href="https://bsky.app/profile/sdowney.bsky.social">Bluesky <i class="fa-brands fa-square-bluesky"></i></a></li>
+                <li><a href="../../feed.atom">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                <li><a href="../../rss.xml">RSS <i class="fa-solid fa-rss"></i></a></li>
+    
+    
+    </ul>
+</div>
+</div>
+
+    
+
+<div class="callout large primary">
+<div class="row column text-center">
+
+    <h1>The Sender Sub-Language</h1>
+    <h2 class="subheader"><small>2026-02-28 18:40</small></h2>
+
+</div>
+</div>
+
+<div class="row medium-8 large-7 columns">
+
+<div class="blog-post">
+    
+    
+
+
+    <div class="abstract" id="orgddef4ee">
+<p>
+The paper <a href="http://wg21.link/P4014R0">The Sender Sub-Language</a> by Vinnie Falco &lt;vinnie.falco@gmail.com&gt; and Mungo Gill &lt;mungo.gill@me.com&gt; makes extensive use of my work at <a href="https://github.com/steve-downey/sender-examples">https://github.com/steve-downey/sender-examples</a>.  The code is also the basis for my talk at C++Now 2023, <a href="https://youtu.be/xXncLUD-4bA?si=tFXFFYLUxia9WW-c">Using the C++ Sender/Receiver Framework: Implement Control Flow for Async Processing</a>. They present the code accurately and fairly, and I am very happy they found it useful in describing and understanding the capabilities of Senders in the framework. There is no higher praise than someone finding your work useful to build upon.
+</p>
+
+<p>
+Nonetheless, we come to different overall conclusions about the Sender/Receiver framework.
+</p>
+
+</div>
+
+<!-- TEASER_END -->
+
+<p>
+There are several papers in the February 2026 pre-Croydon mailing which are, taken together, asking to reconsider the sender / receiver framework, generally and especially in the context of networking. As this is the meeting in which C++26 will be finalized for publication, this is the last chance for any objections to anything being included. It would definitely have been better to have these objections and any new information earlier, but, since changing anything after the standard is shipped is far more difficult, even sustained opposition with new information is important to consider.
+</p>
+
+<p>
+This post, however, is not my consideration of the new papers.
+</p>
+
+<p>
+I simply wish to put the work I did in 2022 and 2023 in context.
+</p>
+<div id="outline-container-orgd03696b" class="outline-2">
+<h2 id="orgd03696b">
+<span class="section-number-2">1.</span> The Papers</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+The papers which I am looking at
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col class="org-left">
+<col class="org-left">
+<col class="org-left">
+<col class="org-left">
+</colgroup>
+<thead><tr>
+<th scope="col" class="org-left">Number</th>
+<th scope="col" class="org-left">Title</th>
+<th scope="col" class="org-left">Author</th>
+<th scope="col" class="org-left">Subgroup</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="org-left"><a href="https://wg21.link/P2583R0">P2583R0</a></td>
+<td class="org-left">Symmetric Transfer and Sender Composition</td>
+<td class="org-left">Mungo Gill, Vinnie Falco</td>
+<td class="org-left">LEWG Library Evolution</td>
+</tr>
+<tr>
+<td class="org-left"><a href="https://wg21.link/P4003R0">P4003R0</a></td>
+<td class="org-left">Coroutines for I/O</td>
+<td class="org-left">Vinnie Falco, Mungo Gill, Steve Gerbino</td>
+<td class="org-left">LEWGI SG18: LEWG Incubator,LEWG Library Evolution</td>
+</tr>
+<tr>
+<td class="org-left"><a href="https://wg21.link/P4007R0">P4007R0</a></td>
+<td class="org-left">Senders and Coroutines</td>
+<td class="org-left">Vinnie Falco, Mungo Gill</td>
+<td class="org-left">LEWG Library Evolution</td>
+</tr>
+<tr>
+<td class="org-left"><a href="https://wg21.link/P4014R0">P4014R0</a></td>
+<td class="org-left">The Sender Sub-Language</td>
+<td class="org-left">Vinnie Falco, Mungo Gill</td>
+<td class="org-left">LEWG Library Evolution</td>
+</tr>
+<tr>
+<td class="org-left"><a href="https://wg21.link/P4029R0">P4029R0</a></td>
+<td class="org-left">The SG14 Priority List for C++29/32</td>
+<td class="org-left">Michael Wong</td>
+<td class="org-left">SG14 Low Latency</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="outline-container-org3ddafc9" class="outline-2">
+<h2 id="org3ddafc9">
+<span class="section-number-2">2.</span> Abstracts and Suggested Polls</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+These quotes are drawn from their respective papers to provide context.
+</p>
+</div>
+<div id="outline-container-org522ae0e" class="outline-3">
+<h3 id="org522ae0e">
+<span class="section-number-3">2.1.</span> P2583R0: Symmetric Transfer and Sender Composition</h3>
+<div class="outline-text-3" id="text-2-1">
+</div>
+<div id="outline-container-orgfc9a8b2" class="outline-4">
+<h4 id="orgfc9a8b2">
+<span class="section-number-4">2.1.1.</span> Abstract</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+C++20 provides symmetric transfer (<a href="https://wg21.link/P0913R1">P0913R1</a>) - a mechanism where <code>await_suspend</code> returns a <code>coroutine_handle&lt;&gt;</code> and the compiler resumes the designated coroutine as a tail call. Coroutine chains execute in constant stack space. <code>std::execution</code> (<a href="https://wg21.link/P2300R10">P2300R10</a>) composes asynchronous operations through sender algorithms. These algorithms create receivers that are structs, not coroutines. No <code>coroutine_handle&lt;&gt;</code> exists at any intermediate point in a sender pipeline. When a coroutine <code>co_await</code> s a sender that completes synchronously, the stack grows by one frame per completion. <a href="https://wg21.link/P3552R3">P3552R3</a>’s <code>std::execution::task</code> inherits this property. The sender model’s zero-allocation composition property and symmetric transfer’s constant-stack property cannot both be satisfied. One requires structs. The other requires coroutines. This paper describes the mechanism, provides implementation experience, and documents the tradeoff.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org4ba4e57" class="outline-3">
+<h3 id="org4ba4e57">
+<span class="section-number-3">2.2.</span> P4003R0: Coroutines for I/O</h3>
+<div class="outline-text-3" id="text-2-2">
+</div>
+<div id="outline-container-org6d0a791" class="outline-4">
+<h4 id="org6d0a791">
+<span class="section-number-4">2.2.1.</span> Abstract</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+C++20 coroutines have five properties that, taken together, make them uniquely suited to asynchronous I/O: type erasure through <code>coroutine_handle&lt;&gt;</code> , customization through promise_type , stackless independently resumable frames, symmetric transfer through await_suspend , and compiler-managed state that persists across suspension points. Each was designed for generality. Their conjunction yields something no single property suggests: the optimal basis for byte-oriented I/O.
+</p>
+
+<p>
+We used C++20 coroutines directly for I/O - timers, sockets, DNS, TLS, HTTP - and observed what the language already provides. The protocol that emerged is the IoAwaitable: a system for associating a coroutine with an executor, stop token, and frame allocator, and  propagating this context forward through a coroutine chain to the operating system API boundary where asynchronous operations are performed.
+</p>
+</div>
+</div>
+<div id="outline-container-org80117c6" class="outline-4">
+<h4 id="org80117c6">
+<span class="section-number-4">2.2.2.</span> Suggested Straw Polls</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+SG4 polled at Kona (November 2023) on <a href="https://wg21.link/P2762R2">P2762R2</a> “Sender/Receiver Interface For Networking”
+</p>
+<blockquote>
+<p>
+“Networking should support only a sender/receiver model for asynchronous operations; the
+Networking TS’s executor model should be removed”
+</p>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col class="org-right">
+<col class="org-right">
+<col class="org-right">
+<col class="org-right">
+<col class="org-right">
+</colgroup>
+<tbody>
+<tr>
+<td class="org-right">SF</td>
+<td class="org-right">F</td>
+<td class="org-right">N</td>
+<td class="org-right">A</td>
+<td class="org-right">SA</td>
+</tr>
+<tr>
+<td class="org-right">5</td>
+<td class="org-right">5</td>
+<td class="org-right">1</td>
+<td class="org-right">0</td>
+<td class="org-right">1</td>
+</tr>
+</tbody>
+</table>
+<p>
+Consensus.
+</p>
+</blockquote>
+
+<p>
+The approach described in this paper - a coroutine-native I/O model using C++20 language features - was not among the alternatives considered.
+</p>
+
+<p>
+Poll 1. A coroutine-native I/O model is a distinct approach from both the Networking TS executor model and the sender/receiver model.
+</p>
+
+<p>
+Poll 2. New research into coroutine-native I/O, not available at the time of the Kona poll, warrants consideration.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-org7b46ccf" class="outline-3">
+<h3 id="org7b46ccf">
+<span class="section-number-3">2.3.</span> P4007R0: Senders and Coroutines</h3>
+<div class="outline-text-3" id="text-2-3">
+</div>
+<div id="outline-container-org1b2730a" class="outline-4">
+<h4 id="org1b2730a">
+<span class="section-number-4">2.3.1.</span> Abstract</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<p>
+<code>std::execution</code> serves its domain well. Different asynchronous domains have different costs, and a single model cannot minimize all of them simultaneously. This paper identifies four structural gaps where the sender model meets coroutines: three at the boundary - error reporting, error returns, and frame allocator propagation - and one inside the composition mechanism - the symmetric transfer gap documented in <a href="https://wg21.link/P2583R0">P2583R0</a>. Each gap is the cost of a property the sender model requires for compile-time analysis (<a href="https://wg21.link/P2300R10">P2300R10</a>, <a href="https://wg21.link/P4014R0">P4014R0</a> ). They are not design defects, they are tradeoffs. Mandating that standard networking be built on the sender model would force coroutine I/O users to pay these costs. A coroutine-native I/O research report (<a href="https://wg21.link/P4003R0">P4003R0</a>) made the gaps visible by showing that partial results, error returns, cancellation, and frame allocator propagation emerge naturally when I/O is designed for coroutines. The findings hold regardless of that report’s specific design. This paper recommends: ship <code>std::execution</code> for C++26, defer task (<a href="https://wg21.link/P3552R3">P3552R3</a>, “Add a Coroutine Task Type”) to C++29, and explore coroutine-native I/O designs alongside sender-based designs.
+</p>
+</div>
+</div>
+<div id="outline-container-org32f26aa" class="outline-4">
+<h4 id="org32f26aa">
+<span class="section-number-4">2.3.2.</span> Suggested Straw Polls</h4>
+<div class="outline-text-4" id="text-2-3-2">
+<ol class="org-ol">
+<li>“I/O completions that carry both an error code and a byte count present a design challenge for the three-channel completion model.”</li>
+<li>“The coroutine integration in std::execution has open design questions that would benefit from further iteration.”</li>
+<li>“WG21 should explore coroutine-native I/O designs alongside sender-based designs.”</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="outline-container-org91ef3a4" class="outline-3">
+<h3 id="org91ef3a4">
+<span class="section-number-3">2.4.</span> P4014R0: The Sender Sub-Language</h3>
+<div class="outline-text-3" id="text-2-4">
+</div>
+<div id="outline-container-org21e78fa" class="outline-4">
+<h4 id="org21e78fa">
+<span class="section-number-4">2.4.1.</span> Abstract</h4>
+<div class="outline-text-4" id="text-2-4-1">
+<p>
+C++26 introduces a rich sub-language for asynchronous programming through <code>std::execution</code> (P2300R10) . Sender pipelines replace C++’s control flow, variable binding, error handling, and iteration with library-level equivalents rooted in continuation-passing style and monadic composition. This paper is a guide to the Sender SubLanguage: its theoretical foundations, the programming model it provides, and the engineering trade-offs it makes. The trade-offs serve specific domains well. The question is whether other domains deserve the same freedom to choose the model that serves them.
+</p>
+</div>
+</div>
+<div id="outline-container-orgc6e3ab8" class="outline-4">
+<h4 id="orgc6e3ab8">
+<span class="section-number-4">2.4.2.</span> Suggested Straw Polls</h4>
+<div class="outline-text-4" id="text-2-4-2">
+<ol class="org-ol">
+<li>“ std::execution serves coroutine-driven async I/O less ideally than heterogeneous compute.”</li>
+<li>“Coroutine-driven async I/O should have the same freedom to optimize for its domain as heterogeneous compute did</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="outline-container-orgc573cc9" class="outline-3">
+<h3 id="orgc573cc9">
+<span class="section-number-3">2.5.</span> P4029R0: The SG14 Priority List for C++29/32</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+This paper is a forward looking priority list for SG14 Low Latency. It has overlapping concerns about the sender / receiver model with the other papers.
+</p>
+</div>
+<div id="outline-container-org3784f20" class="outline-4">
+<h4 id="org3784f20">
+<span class="section-number-4">2.5.1.</span> Executors/coroutine backward flow + lazy execution vs direct forward flow model for CPU-bound I/O and Networking.</h4>
+<div class="outline-text-4" id="text-2-5-1">
+<ol class="org-ol">
+<li>Decouple Networking from std::execution SG14 advise that Networking (SG4) should not be built on top of <a href="https://wg21.link/P2300">P2300</a>. The allocation patterns required by <a href="https://wg21.link/P2300">P2300</a> are incompatible with low-latency networking requirements.</li>
+<li>Standardize "Direct Style" I/O Prioritize <a href="https://wg21.link/P4003">P4003</a> (or similar Direct Style concepts) as the C++29 Networking model. It offers the performance of Asio/Beast with the ergonomics of Coroutines, maintaining the "Zero-Overhead" principle.</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+<div id="outline-container-org111aa17" class="outline-2">
+<h2 id="org111aa17">
+<span class="section-number-2">3.</span> The Sender Model</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+As described in my earlier papers and talks, and accurately summarized by <a href="https://wg21.link/P4014R0">P4014R0: The Sender Sub-Language</a>, senders are a framework for working with continuations and for supporting <a href="https://en.wikipedia.org/wiki/Continuation-passing_style">Continuation Passing Style</a>, or CPS. The CPS formalism is a full model of computation, Turing complete, and equivalent in expressiveness to Single Static Assignment, the current, common, model that compilers use for lowering programming languages. CPS used to be far more common, and is still in use in some language implementations today. The reasons for choosing one over the other is entirely out of scope for this discussion.
+</p>
+
+<p>
+The Sender model is also closely tied to the <code>Cont</code> monad. For background see <a href="https://hackage-content.haskell.org/package/mtl-2.3.2/docs/Control-Monad-Cont.html">Control.Monad.Cont</a>, <a href="https://en.wikibooks.org/wiki/Haskell/Continuation_passing_style">Haskell/Continuation passing style</a>, and <a href="https://www.schoolofhaskell.com/school/to-infinity-and-beyond/pick-of-the-week/the-mother-of-all-monads">The Mother of all Monads</a>. The monad abstracts away the chaining and connection of the results to the eventual receiver. Senders augment the model by adding the three channels used to communicate between the processes, allowing for propagation of values, errors, and cancellation requests throughout the graph.
+</p>
+
+<p>
+The Sender / Receiver framework is also a model of Structured Concurrency, <a href="https://www.250bpm.com/p/structured-concurrency">Structured Concurrency, Martin Sustrik</a>, <a href="https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/">Notes on structured concurrency, or: Go statement considered harmful – Nathaniel J. Smith</a>, a system for ensuring that concurrent operations have clear entry and exit points and will all complete before exiting. It does so in part by also using delimited continuations, ones that have fixed, rather than unbounded, end points, <a href="https://okmij.org/ftp/continuations/index.html">Continuations and Delimited Control – Oleg Kiselyov</a>
+</p>
+
+<p>
+In evaluating a library, particularly one that will be frozen in the C++ standard, where good libraries go to die, I want to know if what is being offered is complete, and if it is not, if what is offered has everything necessary and sufficient to base further work on outside the library. We made this mistake, for example, with the initial Ranges work where there was no mechanism for a user to write a pipe-able algorithm with what was specified. This was quickly rectified, fortunately. With <code>format</code>, the ability to statically check the format string was back-filled, and was not ABI compatible, causing vendors much distress in shipping the new component.
+</p>
+
+<p>
+It was with this in mind that I was looking at what was well specified and available in the original P2300 papers. In general I prefer systems that have firm theory behind them over ones that merely, pragmatically, appear to work. As an industry we were all burned badly by the pthreads library, which appeared to work, but we now know can not by itself. The pthread model is also one that we have demonstrated, repeatedly, that human beings can not reason about. On the other hand, object orientation still has no good theory, but has been demonstrably successful. The abstractions it provides allow humans to reason at a much higher level about the complex systems we are producing.
+</p>
+
+<p>
+The work in 2022 and 2023 was with the goal in mind of showing that the end user facing parts of the model, senders and the basic adapters in the proposal, were necessary and sufficient as a basis for further work. That the primitives would not need to be scrapped or changed in ways that would break code once written. This is not the same as saying there need be no other adapters or algorithms provided, or that the sender primitives are the most efficient implementations. The question was how far can the model be pushed without having to work with <code>operational state</code> directly.
+</p>
+
+<p>
+The base sender operations, <code>just</code>, <code>then</code>, and <code>let_value</code>, allow all structured programming constructs to be created, including structured concurrency. The model is complete and well founded.
+</p>
+
+<p>
+The proposal, as adopted, also provides for user implementation and inter-operation of types that have operational states, senders and sender adapters themselves. Analogously to how the standard allows for user written containers to participate in the containers/iterators/algorithms triad that comprised the original <a href="https://www.stepanovpapers.com/STL/DOC.PDF">STL proposal</a>. Users may not write new containers or iterators often, but there is no particular magic involved, and writing one should be well within the capabilities of most C++ programmers.
+</p>
+
+<p>
+A sender is somewhat more difficult, as it is new so there is less documentation, but it is not intrinsically hard. In addition, the APIs tend to encourage correct and safe use. Senders describe the shape of work and should be generally reusable. Programmers will work with senders and sender adaptors several orders of magnitude more than they will write a sender or sender adapter from scratch.
+</p>
+
+<p>
+My question was not, what is missing that can be added. That is self evidently lots of things. We are still adding range algorithms and new ranges after years of work and more are in the pipeline for C++29 already. My question was, can real applications be created with nothing more than what is easily available in senders, and can an application programmer who does not wish to create a sender today, still deliver a sender graph of async work.
+</p>
+
+<p>
+That was, and is, clearly, to me, yes.
+</p>
+
+
+<p>
+Exported: 2026-03-01 21:13:43
+</p>
+</div>
+</div>
+
+    <div class="callout">
+    <ul class="menu simple">
+<li>Author: Steve Downey</li>
+
+    </ul>
+</div>
+    
+
+    
+        <div class="column row">
+            <ul class="pagination" role="navigation" aria-label="Pagination">
+<li>
+                    <a href="../building-vcpkg-dependencies-with-project-toolchain/" rel="prev" title="Building vcpkg dependencies with project toolchain">« <span class="show-for-sr">Previous post</span></a>
+                </li>
+            </ul>
+</div>
+
+    
+    
+
+
+</div>
+
+
+
+<hr>
+<footer id="footer"><p><small>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+ <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
+            
+        </footer>
+</div>
+
+    
+
+
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VGV27RDN3E');
+</script>
+</body>
+</html>

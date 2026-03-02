@@ -82,7 +82,7 @@ transform is the c++ spelling for map or'>
     
 
 
-    <div class="abstract" id="orgda1a411">
+    <div class="abstract" id="org97d5a3c">
 <p>
 Why are optional::transform and optional::and_then not constrained by <code>invocable</code>?
 </p>
@@ -90,8 +90,8 @@ Why are optional::transform and optional::and_then not constrained by <code>invo
 </div>
 
 <!-- TEASER_END -->
-<div id="outline-container-orgfd1f7cb" class="outline-2">
-<h2 id="orgfd1f7cb">
+<div id="outline-container-orgddf97f8" class="outline-2">
+<h2 id="orgddf97f8">
 <span class="section-number-2">1.</span> Optional "Monadic" Interface</h2>
 <div class="outline-text-2" id="text-1">
 <p>
@@ -126,8 +126,8 @@ They don't work if you don't give them invocables, and rely on <code>invoke_resu
 </p>
 </div>
 </div>
-<div id="outline-container-org8c7b2d9" class="outline-2">
-<h2 id="org8c7b2d9">
+<div id="outline-container-org5046b45" class="outline-2">
+<h2 id="org5046b45">
 <span class="section-number-2">2.</span> SFINAE is shallow</h2>
 <div class="outline-text-2" id="text-2">
 <p>
@@ -138,13 +138,13 @@ The problem is if another template has to be instantiated in order to evaluate t
 Consider the code:
 </p>
 <div class="org-src-container">
-<pre class="src src-c++"><span class="org-type">void</span> <span class="org-function-name">f</span>(<span class="org-type">int</span>&amp;);
+<pre class="src src-c++"><code><span class="org-type">void</span> <span class="org-function-name">f</span>(<span class="org-type">int</span>&amp;);
 
 <span class="org-keyword">auto</span> <span class="org-variable-name">l</span> = [](<span class="org-keyword">auto</span>&amp; <span class="org-variable-name">y</span>) {
     f(y);
     <span class="org-keyword">return</span> 42;
 };
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -155,29 +155,29 @@ The two important parts are the <code>auto&amp;</code> parameter and the implici
 We can rewrite it, to make things possibly more obvious:
 </p>
 <div class="org-src-container">
-<pre class="src src-c++"><span class="org-keyword">struct</span> <span class="org-type">Func</span> {
+<pre class="src src-c++"><code><span class="org-keyword">struct</span> <span class="org-type">Func</span> {
     <span class="org-keyword">template</span> &lt;<span class="org-keyword">typename</span> <span class="org-type">T</span>&gt;
     <span class="org-keyword">auto</span> <span class="org-keyword">operator</span><span class="org-function-name">()</span>(<span class="org-type">T</span>&amp; <span class="org-variable-name">t</span>) {
         f(t);
         <span class="org-keyword">return</span> 42;
     }
 };
-</pre>
+</code></pre>
 </div>
 
 <p>
 and to slightly spoil things, the problem code is effectively:
 </p>
 <div class="org-src-container">
-<pre class="src src-c++">static_assert(<span class="org-constant">std</span>::<span class="org-type">invocable</span>&lt;Func, <span class="org-type">int</span> <span class="org-keyword">const</span>&amp;&gt;);
-</pre>
+<pre class="src src-c++"><code><span class="org-keyword">static_assert</span>(<span class="org-constant">std</span>::<span class="org-type">invocable</span>&lt;Func, <span class="org-type">int</span> <span class="org-keyword">const</span>&amp;&gt;);
+</code></pre>
 </div>
 
 <p>
 which produces:
 </p>
 <div class="org-src-container">
-<pre class="src src-c++">&lt;source&gt;: In instantiation of <span class="org-warning">'</span><span class="org-keyword">auto</span> <span class="org-constant">Func</span>::<span class="org-keyword">operator</span>()(<span class="org-type">T</span>&amp;) [with T = <span class="org-keyword">const</span> <span class="org-type">int</span>]<span class="org-warning">'</span>:
+<pre class="src src-c++"><code>&lt;source&gt;: In instantiation of <span class="org-warning">'</span><span class="org-keyword">auto</span> <span class="org-constant">Func</span>::<span class="org-keyword">operator</span>()(<span class="org-type">T</span>&amp;) [with T = <span class="org-keyword">const</span> <span class="org-type">int</span>]<span class="org-warning">'</span>:
 type_traits:2565:26:   required by substitution of <span class="org-warning">'</span><span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">_Fn</span>, <span class="org-keyword">class</span> ... <span class="org-type">_Args</span>&gt; <span class="org-keyword">static</span> <span class="org-constant">std</span>::<span class="org-type">__result_of_success</span>&lt;<span class="org-keyword">decltype</span> (declval&lt;<span class="org-type">_Fn</span>&gt;()((<span class="org-type">declval</span>&lt;<span class="org-type">_Args</span>&gt;)()...)), <span class="org-constant">std</span>::__invoke_other&gt; <span class="org-constant">std</span>::<span class="org-constant">__result_of_other_impl</span>::_S_test(<span class="org-type">int</span>) [with _Fn = Func; _Args = {<span class="org-keyword">const</span> <span class="org-type">int</span>&amp;}]<span class="org-warning">'</span>
 type_traits:2576:55:   required from <span class="org-warning">'</span><span class="org-keyword">struct</span> <span class="org-constant">std</span>::<span class="org-type">__result_of_impl</span>&lt;<span class="org-constant">false</span>, <span class="org-constant">false</span>, Func, <span class="org-keyword">const</span> <span class="org-type">int</span>&amp;&gt;<span class="org-warning">'</span>
 type_traits:3038:12:   recursively required by substitution of <span class="org-warning">'</span><span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">_Result</span>, <span class="org-keyword">class</span> <span class="org-type">_Ret</span>&gt; <span class="org-keyword">struct</span> <span class="org-constant">std</span>::<span class="org-type">__is_invocable_impl</span>&lt;<span class="org-type">_Result</span>, <span class="org-type">_Ret</span>, <span class="org-constant">true</span>, <span class="org-constant">std</span>::<span class="org-type">__void_t</span>&lt;<span class="org-keyword">typename</span> <span class="org-constant">_CTp</span>::<span class="org-type">type</span>&gt; &gt; [<span class="org-constant">with</span> _Result = <span class="org-constant">std</span>::<span class="org-type">__invoke_result</span>&lt;Func, <span class="org-keyword">const</span> <span class="org-type">int</span>&amp;&gt;; _Ret = <span class="org-type">void</span>]<span class="org-warning">'</span>
@@ -191,7 +191,7 @@ concepts:336:25:   required from <span class="org-type">here</span>
     2 |     <span class="org-type">void</span> f(<span class="org-type">int</span>&amp;);
       |            ^~~~
 Compiler returned: 1
-</pre>
+</code></pre>
 </div>
 <p>
 <a href="https://compiler-explorer.com/z/W1jT6bxrf">Compiler Explorer</a>
@@ -214,20 +214,20 @@ The compiler needs to figure out the overload set in order to resolve which one 
 </p>
 
 <div class="org-src-container">
-<pre class="src src-c++"><span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">F</span>&gt; <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-function-name">transform</span>(<span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>) &amp;;
+<pre class="src src-c++"><code><span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">F</span>&gt; <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-function-name">transform</span>(<span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>) &amp;;
 <span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">F</span>&gt; <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-function-name">transform</span>(<span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>) <span class="org-keyword">const</span> &amp;;
 <span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">F</span>&gt; <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-function-name">transform</span>(<span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>) &amp;&amp;;
 <span class="org-keyword">template</span>&lt;<span class="org-keyword">class</span> <span class="org-type">F</span>&gt; <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-function-name">transform</span>(<span class="org-type">F</span>&amp;&amp; <span class="org-variable-name">f</span>) <span class="org-keyword">const</span> &amp;&amp;;
-</pre>
+</code></pre>
 </div>
 <p>
 with differing computations of the resulting <code>optional</code> being returned.
 </p>
 <div class="org-src-container">
-<pre class="src src-c++"><span class="org-keyword">using</span> <span class="org-type">U</span> = <span class="org-type">invoke_result_t</span>&lt;F, <span class="org-keyword">decltype</span>(<span class="org-constant">std</span>​::​move(*val))&gt;;
+<pre class="src src-c++"><code><span class="org-keyword">using</span> <span class="org-type">U</span> = <span class="org-type">invoke_result_t</span>&lt;F, <span class="org-keyword">decltype</span>(<span class="org-constant">std</span>​::​move(*val))&gt;;
 <span class="org-comment-delimiter">//</span><span class="org-comment">or
 </span><span class="org-keyword">using</span> <span class="org-type">U</span> = <span class="org-type">remove_cv_t</span>&lt;<span class="org-type">invoke_result_t</span>&lt;F, <span class="org-keyword">decltype</span>(*val)&gt;&gt;;
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -243,8 +243,8 @@ If we constrain <code>transform</code> we get the same errors as above. <a href=
 </p>
 </div>
 </div>
-<div id="outline-container-org5976902" class="outline-2">
-<h2 id="org5976902">
+<div id="outline-container-orgec8cd8f" class="outline-2">
+<h2 id="orgec8cd8f">
 <span class="section-number-2">3.</span> Constraints, what are they good for</h2>
 <div class="outline-text-2" id="text-3">
 <p>
@@ -300,8 +300,8 @@ Constraints that let you control the choice of alternatives are wonderful, and r
 </p>
 </div>
 </div>
-<div id="outline-container-org388d816" class="outline-2">
-<h2 id="org388d816">
+<div id="outline-container-org44f8b17" class="outline-2">
+<h2 id="org44f8b17">
 <span class="section-number-2">4.</span> Can we do better?</h2>
 <div class="outline-text-2" id="text-4">
 <p>
@@ -320,7 +320,7 @@ P0847 has discussion about how deducing this might be applied to optional. There
 With the tools we have today, it looks possible, but still slightly messy. I managed to get my implementation of optional to compile and pass its own tests with.
 </p>
 <div class="org-src-container">
-<pre class="src src-c++"><span class="org-keyword">template</span> &lt;<span class="org-keyword">class</span> <span class="org-type">F</span>, <span class="org-keyword">class</span> <span class="org-type">Self</span>&gt;
+<pre class="src src-c++"><code><span class="org-keyword">template</span> &lt;<span class="org-keyword">class</span> <span class="org-type">F</span>, <span class="org-keyword">class</span> <span class="org-type">Self</span>&gt;
     <span class="org-keyword">requires</span>(
         <span class="org-constant">std</span>::<span class="org-type">invocable</span>&lt;<span class="org-type">F</span>,
                        <span class="org-keyword">decltype</span>(<span class="org-constant">std</span>::forward_like&lt;<span class="org-type">Self</span>&gt;(<span class="org-constant">std</span>::declval&lt;T&gt;()))&gt;)
@@ -331,10 +331,10 @@ With the tools we have today, it looks possible, but still slightly messy. I man
     <span class="org-keyword">using</span> <span class="org-type">U</span> = <span class="org-constant">std</span>::<span class="org-type">invoke_result_t</span>&lt;<span class="org-type">F</span>,
                                    <span class="org-keyword">decltype</span>(<span class="org-constant">std</span>::forward_like&lt;<span class="org-type">Self</span>&gt;(
                                        <span class="org-constant">std</span>::declval&lt;T&gt;()))&gt;;
-    static_assert(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_array_v</span>&lt;<span class="org-type">U</span>&gt;);
-    static_assert(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">in_place_t</span>&gt;);
-    static_assert(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">nullopt_t</span>&gt;);
-    static_assert(<span class="org-constant">std</span>::<span class="org-type">is_object_v</span>&lt;<span class="org-type">U</span>&gt; || <span class="org-constant">std</span>::<span class="org-type">is_reference_v</span>&lt;<span class="org-type">U</span>&gt;);
+    <span class="org-keyword">static_assert</span>(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_array_v</span>&lt;<span class="org-type">U</span>&gt;);
+    <span class="org-keyword">static_assert</span>(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">in_place_t</span>&gt;);
+    <span class="org-keyword">static_assert</span>(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">nullopt_t</span>&gt;);
+    <span class="org-keyword">static_assert</span>(<span class="org-constant">std</span>::<span class="org-type">is_object_v</span>&lt;<span class="org-type">U</span>&gt; || <span class="org-constant">std</span>::<span class="org-type">is_reference_v</span>&lt;<span class="org-type">U</span>&gt;);
     <span class="org-keyword">if</span> (self.has_value()) {
         <span class="org-keyword">return</span> <span class="org-type">optional</span>&lt;<span class="org-type">U</span>&gt;{<span class="org-constant">detail</span>::from_function,
                            <span class="org-constant">std</span>::forward&lt;<span class="org-type">F</span>&gt;(f),
@@ -342,7 +342,7 @@ With the tools we have today, it looks possible, but still slightly messy. I man
     }
     <span class="org-keyword">return</span> <span class="org-type">optional</span>&lt;<span class="org-type">U</span>&gt;;
 }
-</pre>
+</code></pre>
 </div>
 
 <p>
@@ -393,7 +393,7 @@ delimiters: [
                     }
                 );
             </script><hr>
-<footer id="footer"><p><small>Contents © 2025         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+<footer id="footer"><p><small>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
  <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
  <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
             

@@ -58,6 +58,32 @@
 
     <div class="blog-post">
     <h3>
+<a href="posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/">Standard Vocabulary for Algorithms</a><br><small>2021-01-16 18:22</small>
+</h3>
+    <div>
+
+        <div>
+<p>This is feedback after considering <a href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2020/p2214r0.html">A Plan for C++23 Ranges</a>
+
+Disclosure: I voted in favor of this. It does <b>not</b> suggest work on <a href="https://wg21.link/P1255">views::maybe [P1255R6]​</a>. I'm fine with that priority.
+</p>
+<div id="outline-container-orga27da53" class="outline-2">
+<h3 id="orga27da53">Vocabulary is not just Types between Components</h3>
+<div class="outline-text-2" id="text-orga27da53">
+
+ There's broad agreement that 'vocabulary types' belong in the standard. Domain independent types that can be used between otherwise uncoupled facilities. They each depend on facilities provided by Standard C++ and can thus be developed independently. Each component can rely on the API of a core vocabulary type not changing. This allows facilities to communicate effectively.
+
+A component can have std::string or std::vector&lt;int&gt; in its interface with little concern. The STL parts of the standard library have always relied on concepts for constraining template parameters implicitly, requiring an Iterator of particular category in places, or specializing algorithms based on such. Composition of container types has also been natural. No one is confused by a std::unordered_map&lt;std::string, std::vector&lt;my::person&gt;&gt;.
+
+<p class="more"><a href="posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/">Read more…</a></p>
+</div>
+</div>
+</div>
+    </div>
+
+    </div>
+    <div class="blog-post">
+    <h3>
 <a href="posts/index.php/2020/11/28/blog-infrastructure-work/">Blog Infrastructure Work</a><br><small>2020-11-28 19:05</small>
 </h3>
     <div>
@@ -883,7 +909,7 @@ White Paper,</li>
 
 
 <hr>
-<footer id="footer"><p><small>Contents © 2025         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+<footer id="footer"><p><small>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
  <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
  <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
             
