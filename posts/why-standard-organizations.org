@@ -1,0 +1,107 @@
+#+TITLE: Why Standards Organizations
+#+DATE: {{{modification-time(%Y-%m-%d, VC)}}}
+#+AUTHOR: Steve Downey
+#+EMAIL: sdowney@gmail.com
+
+#+description: An explanation of why standards organizations exist
+#+keywords:
+#+language: en
+
+#+org-export-with-smart-quotes: nil
+#+org-export-with-emphasize: t
+#+org-export-with-special-strings: t
+#+org-export-with-fixed-width: t
+#+org-export-with-timestamps: t
+#+org-export-preserve-breaks: nil
+#+org-export-with-sub-superscripts: nil
+#+org-export-with-archived-trees: headline
+#+org-export-with-author: t
+#+org-export-headline-levels: 3
+
+#+org-export-with-broken-links: nil
+#+org-export-with-clocks: nil
+#+org-export-with-creator: nil
+#+org-export-with-drawers: (not "LOGBOOK")
+#+org-export-with-date: t
+#+org-export-with-entities: t
+
+#+org-export-with-email: nil
+#+org-export-with-footnotes: t
+#+org-export-with-inlinetasks: t
+#+org-export-with-section-numbers: t
+#+org-export-with-planning: nil
+#+org-export-with-priority: nil
+#+org-export-with-properties: nil
+#+org-export-with-statistics-cookies: t
+#+org-export-with-tags: t
+
+#+org-export-with-tasks: t
+#+org-export-with-latex: t
+#+org-export-timestamp-file: t
+#+org-export-with-title: n
+#+org-export-with-toc: nil
+#+org-export-with-todo: t
+#+org-export-with-tables: t
+
+#+org-html-link-use-abs-url: nil
+#+org-html-postamble: nil
+#+org-html-preamble: t
+#+org-html-scripts: n
+#+org-html-style: nil
+#+org-html5-fancy: t
+#+org-html-self-link-headlines: t
+
+#+html_doctype: xhtml5
+#+html_container: div
+#+html_link_home:
+#+html_link_up:
+#+html_mathjax:
+#+html_head:
+#+html_head_extra:
+#+infojs_opt:
+
+#+select_tags: export
+#+exclude_tags: noexport
+
+#+bibliography: ../references.bib
+#+cite_export: basic author-year author
+
+#+startup: showall
+
+#+begin_abstract
+The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
+
+It's a radically oversimplified too long elevator pitch.
+#+end_abstract
+
+{{{TEASER_END}}}
+
+"Why Standards Organizations" is actually a really good question, as is the related question of if C and C++ should move from ISO.
+
+Standards organizations exist because standards are important and governments know they aren't particularly competent to create them. But standards can also have legal impact, like the fire code that says building materials must meet some criteria to be legal for people to live in. Screws have to match the tools and the holes they are meant to go in.
+
+The people who have the expertise to define all this are the people who make things. That's actually a problem. Letting BigScrewCo say that BigScrew #7 is the standard means they have a huge advantage. BigScrewCo and BigDriverCo could conspire to cut everyone else out of the market.
+
+So you want an independent organization, with rules to prevent that.
+
+That org gave Microsoft, IBM, and Bell Labs the legal cover to meet with each other and conspire about their competing products. Remember that those companies, in particular, had already agreed to remedies for their antitrust violations. So meeting under the auspices of ANSI made all the lawyers, if not happy, at least less worried.
+
+Open Source did not exist. GNU and the FSF were brand new. Collaborating in public wasn't a thing, either, because we didn't have The Web, even if we did have early Internet.
+
+There are a lot of standards organizations now [insert [[https://xkcd.com/927/][xkcd:Standards]]]. Nor does it seem particularly necessary from a legal or technical perspective to host something like a language or ecosystem standard within one. However, existing orgs give some level of credibility.
+
+That's somewhat important, because it short circuits a lot of questions about how good, or what process, etc, for the quality of a standard.
+
+It also helps on the other end, getting participation. It's much easier to explain to my manager and my company that I'm doing work on an ISO, or ECMA, Apache, or Python Software Foundation project and get all the approvals to engage and spend work hours on it. Similarly for GCC or LLVM or a bunch of other established open source projects.
+
+New projects, or my own projects, are possible, but more work. Harder to get approvals, or to spend working hours or actual cash on travel for. And that is similar for everyone everywhere, even to some extend for a sole proprietorship consultancy.
+
+So, yes, while we could set up something entirely new, that makes other things more complicated, and it is more work. And a new organization has to be able to answer the question of why should we listen to [[https://github.com/grafikrobot][René]] and Steve, even if [[https://robot-dreams.net/author/grafik/][René]] is one of the leading experts on the C++ ecosystem and tools, and [[https://avatars.sched.co/8/2f/4704556/avatar.jpg?c22][Steve]] is old and has grey hair, but works for a [[https://www.bloomberg.com/company/values/tech-at-bloomberg/][really big company]].
+
+LLVM and GCC are definitely interested in getting answers to this, especially for the parts that no one ought to care about as long as there is one answer, but neither is really the right group. It also turns out that even walled garden ecosystems end up caring about C, C++, and Fortran, because they want access to the code written in those languages, but integration is a terrible mess.
+
+We joke that the most common build system is not CMake, it's setup.py.
+
+So, a moderate sized post, with a not terribly satisfying engineering answer, because like most hard problems, [[link://slug/quote-file][it's not a technical problem it is a people problem.]]
+
+ C++ stays at ISO because ISO has rights to the standard, and getting those rights to move it elsewhere is a hard problem, and would make everyone involved have to do some work just to continue to participate. Doing all that would have to be a massively clear win, and so no one is trying to take on the impossible task.
