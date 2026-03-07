@@ -6,6 +6,14 @@
     xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <sitemap>
+  <loc>https://sdowney.org/categories/c%2B%2B.atom</loc>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
+ </sitemap>
+ <sitemap>
+  <loc>https://sdowney.org/categories/c%2B%2B.xml</loc>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
+ </sitemap>
+ <sitemap>
   <loc>https://sdowney.org/categories/emacs.atom</loc>
   <lastmod>2026-03-02T02:02:00Z</lastmod>
  </sitemap>
@@ -31,14 +39,14 @@
  </sitemap>
  <sitemap>
   <loc>https://sdowney.org/feed.atom</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>https://sdowney.org/rss.xml</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </sitemap>
  <sitemap>
   <loc>https://sdowney.org/sitemap.xml</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T18:27:00Z</lastmod>
  </sitemap>
 </sitemapindex>

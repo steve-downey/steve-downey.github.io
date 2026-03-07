@@ -3,7 +3,78 @@
  &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
  &lt;img alt="Creative Commons License BY-NC-SA"
  style="border-width:0; margin-bottom:12px;"
- src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Mon, 02 Mar 2026 02:13:44 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>The Sender Sub-Language</title><link>https://sdowney.org/posts/the-sender-sub-language/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgddef4ee"&gt;
+ src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sat, 07 Mar 2026 16:59:38 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Why Standard Organizations</title><link>https://sdowney.org/posts/why-standard-organizations/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org8b16085"&gt;
+&lt;p&gt;
+The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
+&lt;/p&gt;
+
+&lt;p&gt;
+It's a radically oversimplified too long elevator pitch.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;!-- TEASER_END --&gt;
+
+&lt;p&gt;
+"Why Standards Organizations" is actually a really good question, as is the related question of if C and C++ should move from ISO.
+&lt;/p&gt;
+
+&lt;p&gt;
+Standards organizations exist because standards are important and governments know they aren't particularly competent to create them. But standards can also have legal impact, like the fire code that says building materials must meet some criteria to be legal for people to live in. Screws have to match the tools and the holes they are meant to go in.
+&lt;/p&gt;
+
+&lt;p&gt;
+The people who have the expertise to define all this are the people who make things. That's actually a problem. Letting BigScrewCo say that BigScrew #7 is the standard means they have a huge advantage. BigScrewCo and BigDriverCo could conspire to cut everyone else out of the market.
+&lt;/p&gt;
+
+&lt;p&gt;
+So you want an independent organization, with rules to prevent that.
+&lt;/p&gt;
+
+&lt;p&gt;
+That org gave Microsoft, IBM, and Bell Labs the legal cover to meet with each other and conspire about their competing products. Remember that those companies, in particular, had already agreed to remedies for their antitrust violations. So meeting under the auspices of ANSI made all the lawyers, if not happy, at least less worried.
+&lt;/p&gt;
+
+&lt;p&gt;
+Open Source did not exist. GNU and the FSF were brand new. Collaborating in public wasn't a thing, either, because we didn't have The Web, even if we did have early Internet.
+&lt;/p&gt;
+
+&lt;p&gt;
+There are a lot of standards organizations now [insert &lt;a href="https://xkcd.com/927/"&gt;xkcd:Standards&lt;/a&gt;]. Nor does it seem particularly necessary from a legal or technical perspective to host something like a language or ecosystem standard within one. However, existing orgs give some level of credibility.
+&lt;/p&gt;
+
+&lt;p&gt;
+That's somewhat important, because it short circuits a lot of questions about how good, or what process, etc, for the quality of a standard.
+&lt;/p&gt;
+
+&lt;p&gt;
+It also helps on the other end, getting participation. It's much easier to explain to my manager and my company that I'm doing work on an ISO, or ECMA, Apache, or Python Software Foundation project and get all the approvals to engage and spend work hours on it. Similarly for GCC or LLVM or a bunch of other established open source projects.
+&lt;/p&gt;
+
+&lt;p&gt;
+New projects, or my own projects, are possible, but more work. Harder to get approvals, or to spend working hours or actual cash on travel for. And that is similar for everyone everywhere, even to some extend for a sole proprietorship consultancy.
+&lt;/p&gt;
+
+&lt;p&gt;
+So, yes, while we could set up something entirely new, that makes other things more complicated, and it is more work. And a new organization has to be able to answer the question of why should we listen to &lt;a href="https://github.com/grafikrobot"&gt;René&lt;/a&gt; and Steve, even if &lt;a href="https://robot-dreams.net/author/grafik/"&gt;René&lt;/a&gt; is one of the leading experts on the C++ ecosystem and tools, and &lt;a href="https://avatars.sched.co/8/2f/4704556/avatar.jpg?c22"&gt;Steve&lt;/a&gt; is old and has grey hair, but works for a &lt;a href="https://www.bloomberg.com/company/values/tech-at-bloomberg/"&gt;really big company&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+LLVM and GCC are definitely interested in getting answers to this, especially for the parts that no one ought to care about as long as there is one answer, but neither is really the right group. It also turns out that even walled garden ecosystems end up caring about C, C++, and Fortran, because they want access to the code written in those languages, but integration is a terrible mess.
+&lt;/p&gt;
+
+&lt;p&gt;
+We joke that the most common build system is not CMake, it's setup.py.
+&lt;/p&gt;
+
+&lt;p&gt;
+So, a moderate sized post, with a not terribly satisfying engineering answer, because like most hard problems, &lt;a href="https://sdowney.org/pages/quote-file/"&gt;it's not a technical problem it is a people problem.&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+C++ stays at ISO because ISO has rights to the standard, and getting those rights to move it elsewhere is a hard problem, and would make everyone involved have to do some work just to continue to participate. Doing all that would have to be a massively clear win, and so no one is trying to take on the impossible task.
+&lt;/p&gt;</description><category>C++</category><guid>https://sdowney.org/posts/why-standard-organizations/</guid><pubDate>Sat, 07 Mar 2026 15:21:36 GMT</pubDate></item><item><title>The Sender Sub-Language</title><link>https://sdowney.org/posts/the-sender-sub-language/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgddef4ee"&gt;
 &lt;p&gt;
 The paper &lt;a href="http://wg21.link/P4014R0"&gt;The Sender Sub-Language&lt;/a&gt; by Vinnie Falco &amp;lt;vinnie.falco@gmail.com&amp;gt; and Mungo Gill &amp;lt;mungo.gill@me.com&amp;gt; makes extensive use of my work at &lt;a href="https://github.com/steve-downey/sender-examples"&gt;https://github.com/steve-downey/sender-examples&lt;/a&gt;.  The code is also the basis for my talk at C++Now 2023, &lt;a href="https://youtu.be/xXncLUD-4bA?si=tFXFFYLUxia9WW-c"&gt;Using the C++ Sender/Receiver Framework: Implement Control Flow for Async Processing&lt;/a&gt;. They present the code accurately and fairly, and I am very happy they found it useful in describing and understanding the capabilities of Senders in the framework. There is no higher praise than someone finding your work useful to build upon.
 &lt;/p&gt;
@@ -3289,121 +3360,4 @@ I have not done a good job at allocating names to the various bits and pieces. P
 
 &lt;p&gt; Please consider this as an exhibition of techniques rather than as a solution. &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/index.php/2021/10/03/a-local-cmake-workflow-with-docker/</guid><pubDate>Sun, 03 Oct 2021 04:00:00 GMT</pubDate></item><item><title>std::execution, Sender/Receiver, and the Continuation Monad</title><link>https://sdowney.org/posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/</link><dc:creator>Steve Downey</dc:creator><description>&lt;p&gt; Some thoughts on the &lt;a href="https://wg21.link/p2300"&gt;std::execution&lt;/a&gt; proposal and my understanding of the underlying theory. &lt;/p&gt;
-
-&lt;div id="outline-container-org6280fb4" class="outline-2"&gt;
-&lt;h3 id="org6280fb4"&gt;What's proposed&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org6280fb4"&gt;
-&lt;p&gt; From the paper's &lt;a href="https://brycelelbach.github.io/wg21_p2300_std_execution/std_execution.html#intro"&gt;Introduction&lt;/a&gt; &lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt; This paper proposes a self-contained design for a Standard C++ framework for managing asynchronous execution on generic execution contexts. It is based on the ideas in [P0443R14] and its companion papers. &lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt; Which doesn't tell you much. &lt;/p&gt;
-
-&lt;p&gt; It proposes a framework where the principle abstractions are Senders, Receivers, and Schedulers. &lt;/p&gt;
-
-&lt;dl class="org-dl"&gt;
-&lt;dt&gt;Sender&lt;/dt&gt;&lt;dd&gt;A composable unit of work.&lt;/dd&gt;
-&lt;dt&gt;Receiver&lt;/dt&gt;&lt;dd&gt;Delimits work, handling completion, exceptions, or cancellation.&lt;/dd&gt;
-&lt;dt&gt;Schedulers&lt;/dt&gt;&lt;dd&gt;Arranges for the context work is done in.&lt;/dd&gt;
-&lt;/dl&gt;
-
-&lt;!-- TEASER_END --&gt;
-
-&lt;p&gt; The primary user facing concept is the sender. Values and functions can be lifted directly into senders. Senders can be stacked together, with a sender passing its value on to another function. Or stacking exception or cancellation handling the same way. &lt;/p&gt;
-
-&lt;p&gt; Receivers handle the three ways a sender can complete, by returning a value, throwing an exception, or being canceled. As described, receivers are most likely to be implemented within particular algorithms that combine senders, such as &lt;a href="https://brycelelbach.github.io/wg21_p2300_std_execution/std_execution.html#example-then"&gt;`then`&lt;/a&gt; or &lt;a href="https://brycelelbach.github.io/wg21_p2300_std_execution/std_execution.html#example-retry"&gt;`retry`&lt;/a&gt;. &lt;/p&gt;
-
-&lt;p&gt; Schedulers provide access to execution contexts. Like inline, single thread, a thread pool, a GPU, and so on, would all have schedulers that provide for putting a sender into the context they manage. &lt;/p&gt;
-
-&lt;p&gt; There's a fairly large API surface being proposed. But there's an underlying theory about this, governing what algorithms need to be there and how the pieces fit together. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org8699f4f" class="outline-2"&gt;
-&lt;h3 id="org8699f4f"&gt;Continuation Passing Style and the Continuation Monad&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org8699f4f"&gt;
-&lt;p&gt; Continuation passing style is a transformation from a normal function and a call stack to a direction to send the result to the "continuation" without returning. This means the functions context can be cleaned up. Delimited continuations are a slight variation, where instead of an unbounded "rest of the program", the continuation has an end point and a value. It's essentially a function, and can be handled as such. There is a purely mechanical method for converting all of the lambda calculus transforms into CPS form, and this can be profitable for compilers based on lambda, or related logics, like system F. &lt;/p&gt;
-
-&lt;p&gt; The mechanical transformation also means that all the control structures, like loops, gotos, coroutines, exceptions, have CPS equivalents. &lt;/p&gt;
-
-&lt;p&gt; CPS is tedious, though. Having to explicitly add a continuation to everything is complicated. &lt;/p&gt;
-
-&lt;p&gt; However, there's also a typeclass, or concept, that allows you to convert regular functions into continuation passing style, automatically. It's then rather straightforward to involve concerns like where work is being run for something that wraps up the entire work. Even being able to switch back and forth between contexts. That's the continuation monad. &lt;/p&gt;
-
-&lt;p&gt; And unfortunately monads became an organizing principle in programming language theory one or two decades after most CS programs were standardized. So it's all complicated and involves things we weren't trained on. Fitting it into C++ has been an ongoing challenge, and until we had generic lambda was neither reasonbly concise nor idiomatic. &lt;/p&gt;
-
-&lt;p&gt; See, however, the new monadic interface additions for std::optional for why you want this. Or Ranges, which are solidly based in the 'list' or non-deterministic monad. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org32f30b7" class="outline-2"&gt;
-&lt;h3 id="org32f30b7"&gt;We have a poor relationship with Theory&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org32f30b7"&gt;
-&lt;p&gt; There is no satisfactory PL theory for object oriented programming. There's lots of work, but it mostly ends up describing something that OO programmers don't think is quite the same as what they do. Even the ones who spend a lot of time doing theory. &lt;/p&gt;
-
-&lt;p&gt; Yet OO was, and is, a successful discipline. Working with identity, behavior, and state has produced remarkable results. Temporal calculi, not so much. &lt;/p&gt;
-
-&lt;p&gt; For a long while, we as a discipline thought that multi-threading was similar. There was poor theory, but we had hardware, and libraries that let us use that hardware to do concurrent work correctly. &lt;/p&gt;
-
-&lt;p&gt; That turned out not to be the case. &lt;/p&gt;
-
-&lt;p&gt; Concurrency can't be just a library, unfortunately. Concurrency models that hardware vendors will commit to won't promise not to violate causality. That makes producing a programming model programmers can use frighteningly difficult. &lt;/p&gt;
-
-&lt;p&gt; Which is why having a sound theory for std::execution is a good thing, even if the theory is unfamiliar. &lt;/p&gt;
-
-&lt;p&gt; But as a group, we learned the wrong lessons from the 80s and thought it was a researcher's job to take the successes of practitioners and put a sound basis to them. Ignoring that it is a feedback loop. In the 60s and 70s, those researchers were also the practitioners. It's not wrong to get out ahead of theory, but we do need to check back. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org4d78be1" class="outline-2"&gt;
-&lt;h3 id="org4d78be1"&gt;p2300 std::execution&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org4d78be1"&gt;
-&lt;p&gt; Senders, via the Decorator pattern, lift ordinary functions into the continuation passing style. People writing functions only need to be concerned with handling the arguments they are passed, without concern for execution context or continuations. Functions used by senders act like, and are, normal functions. &lt;/p&gt;
-
-&lt;p&gt; Senders manage a bundle of channels, representing normal return of a value, throwing an exception, or an error channel to handle cancellation, or other errors not within the bound of ordinary functions. All of these channels can be composed taking the result to another function, or monadically with a function returning a sender, where that function can determine the kind of sender based on the values of the arguments. The channels can be combined or rerouted, connecting one to another, or presenting a variant containing either result, exception, and/or error to the continuation function. &lt;/p&gt;
-
-&lt;p&gt; Although senders form a logical graph of units of work, the physical type model is containment, much like expression templates. The result of binding senders together via an algorithm is a sender that contains the bound together senders. There are no nodes or allocations inherent to the model, just function calls. &lt;/p&gt;
-
-&lt;p&gt; C++ coroutines fit into this model. C++ coroutines are, from the outside, functions with rules about the interaction patterns with the returned value. Making a coroutine owning type a sender, and a sender co_awaitable, is possible and has been demonstrated. &lt;/p&gt;
-
-&lt;p&gt; std::execution takes the Continuation Monad and fits it to C++ control flow, return or exception, and adds cancellation, which incidentally allows a channel for failures from execution contexts. The thread pool can potentially signal failure via the error channel, without aliasing problems from application function code. However, for advanced users, these can be folded back into the normal function arguments and handled by application code. Policy decisions are not burned into the ROM of std::execution, but there are defaults that can be provided by application infrastructure authors. &lt;/p&gt;
-
-&lt;p&gt; Those infrastructure authors do not have to be std library vendors. The protocols, rendered as concepts, are available to normal users. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org2dd1cec" class="outline-2"&gt;
-&lt;h3 id="org2dd1cec"&gt;Network TS&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org2dd1cec"&gt;
-&lt;dl class="org-dl"&gt;
-&lt;dt&gt;&lt;span class="underline"&gt;Eppur si muove&lt;/span&gt;&lt;/dt&gt;&lt;dd&gt;And yet it moves&lt;/dd&gt;
-&lt;/dl&gt;
-
-&lt;p&gt; I do not believe ASIO's model is a firm foundation for all async programming. However, it is well proven, and exists. It works. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-
-&lt;div id="outline-container-org5f111d1" class="outline-2"&gt;
-&lt;h3 id="org5f111d1"&gt;And …&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org5f111d1"&gt;
-&lt;p&gt; I have confidence that a networking library can and will be built using p2300. I am less confident that can be done in the timeframe for C++26. I do not believe for a moment we could have one for C++23, even with an existence proof a networking library appearing now. It's simply too late to review and agree. We're in the same place as coroutines. We can have the machinery, but without all of the application user facing infrastructure we should have. &lt;/p&gt;
-
-&lt;p&gt; I think this was the right choice with coroutines, and I think providing the machinery for general continuation based async in the standard library so that we can build on top of it is the right choice. The authors have committed to making sure all the facilities are available for programmers, in particular the pipe syntax (an issue for ranges) as well as providing bases or adapters for coroutine promises and typed senders. We can experiment and add existing practice as we go. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-
-&lt;div id="outline-container-orgb7e8b70" class="outline-2"&gt;
-&lt;h3 id="orgb7e8b70"&gt;Disclaimer&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgb7e8b70"&gt;
-&lt;p&gt; This is &lt;b&gt;all&lt;/b&gt; my personal opinion, based on my own understanding. I've been in the meetings, I've been in discussions, asked questions. But if I'm wrong about some aspect of the proposal, that's on me. Certainly not a formal opinion of Bloomberg, where I work. While we do lots of network services, and async programming, this isn't what our tech looks like at all. Getting from here to there is an open question, but it would be for ASIO, too. &lt;/p&gt;
-
-&lt;p&gt; At least it isn't CORBA. &lt;/p&gt;
-
-&lt;p&gt; &lt;a href="https://github.com/steve-downey/what-comes-to-mind/blob/master/send-rec.org"&gt;Source For Blog&lt;/a&gt; &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/</guid><pubDate>Sun, 03 Oct 2021 04:00:00 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/index.php/2021/10/03/a-local-cmake-workflow-with-docker/</guid><pubDate>Sun, 03 Oct 2021 04:00:00 GMT</pubDate></item></channel></rss>

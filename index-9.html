@@ -30,10 +30,10 @@
 <li class="menu-text"><a href="https://sdowney.org/" title="What Comes to Mind" rel="home">What Comes to Mind</a></li>
                 <li><a href="archive.html">Archives</a></li>
                 <li><a href="categories/index.html">Tags</a></li>
-                <li><a href="mailto:sdowney@sdowney.dev"><i class="fa fa-envelope"></i></a></li>
-                <li><a href="https://github.com/steve-downey">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                <li><a href="mailto:sdowney@sdowney.dev">Email <i class="fa fa-envelope"></i></a></li>
+                <li><a href="https://github.com/steve-downey">GitHub <i class="fa-brands fa-github"></i></a></li>
                 <li><a href="https://mastodon.social/@Sdowney">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
-                <li><a href="https://bsky.app/profile/sdowney.bsky.social">Bluesky <i class="fa-brands fa-square-bluesky"></i></a></li>
+                <li><a href="https://bsky.app/profile/sdowney.org">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
                 <li><a href="feed.atom">ATOM <i class="fa-solid fa-atom"></i></a></li>
                 <li><a href="rss.xml">RSS <i class="fa-solid fa-rss"></i></a></li>
     
@@ -56,6 +56,43 @@
 <div class="row medium-8 large-7 columns">
 
 
+    <div class="blog-post">
+    <h3>
+<a href="posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/">std::execution, Sender/Receiver, and the Continuation Monad</a><br><small>2021-10-03 00:00</small>
+</h3>
+    <div>
+
+        <div>
+<p> Some thoughts on the <a href="https://wg21.link/p2300">std::execution</a> proposal and my understanding of the underlying theory. </p>
+
+<div id="outline-container-org6280fb4" class="outline-2">
+<h3 id="org6280fb4">What's proposed</h3>
+<div class="outline-text-2" id="text-org6280fb4">
+<p> From the paper's <a href="https://brycelelbach.github.io/wg21_p2300_std_execution/std_execution.html#intro">Introduction</a> </p>
+
+<blockquote>
+<p> This paper proposes a self-contained design for a Standard C++ framework for managing asynchronous execution on generic execution contexts. It is based on the ideas in [P0443R14] and its companion papers. </p>
+</blockquote>
+
+<p> Which doesn't tell you much. </p>
+
+<p> It proposes a framework where the principle abstractions are Senders, Receivers, and Schedulers. </p>
+
+<dl class="org-dl">
+<dt>Sender</dt>
+<dd>A composable unit of work.</dd>
+<dt>Receiver</dt>
+<dd>Delimits work, handling completion, exceptions, or cancellation.</dd>
+<dt>Schedulers</dt>
+<dd>Arranges for the context work is done in.</dd>
+</dl>
+<p class="more"><a href="posts/index.php/2021/10/03/stdexecution-sender-receiver-and-the-continuation-monad/">Read more…</a></p>
+</div>
+</div>
+</div>
+    </div>
+
+    </div>
     <div class="blog-post">
     <h3>
 <a href="posts/index.php/2021/01/16/standard-vocabulary-for-algorithms/">Standard Vocabulary for Algorithms</a><br><small>2021-01-16 18:22</small>

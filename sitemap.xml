@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>https://sdowney.org/</loc>
-  <lastmod>2026-02-28T23:57:00Z</lastmod>
+  <lastmod>2026-03-07T18:27:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/2004/</loc>
@@ -87,11 +87,15 @@
  </url>
  <url>
   <loc>https://sdowney.org/archive.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/categories/</loc>
-  <lastmod>2026-02-28T17:28:00Z</lastmod>
+  <lastmod>2026-03-07T15:28:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://sdowney.org/categories/c%2B%2B/</loc>
+  <lastmod>2026-03-07T15:28:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/categories/emacs/</loc>
@@ -107,39 +111,39 @@
  </url>
  <url>
   <loc>https://sdowney.org/index-1.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-2.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-3.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-4.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-5.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-6.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-7.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-8.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-9.html</loc>
-  <lastmod>2026-03-02T02:02:00Z</lastmod>
+  <lastmod>2026-03-07T16:59:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index.php/2004/09/08/test-mail-post/</loc>
@@ -634,6 +638,10 @@
   <lastmod>2026-02-28T17:28:00Z</lastmod>
  </url>
  <url>
+  <loc>https://sdowney.org/pages/quote-file/</loc>
+  <lastmod>2026-03-07T16:07:00Z</lastmod>
+ </url>
+ <url>
   <loc>https://sdowney.org/posts/104/</loc>
   <lastmod>2026-02-28T17:28:00Z</lastmod>
  </url>
@@ -1028,5 +1036,9 @@
  <url>
   <loc>https://sdowney.org/posts/the-sender-sub-language/</loc>
   <lastmod>2026-02-28T23:57:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://sdowney.org/posts/why-standard-organizations/</loc>
+  <lastmod>2026-03-07T15:28:00Z</lastmod>
  </url>
 </urlset>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="../assets/xml/rss.xsl" media="all"?><rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>What Comes to Mind (Posts about C++)</title><link>https://sdowney.org/</link><description></description><atom:link href="https://sdowney.org/categories/c%2B%2B.xml" rel="self" type="application/rss+xml"></atom:link><language>en</language><copyright>Contents © 2026 &lt;a href="mailto:sdowney@sdowney.dev"&gt;Steve Downey&lt;/a&gt; 
+ &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
+ &lt;img alt="Creative Commons License BY-NC-SA"
+ style="border-width:0; margin-bottom:12px;"
+ src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sat, 07 Mar 2026 16:59:38 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Why Standard Organizations</title><link>https://sdowney.org/posts/why-standard-organizations/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org8b16085"&gt;
+&lt;p&gt;
+The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
+&lt;/p&gt;
+
+&lt;p&gt;
+It's a radically oversimplified too long elevator pitch.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;!-- TEASER_END --&gt;
+
+&lt;p&gt;
+"Why Standards Organizations" is actually a really good question, as is the related question of if C and C++ should move from ISO.
+&lt;/p&gt;
+
+&lt;p&gt;
+Standards organizations exist because standards are important and governments know they aren't particularly competent to create them. But standards can also have legal impact, like the fire code that says building materials must meet some criteria to be legal for people to live in. Screws have to match the tools and the holes they are meant to go in.
+&lt;/p&gt;
+
+&lt;p&gt;
+The people who have the expertise to define all this are the people who make things. That's actually a problem. Letting BigScrewCo say that BigScrew #7 is the standard means they have a huge advantage. BigScrewCo and BigDriverCo could conspire to cut everyone else out of the market.
+&lt;/p&gt;
+
+&lt;p&gt;
+So you want an independent organization, with rules to prevent that.
+&lt;/p&gt;
+
+&lt;p&gt;
+That org gave Microsoft, IBM, and Bell Labs the legal cover to meet with each other and conspire about their competing products. Remember that those companies, in particular, had already agreed to remedies for their antitrust violations. So meeting under the auspices of ANSI made all the lawyers, if not happy, at least less worried.
+&lt;/p&gt;
+
+&lt;p&gt;
+Open Source did not exist. GNU and the FSF were brand new. Collaborating in public wasn't a thing, either, because we didn't have The Web, even if we did have early Internet.
+&lt;/p&gt;
+
+&lt;p&gt;
+There are a lot of standards organizations now [insert &lt;a href="https://xkcd.com/927/"&gt;xkcd:Standards&lt;/a&gt;]. Nor does it seem particularly necessary from a legal or technical perspective to host something like a language or ecosystem standard within one. However, existing orgs give some level of credibility.
+&lt;/p&gt;
+
+&lt;p&gt;
+That's somewhat important, because it short circuits a lot of questions about how good, or what process, etc, for the quality of a standard.
+&lt;/p&gt;
+
+&lt;p&gt;
+It also helps on the other end, getting participation. It's much easier to explain to my manager and my company that I'm doing work on an ISO, or ECMA, Apache, or Python Software Foundation project and get all the approvals to engage and spend work hours on it. Similarly for GCC or LLVM or a bunch of other established open source projects.
+&lt;/p&gt;
+
+&lt;p&gt;
+New projects, or my own projects, are possible, but more work. Harder to get approvals, or to spend working hours or actual cash on travel for. And that is similar for everyone everywhere, even to some extend for a sole proprietorship consultancy.
+&lt;/p&gt;
+
+&lt;p&gt;
+So, yes, while we could set up something entirely new, that makes other things more complicated, and it is more work. And a new organization has to be able to answer the question of why should we listen to &lt;a href="https://github.com/grafikrobot"&gt;René&lt;/a&gt; and Steve, even if &lt;a href="https://robot-dreams.net/author/grafik/"&gt;René&lt;/a&gt; is one of the leading experts on the C++ ecosystem and tools, and &lt;a href="https://avatars.sched.co/8/2f/4704556/avatar.jpg?c22"&gt;Steve&lt;/a&gt; is old and has grey hair, but works for a &lt;a href="https://www.bloomberg.com/company/values/tech-at-bloomberg/"&gt;really big company&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+LLVM and GCC are definitely interested in getting answers to this, especially for the parts that no one ought to care about as long as there is one answer, but neither is really the right group. It also turns out that even walled garden ecosystems end up caring about C, C++, and Fortran, because they want access to the code written in those languages, but integration is a terrible mess.
+&lt;/p&gt;
+
+&lt;p&gt;
+We joke that the most common build system is not CMake, it's setup.py.
+&lt;/p&gt;
+
+&lt;p&gt;
+So, a moderate sized post, with a not terribly satisfying engineering answer, because like most hard problems, &lt;a href="https://sdowney.org/pages/quote-file/"&gt;it's not a technical problem it is a people problem.&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+C++ stays at ISO because ISO has rights to the standard, and getting those rights to move it elsewhere is a hard problem, and would make everyone involved have to do some work just to continue to participate. Doing all that would have to be a massively clear win, and so no one is trying to take on the impossible task.
+&lt;/p&gt;</description><category>C++</category><guid>https://sdowney.org/posts/why-standard-organizations/</guid><pubDate>Sat, 07 Mar 2026 15:21:36 GMT</pubDate></item></channel></rss>
