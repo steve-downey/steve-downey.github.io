@@ -41,13 +41,18 @@
                         </ul>
                     </li>
                 % else:
-                    <li><a href="${url}" class="text-gray-300 hover:text-white transition-colors">${text}</a></li>
+                    <%
+                        is_active = rel_link(permalink, url) == "#"
+                        link_class = "text-white font-semibold border-b-2 border-white" if is_active else "text-gray-300 hover:text-white transition-colors"
+                    %>
+                    <li><a href="${url}" class="${link_class}"${' aria-current="page"' if is_active else ''}>${text}</a></li>
                 % endif
             %endfor
             ${template_hooks['menu']()}
             ${template_hooks['menu_alt']()}
             </ul>
         </div>
+        ## Mobile menu — icon links get short text labels for usability
         <ul id="nav-mobile" class="hidden md:hidden flex-col space-y-2 pb-4 text-sm">
         %for url, text in navigation_links[lang]:
             % if isinstance(url, tuple):
@@ -59,7 +64,11 @@
                     </ul>
                 </li>
             % else:
-                <li><a href="${url}" class="text-gray-300 hover:text-white transition-colors">${text}</a></li>
+                <%
+                    is_active = rel_link(permalink, url) == "#"
+                    mobile_class = "text-white font-semibold" if is_active else "text-gray-300 hover:text-white transition-colors"
+                %>
+                <li><a href="${url}" class="${mobile_class}">${text}</a></li>
             % endif
         %endfor
         </ul>
