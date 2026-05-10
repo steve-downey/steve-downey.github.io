@@ -144,6 +144,7 @@ NAVIGATION_LINKS = {
     DEFAULT_LANG: (
         ("/archive.html", "Archives"),
         ("/categories/index.html", "Tags"),
+        ("/pages/work/", "Work"),
         # ('/rss.xml', 'RSS', 'fa fa-rss'),
         ('mailto:%s' % BLOG_EMAIL, '<i class="fa fa-envelope"></i>'),
         ('https://github.com/steve-downey', 'GitHub <i class="fa-brands fa-square-github"></i>'),
