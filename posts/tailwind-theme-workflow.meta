@@ -1,0 +1,7 @@
+.. title: Tailwind, Modus Themes, and the Blog Theming Workflow
+.. slug: tailwind-theme-workflow
+.. date: 2026-05-10 18:00:00-04:00
+.. tags: emacs, tailwind, nikola, org-mode, modus-themes
+.. link:
+.. description: How the blog's Tailwind CSS theme works end-to-end: from Emacs modus-themes palette through secretaire-css to rendered source blocks.
+.. type: text
