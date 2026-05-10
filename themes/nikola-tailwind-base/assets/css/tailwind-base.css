@@ -1,0 +1,153 @@
+/* tailwind-base.css
+ *
+ * Generic Tailwind CSS infrastructure for Nikola themes.
+ * No hardcoded colors — uses CSS custom properties with neutral fallbacks.
+ * No bare element selectors — Tailwind Preflight owns those.
+ *
+ * Provides: org-mode source block layout, copy button positioning,
+ * prose code overrides, example block styling.
+ */
+
+:root {
+    --code-bg: var(--bg-main, #1e1e2e);
+    --code-fg: var(--fg-main, #cdd6f4);
+    --code-radius: 0.5rem;
+    --code-padding: 1rem 1.5rem;
+    --code-font-size: 0.875rem;
+    --code-line-height: 1.7;
+    --inline-code-bg: #f3f4f6;
+}
+
+/* --- Org-mode source blocks -------------------------------------------- */
+
+.org-src-container {
+    position: relative;
+    margin: 1.5rem auto;
+    width: fit-content;
+    min-width: 60%;
+    max-width: 100%;
+}
+
+.org-src-container pre.src,
+pre.example {
+    background-color: var(--code-bg);
+    color: var(--code-fg);
+    border-radius: var(--code-radius);
+    padding: var(--code-padding);
+    padding-top: 2.25rem;
+    overflow-x: auto;
+    box-sizing: border-box;
+    font-size: var(--code-font-size);
+    line-height: var(--code-line-height);
+    width: 100%;
+}
+
+pre.example {
+    position: relative;
+    margin: 1.5rem auto;
+    width: fit-content;
+    min-width: 60%;
+    max-width: 100%;
+    padding-top: 2.25rem;
+}
+
+.example-container {
+    position: relative;
+    margin: 1.5rem auto;
+    width: fit-content;
+    min-width: 60%;
+    max-width: 100%;
+}
+
+.example-container pre.example {
+    margin: 0;
+    width: 100%;
+}
+
+/* Language label (injected by JS) */
+.org-src-container .code-lang-label,
+.example-container .code-lang-label {
+    position: absolute;
+    top: 0.375rem;
+    left: 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8b8fa3;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* Copy button (injected by JS) */
+.org-src-container .code-copy-btn,
+.example-container .code-copy-btn {
+    position: absolute;
+    top: 0.375rem;
+    right: 0.5rem;
+    font-size: 0.75rem;
+    color: #8b8fa3;
+    background: transparent;
+    border: 1px solid #3a3d52;
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    line-height: 1.4;
+}
+
+.org-src-container .code-copy-btn:hover,
+.example-container .code-copy-btn:hover {
+    color: #d0d4e8;
+    border-color: #6b7094;
+}
+
+/* Ensure code inside source/example blocks inherits cleanly */
+.org-src-container pre.src code,
+pre.example code {
+    background: transparent;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+    color: inherit;
+    font-family: inherit;
+    font-weight: inherit;
+}
+
+/* Consecutive source blocks: tighten spacing */
+.org-src-container + .org-src-container {
+    margin-top: 0.5rem;
+}
+
+/* --- Tailwind Typography prose overrides ------------------------------- */
+
+/* Remove backtick pseudo-elements that Typography adds to inline code */
+.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::before,
+.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::after {
+    content: none;
+}
+
+/* Inline code styling within prose */
+.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+    font-weight: 600;
+    font-size: 0.875em;
+    background-color: var(--inline-code-bg);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+}
+
+/* But not code inside source/example blocks */
+.org-src-container code,
+pre.example code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    font-weight: inherit;
+}
+
+/* --- Scoped element refinements ---------------------------------------- */
+
+#footer img {
+    display: inline;
+    margin: 0;
+}
