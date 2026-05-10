@@ -1,0 +1,56 @@
+## -*- coding: utf-8 -*-
+<%inherit file="list_post.tmpl"/>
+<%namespace name="feeds_translations" file="feeds_translations_helper.tmpl" import="*"/>
+
+<%block name="extra_head">
+    ${parent.extra_head()}
+    %if len(translations) > 1 and generate_rss:
+        %for language in sorted(translations):
+            <link rel="alternate" type="application/rss+xml" title="RSS for ${kind} ${tag|h} (${language})" href="${_link(kind + "_rss", tag, language)}">
+        %endfor
+    %elif generate_rss:
+        <link rel="alternate" type="application/rss+xml" title="RSS for ${kind} ${tag|h}" href="${_link(kind + "_rss", tag)}">
+    %endif
+</%block>
+
+<%block name="content">
+<article class="tagpage">
+    <header>
+        <h1 class="text-3xl font-bold mb-2">${title|h}</h1>
+        %if description:
+        <p class="text-gray-600 mb-4">${description}</p>
+        %endif
+        %if subcategories:
+        <div class="mb-4">
+            <span class="text-sm font-medium text-gray-600">${messages('Subcategories:')}</span>
+            <ul class="list-disc list-inside ml-4 mt-1">
+                %for name, link in subcategories:
+                <li><a href="${link}" class="text-indigo-600 hover:underline">${name|h}</a></li>
+                %endfor
+            </ul>
+        </div>
+        %endif
+        <div class="metadata text-sm text-gray-500 mb-6">
+            %if len(translations) > 1 and generate_rss:
+                %for language in sorted(translations):
+                <p>
+                    <a href="${_link(kind + "_rss", tag, language)}" hreflang="${language}" type="application/rss+xml" class="text-indigo-600 hover:underline">${messages('RSS feed', language)} (${language})</a>
+                </p>
+                %endfor
+            %elif generate_rss:
+                <p><a href="${_link(kind + "_rss", tag)}" type="application/rss+xml" class="text-indigo-600 hover:underline">${messages('RSS feed')}</a></p>
+            %endif
+        </div>
+    </header>
+    %if posts:
+    <ul class="not-prose space-y-2">
+    % for post in posts:
+        <li class="flex items-baseline gap-3">
+            <time class="text-sm text-gray-500 whitespace-nowrap font-mono" datetime="${post.formatted_date('webiso')}" title="${post.formatted_date(date_format)|h}">${post.formatted_date(date_format)|h}</time>
+            <a href="${post.permalink()}" class="text-indigo-600 hover:underline">${post.title()|h}</a>
+        </li>
+    % endfor
+    </ul>
+    %endif
+</article>
+</%block>
