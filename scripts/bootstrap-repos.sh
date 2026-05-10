@@ -139,11 +139,14 @@ setup_repo() {
     git push origin --all
     git push origin --tags
 
-    # Push to github; force where history rewrites have occurred.
-    # --force-with-lease verifies the remote hasn't changed since our fetch.
+    # Push to github.  github is a mirror; bbgithub is authoritative.
+    # --force is intentional: we want github to match bbgithub exactly,
+    # including after history rewrites.  --force-with-lease is unsuitable
+    # here because it fails with "stale info" when the remote-tracking refs
+    # predate a force-push on the bbgithub side (e.g. co-author removal).
     echo "  Pushing to github..."
-    git push github --all --force-with-lease
-    git push github --tags --force-with-lease
+    git push github --all --force
+    git push github --tags --force
 
     if [[ "$need_review" -ne 0 ]]; then
         echo "  *** One or more branches need manual integration — see warnings above ***"
