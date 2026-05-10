@@ -151,3 +151,11 @@ pre.example code {
     display: inline;
     margin: 0;
 }
+
+/* Respect reduced-motion preference — suppress decorative transitions */
+@media (prefers-reduced-motion: reduce) {
+    .transition-colors,
+    .transition {
+        transition: none;
+    }
+}
