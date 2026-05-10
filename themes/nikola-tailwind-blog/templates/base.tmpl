@@ -18,13 +18,13 @@ ${template_hooks['extra_head']()}
         <p class="mt-2 text-lg text-indigo-200">${blog_description|h}</p>
     </%block>
     </div>
-    <main id="content" class="max-w-3xl mx-auto px-4 py-8">
+    <main id="content" class="max-w-prose mx-auto px-4 py-8">
         <div class="prose prose-lg max-w-none prose-indigo">
         <%block name="content"></%block>
         </div>
     </main>
-    <hr class="max-w-3xl mx-auto border-gray-200">
-    <div class="max-w-3xl mx-auto px-4 py-6">
+    <hr class="max-w-prose mx-auto border-gray-200">
+    <div class="max-w-prose mx-auto px-4 py-6">
         ${footer.html_footer()}
     </div>
     ${base.late_load_js()}
