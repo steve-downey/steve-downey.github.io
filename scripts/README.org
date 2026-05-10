@@ -1,0 +1,91 @@
+#+TITLE: wctm Subtree Split Scripts
+#+DATE: 2026-05-10
+
+Scripts to split shared Nikola theme tiers and the secretaire-css Emacs
+package out of the wctm blog repo into standalone repositories.
+
+* Repos being split
+
+| Directory                    | Standalone repo                   |
+|------------------------------+-----------------------------------|
+| =themes/nikola-tailwind-base=  | =sdowney/nikola-tailwind-base=      |
+| =themes/nikola-tailwind-blog=  | =sdowney/nikola-tailwind-blog=      |
+| =plugins/secretaire-css=       | =sdowney/secretaire-css=            |
+
+* Workflow
+
+** Phase 1: Split and publish
+
+Run each split script.  They create the remote repo via =gh repo create=
+and populate it from the relevant directory's commit history.
+
+#+begin_src shell
+bash scripts/split-nikola-tailwind-base.sh
+bash scripts/split-nikola-tailwind-blog.sh
+bash scripts/split-secretaire-css.sh     # also moves secretaire-css.el first
+#+end_src
+
+The nikola theme splits can run in any order.  The secretaire-css split
+commits a directory reorganization (moving =secretaire-css.el= from
+=plugins/orgmode/= to =plugins/secretaire-css/=) before splitting.
+
+** Phase 2: Register remotes for future pulls
+
+#+begin_src shell
+bash scripts/add-subtree-remotes.sh
+#+end_src
+
+Adds the three repos as git remotes named =nikola-tailwind-base=,
+=nikola-tailwind-blog=, and =secretaire-css=, and records the subtree
+split point so future pulls are fast.
+
+** Phase 3: Day-to-day use
+
+To pull upstream changes from a standalone repo into wctm:
+
+#+begin_src shell
+bash scripts/pull-subtrees.sh
+#+end_src
+
+To push wctm changes back to a standalone repo:
+
+#+begin_src shell
+bash scripts/push-subtrees.sh
+#+end_src
+
+** Phase 4: Remove from wctm (optional, final)
+
+Once the standalone repos are established and the build is verified to
+work with them referenced externally, the directories can be removed from
+wctm.  This is irreversible in the branch.
+
+#+begin_src shell
+bash scripts/remove-from-wctm.sh
+#+end_src
+
+* Technical notes
+
+** Why git subtree and not submodule?
+
+- Subtree keeps all history in one repo — no need for recursive clones or
+  =git submodule update=
+- =git subtree pull --squash= brings in upstream as a single commit
+- New contributors get the full theme source without extra steps
+- Submodule makes sense if you want hard pinning to a specific commit
+
+** Why =--rejoin=?
+
+=git subtree split --rejoin= writes a synthetic merge commit into wctm
+history that records the split point.  On subsequent =subtree split= calls,
+git only needs to scan commits since the last rejoin rather than the full
+wctm history back to 2004.  This makes future splits and pushes fast.
+
+** The secretaire-css prep step
+
+=secretaire-css.el= lived in =plugins/orgmode/= alongside the Nikola orgmode
+plugin files.  =git subtree= requires a dedicated directory.  The
+=split-secretaire-css.sh= script commits a move to =plugins/secretaire-css/=
+before splitting; this is a structural refactor, not a content change.
+
+=wctm-css.el= and =strip_base_rules.py= are wctm-specific utilities and stay
+in =plugins/orgmode/=.
