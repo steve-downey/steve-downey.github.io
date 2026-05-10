@@ -1,0 +1,308 @@
+#+TITLE: Building a Tailwind CSS Theme for Nikola
+#+AUTHOR: Steve Downey
+#+DATE: 2026-05-10
+#+LICENSE: CC BY-SA 4.0
+#+OPTIONS: toc:3 num:t
+#+STARTUP: showall
+
+* Motivation
+
+Foundation 6 has minimal community support.  When I ran into CSS problems---
+source blocks getting gray backgrounds from Foundation's global =code= and
+=kbd= rules, code blocks refusing to center in their container---the answers
+weren't findable.  [[https://tailwindcss.com/][Tailwind CSS]] has the community, the documentation, and a
+[[https://tailwindcss.com/docs/preflight][Preflight reset]] that eliminates the =code/kbd= conflict structurally rather
+than through overrides.
+
+The goal is a three-tier theme hierarchy where each tier is independently
+useful and separately distributable.  The base framework handles Tailwind
+plumbing.  The blog tier adds post/index/tag templates.  The personal tier
+adds fonts, icons, and modus syntax highlighting.  Each lives in its own
+directory and could live in its own repository.
+
+* Prerequisites
+
+- [[https://getnikola.com/][Nikola]] static site generator
+- Python 3.13+ with [[https://docs.astral.sh/uv/][uv]] for environment management
+- Familiarity with [[https://www.makotemplates.org/][Mako templates]] (Nikola's default template engine)
+- [[https://tailwindcss.com/docs][Tailwind CSS]] utility classes (the docs are excellent)
+- Emacs with [[https://protesilaos.com/emacs/modus-themes][modus-themes]] for syntax highlighting CSS export
+
+* Nikola Theme Inheritance
+
+Nikola resolves themes by walking a parent chain.  Each theme declares its
+parent in a =.theme= file:
+
+#+begin_src ini
+[Theme]
+engine = mako
+parent = base
+#+end_src
+
+When Nikola needs =post.tmpl=, it searches the active theme first, then the
+parent, then the grandparent, until it finds the file.  CSS assets work the
+same way---a child theme can shadow a parent's CSS file by providing one with
+the same name.
+
+Helper templates (=base_helper.tmpl=, =post_helper.tmpl=) are loaded via
+Mako's =<%namespace>= directive.  Nikola resolves the /file/ through the
+theme chain, but once found, the entire file is used.  There is no mechanism
+for overriding individual functions within a helper template.  If you need to
+change one function in =base_helper.tmpl=, you provide a complete replacement.
+
+This is a constraint of the framework, not a bug.  The alternative---Mako
+=<%inherit>= on namespace files---does not work as expected for Nikola's
+template loading.
+
+* The Three-Tier Design
+
+#+begin_example
+sdowney-tailwind  →  nikola-tailwind-blog  →  nikola-tailwind-base  →  base
+   (personal)            (blog)                  (framework)           (Nikola)
+#+end_example
+
+** nikola-tailwind-base (parent: base)
+
+Generic Tailwind CSS infrastructure, reusable for any Nikola site.  Licensed
+under MIT (matching Tailwind itself).
+
+It provides four templates:
+
+=base.tmpl= defines the page skeleton: skip-to-content link, navbar, a colored
+header banner with a =page_header= block, the content area wrapped in
+Tailwind's =prose= class, and a footer.  Inline JavaScript at the end adds
+language labels and copy-to-clipboard buttons to =.org-src-container= and
+=pre.example= blocks.
+
+=base_helper.tmpl= loads the Tailwind Play CDN with the [[https://tailwindcss.com/docs/typography-plugin][Typography plugin]], plus
+=baguetteBox= for image lightboxes and =luxon= for fancy dates.  The Tailwind
+config is minimal---no font extensions, no accent colors.
+
+=base_header.tmpl= provides a responsive navbar (dark background, mobile
+hamburger toggle via a few lines of vanilla JS).
+
+=base_footer.tmpl= renders =content_footer= from =conf.py=.
+
+It also provides =tailwind-base.css= with CSS custom properties for code block
+styling (=--code-bg=, =--code-fg=, etc.), org-mode source block centering, and
+Typography prose overrides.  All rules are scoped to classes; no bare element
+selectors.
+
+Four empty CSS files shadow conflicting files from Nikola's base theme:
+=theme.css=, =code.css=, =rst_base.css=, =nikola_rst.css=.  These files
+contain bare element selectors (=body=, =pre=, =code=, =a:link=) that fight
+Tailwind's Preflight.  The shadows ensure the deployed copies are harmless.
+
+** nikola-tailwind-blog (parent: nikola-tailwind-base)
+
+Blog-specific templates.  Licensed under MIT.
+
+It overrides =base.tmpl= to change the header banner from neutral gray to
+=bg-indigo-700= and adds =prose-indigo= to the content wrapper.  It provides
+eight additional templates: =index.tmpl= (post list with teasers),
+=post.tmpl= (full post with author card, tags, prev/next pager),
+=post_helper.tmpl= (tag pills, pagination, OG/Twitter Card meta),
+=post_header.tmpl=, =index_helper.tmpl=, =list.tmpl= (archives), =tag.tmpl=,
+and =tags.tmpl= (tag cloud).
+
+The indigo accent appears throughout these templates as Tailwind utility
+classes.  Changing the accent color means replacing =indigo= with another
+[[https://tailwindcss.com/docs/customizing-colors][Tailwind color name]].
+
+** sdowney-tailwind (parent: nikola-tailwind-blog)
+
+Personal customizations for sdowney.org.  Only one template: =base_helper.tmpl=,
+which overrides =html_stylesheets()= to load:
+
+- [[https://fonts.google.com/][Google Fonts]]: Source Sans 3, Open Sans, Source Code Pro
+- [[https://fontawesome.com/][Font Awesome]] 7.0.1
+- =modus-vivendi-tinted.css= (syntax highlighting, from =secretaire-css=)
+- A Tailwind config with custom font families and Typography heading overrides
+
+The font stacks are defined once.  A =heading= array is shared between the
+=sans= family (with "Source Sans 3" prepended), the =heading= utility class,
+and the Typography heading override.
+
+** What each tier is responsible for
+
+| Tier                 | Changes when...                      | Shareable with...    |
+|----------------------+--------------------------------------+----------------------|
+| nikola-tailwind-base | Tailwind or Nikola updates           | Any Nikola site      |
+| nikola-tailwind-blog | Blog layout or accent color changes  | Any Tailwind blog    |
+| sdowney-tailwind     | Personal font or theme changes       | Just this blog       |
+
+* Source Blocks and Org-Mode
+
+** The Foundation 6 problem
+
+Foundation 6 globally styled =code= and =kbd=:
+
+#+begin_src css
+code, kbd { background-color: #e6e6e6; }
+code { border: 1px solid #cacaca; }
+#+end_src
+
+Org-mode's exporter wraps source code in =<div class="org-src-container"><pre
+class="src src-cpp"><code>...</code></pre></div>=.  The =<code>= inside
+=<pre>= inherited Foundation's gray background and border, producing visible
+artifacts on dark code blocks.
+
+** How Tailwind fixes it
+
+Tailwind's Preflight resets =code= and =kbd= to have no background, border, or
+padding.  The conflict disappears without overrides.
+
+The Typography plugin's =.prose code= adds color and font-weight but no
+background.  Its backtick pseudo-elements (=::before= / =::after=) are
+suppressed in =tailwind-base.css=.  A defense-in-depth rule on
+=.org-src-container pre.src code= ensures no framework ever re-introduces
+backgrounds.
+
+** Centering and sizing
+
+#+begin_src css
+.org-src-container {
+    position: relative;
+    margin: 1.5rem auto;
+    width: fit-content;
+    min-width: 60%;
+    max-width: 100%;
+}
+#+end_src
+
+The =position: relative= enables absolutely-positioned language labels and
+copy buttons.  =width: fit-content= lets the block shrink to its content;
+=min-width: 60%= prevents excessively narrow blocks.
+
+** Language labels and copy buttons
+
+JavaScript in =base.tmpl= scans each =.org-src-container= for a =src-LANG=
+class (e.g., =src-cpp=), maps it to a display name ("C++"), and injects a
+label in the top-left corner and a copy button in the top-right.
+
+The language map covers the languages I use in blog posts (C++, Haskell,
+Python, Rust, CMake, Bash, LaTeX, etc.) with case normalization for org-mode
+variants like =src-C++=, =src-Haskell=.  Unknown languages display their raw
+class name.  =src-nil= produces no label.
+
+** CSS custom properties
+
+Code block colors reference CSS custom properties:
+
+#+begin_src css
+:root {
+    --code-bg: var(--bg-main, #1e1e2e);
+    --code-fg: var(--fg-main, #cdd6f4);
+}
+#+end_src
+
+When =secretaire-css= generates the modus CSS, it emits =--bg-main= and
+=--fg-main= in a =:root= block.  The code block styling picks them up via
+=var()=.  Change your modus variant, regenerate, and the code blocks follow.
+
+* Syntax Highlighting with Modus Themes
+
+Protesilaos Stavrou's [[https://protesilaos.com/emacs/modus-themes][modus-themes]] ship with Emacs and provide a structured
+palette: an alist of =(semantic-name . hex-color)= pairs.  Face definitions
+reference palette names, not hex values.  This structure is the foundation for
+palette-aware CSS export.
+
+** secretaire-css
+
+=secretaire-css.el= reads the modus palette via =(modus-themes-current-palette)=,
+resolves each face's foreground/background/weight/slant, reverse-maps hex
+colors back to palette names, and emits CSS rules using =var(--palette-name)=
+references.
+
+The exported file includes only palette entries actually used by the faces it
+exports.  The output looks like hand-curated CSS:
+
+#+begin_src css
+/* font-lock-keyword-face: magenta-alt-other */
+.org-keyword {
+    color: var(--magenta-alt-other);
+    font-weight: bold;
+}
+#+end_src
+
+See =secretaire-css-design.org= for the full design.
+
+** Generating CSS
+
+Interactively via the transient menu:
+
+#+begin_example
+M-x secretaire-css-menu
+
+Export
+  v  Modus Vivendi Tinted
+  o  Modus Operandi Tinted
+  b  Both Modus themes
+  c  Current theme
+  e  Choose theme...
+#+end_example
+
+Or from elisp:
+
+#+begin_src emacs-lisp
+(require 'wctm-css)
+(secretaire-css-export-both-modus)
+#+end_src
+
+=secretaire-css= loads deferred major modes (=cc-mode=, =python=, =rust-mode=,
+etc.) before scanning faces, ensuring that mode-specific face definitions are
+present in the output.  The mode list is configurable.
+
+* Distribution
+
+Each tier is a plain directory under =themes/=.  They are local, in-repo
+copies---fixed points in time.  No runtime downloads.
+
+To share a tier as a separate repository, =git subtree= is the cleanest
+mechanism:
+
+#+begin_src shell
+git subtree split --prefix=themes/nikola-tailwind-base -b nikola-tailwind-base
+git push <remote> nikola-tailwind-base:main
+#+end_src
+
+To pull upstream changes back:
+
+#+begin_src shell
+git subtree pull --prefix=themes/nikola-tailwind-base <remote> main
+#+end_src
+
+Git submodules also work.  Nikola's =nikola theme -i= command installs themes
+from the [[https://themes.getnikola.com/][Nikola theme registry]] (ZIP-based); registering is optional.
+
+* Building and Testing
+
+#+begin_src shell
+make compile       # nikola build
+make test-files    # nikola check -f
+make test-links    # nikola check -l -r (slow, network)
+make prod-deploy   # rsync to hosting
+#+end_src
+
+After switching themes or modifying CSS, check for orphaned files in
+=output/assets/css/= that =nikola check -f= will report.
+
+* File Reference
+
+| File                                                       | Tier     | Purpose                              |
+|------------------------------------------------------------+----------+--------------------------------------|
+| =themes/nikola-tailwind-base/nikola-tailwind-base.theme=   | Base     | Theme metadata, parent=base          |
+| =themes/nikola-tailwind-base/templates/base.tmpl=          | Base     | Page skeleton, code block JS         |
+| =themes/nikola-tailwind-base/templates/base_helper.tmpl=   | Base     | Tailwind CDN, generic stylesheets    |
+| =themes/nikola-tailwind-base/templates/base_header.tmpl=   | Base     | Responsive navbar                    |
+| =themes/nikola-tailwind-base/assets/css/tailwind-base.css= | Base     | Code block CSS, prose overrides      |
+| =themes/nikola-tailwind-blog/nikola-tailwind-blog.theme=   | Blog     | Theme metadata, parent=base tier     |
+| =themes/nikola-tailwind-blog/templates/base.tmpl=          | Blog     | Indigo header, prose-indigo          |
+| =themes/nikola-tailwind-blog/templates/post.tmpl=          | Blog     | Full post page                       |
+| =themes/nikola-tailwind-blog/templates/index.tmpl=         | Blog     | Post index                           |
+| =themes/sdowney-tailwind/sdowney-tailwind.theme=           | Personal | Theme metadata, parent=blog tier     |
+| =themes/sdowney-tailwind/templates/base_helper.tmpl=       | Personal | Fonts, Font Awesome, modus CSS       |
+| =themes/sdowney-tailwind/assets/css/modus-vivendi-tinted.css= | Personal | Syntax highlighting (dark)        |
+| =plugins/orgmode/secretaire-css.el=                        | Tool     | Palette-aware CSS export             |
+| =plugins/orgmode/wctm-css.el=                              | Tool     | Blog-specific secretaire-css config  |
+| =conf.py=                                                  | Config   | =THEME = "sdowney-tailwind"=         |
