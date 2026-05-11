@@ -28,6 +28,8 @@
     max-width: 100%;
 }
 
+.prose .org-src-container pre.src,
+.prose pre.example,
 .org-src-container pre.src,
 pre.example {
     background-color: var(--code-bg);
@@ -40,6 +42,7 @@ pre.example {
     font-size: var(--code-font-size);
     line-height: var(--code-line-height);
     width: 100%;
+    margin: 0;
 }
 
 pre.example {
@@ -103,6 +106,8 @@ pre.example {
 }
 
 /* Ensure code inside source/example blocks inherits cleanly */
+.prose .org-src-container pre.src code,
+.prose pre.example code,
 .org-src-container pre.src code,
 pre.example code {
     background: transparent;
