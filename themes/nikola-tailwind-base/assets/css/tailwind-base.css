@@ -9,13 +9,13 @@
  */
 
 :root {
-    --code-bg: var(--bg-main, #1e1e2e);
-    --code-fg: var(--fg-main, #cdd6f4);
+    --code-bg: #0d0e1c;   /* fallback; custom.css overrides */
+    --code-fg: #ffffff;
     --code-radius: 0.5rem;
     --code-padding: 1rem 1.5rem;
     --code-font-size: 0.875rem;
     --code-line-height: 1.7;
-    --inline-code-bg: #f3f4f6;
+    --inline-code-bg: #f1f5f9;
 }
 
 /* --- Org-mode source blocks -------------------------------------------- */
