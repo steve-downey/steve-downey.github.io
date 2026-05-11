@@ -144,6 +144,8 @@ NAVIGATION_LINKS = {
     DEFAULT_LANG: (
         ("/archive.html", "Archives"),
         ("/categories/index.html", "Tags"),
+        # ("/pages/about-me/", "About"),
+        # ("/pages/work/", "Work"),
         # ('/rss.xml', 'RSS', 'fa fa-rss'),
         ('mailto:%s' % BLOG_EMAIL, '<i class="fa fa-envelope"></i>'),
         ('https://github.com/steve-downey', 'GitHub <i class="fa-brands fa-square-github"></i>'),
@@ -162,7 +164,7 @@ NAVIGATION_ALT_LINKS = {
 }
 
 # Name of the theme to use.
-THEME = "sdowney-foundation6"
+THEME = "sdowney-tailwind"
 
 # A theme color. In default themes, it might be displayed by some browsers as
 # the browser UI color (eg. Chrome on Android). Other themes might also use it
@@ -1109,6 +1111,7 @@ delimiters: [
     {left: "$$", right: "$$", display: true},
     {left: "\\\\[", right: "\\\\]", display: true},
     {left: "\\\\begin{equation*}", right: "\\\\end{equation*}", display: true},
+    {left: "$latex ", right: "$", display: false},
     {left: "$", right: "$", display: false},
     {left: "\\\\(", right: "\\\\)", display: false}
 ]

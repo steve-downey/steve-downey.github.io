@@ -1,0 +1,147 @@
+## -*- coding: utf-8 -*-
+## sdowney-tailwind: personal override of base_helper.tmpl
+## Only html_stylesheets() differs from nikola-tailwind-base.
+## The rest is duplicated because Nikola resolves helper templates as
+## whole files — it cannot merge individual defs across the theme chain.
+<%namespace name="feeds_translations" file="feeds_translations_helper.tmpl" import="*"/>
+
+<%def name="html_headstart()">
+<!DOCTYPE html>
+<html \
+    prefix='\
+        og: http://ogp.me/ns# article: http://ogp.me/ns/article# \
+        %if comment_system == 'facebook':
+            fb: http://ogp.me/ns/fb# \
+        %endif
+    ' \
+    vocab="http://ogp.me/ns" \
+% if is_rtl:
+    dir="rtl" \
+% endif
+\
+lang="${lang}">
+<head>
+    <meta charset="utf-8">
+    %if description:
+        <meta name="description" content="${description|h}">
+    %endif
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    %if title == blog_title:
+        <title>${blog_title|h}</title>
+    %else:
+        <title>${title|h} | ${blog_title|h}</title>
+    %endif
+
+    ${html_stylesheets()}
+    <meta name="theme-color" content="${theme_color}">
+    % if meta_generator_tag:
+        <meta name="generator" content="Nikola (getnikola.com)">
+    % endif
+    ${feeds_translations.head(classification=None, kind='index', other=False)}
+    <link rel="canonical" href="${abs_link(permalink)}">
+
+    %if favicons:
+        %for name, file, size in favicons:
+            <link rel="${name}" href="${file}" sizes="${size}"/>
+        %endfor
+    %endif
+
+    % if comment_system == 'facebook':
+        <meta property="fb:app_id" content="${comment_system_id}">
+    % endif
+
+    %if prevlink:
+        <link rel="prev" href="${prevlink}" type="text/html">
+    %endif
+    %if nextlink:
+        <link rel="next" href="${nextlink}" type="text/html">
+    %endif
+
+    ${extra_head_data}
+</%def>
+
+<%def name="late_load_js()">
+    % if use_bundles:
+        % if use_cdn:
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.js" integrity="sha256-ULQV01VS9LCI2ePpLsmka+W0mawFpEA0rtxnezUj4A4=" crossorigin="anonymous"></script>
+            <script src="/assets/js/all.js"></script>
+        % else:
+            <script src="/assets/js/all-nocdn.js"></script>
+        % endif
+    % else:
+        % if use_cdn:
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.js" integrity="sha256-ULQV01VS9LCI2ePpLsmka+W0mawFpEA0rtxnezUj4A4=" crossorigin="anonymous"></script>
+        % else:
+            <script src="/assets/js/baguetteBox.min.js"></script>
+        % endif
+    % endif
+    % if date_fanciness != 0:
+        % if use_cdn:
+            <script src="https://cdn.jsdelivr.net/npm/luxon@3.3.0/build/global/luxon.min.js" integrity="sha256-Nn+JGDrq3PuTxcDfJmmI0Srj5LpfOFlKqEiPwQK7y40=" crossorigin="anonymous"></script>
+        % else:
+            <script src="/assets/js/luxon.min.js"></script>
+        % endif
+        % if not use_bundles:
+            <script src="/assets/js/fancydates.min.js"></script>
+        % endif
+    % endif
+    ${social_buttons_code}
+</%def>
+
+## --- This is the only function that differs from nikola-tailwind-base ---
+<%def name="html_stylesheets()">
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script>
+    (function() {
+        var heading = ['"Open Sans"', 'Roboto', 'Arial', 'sans-serif'];
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Source Sans 3"'].concat(heading),
+                        heading: heading,
+                        mono: ['"Source Code Pro"', 'Inconsolata', 'ui-monospace', 'Courier', 'monospace'],
+                    },
+                    typography: {
+                        DEFAULT: {
+                            css: {
+                                'h1, h2, h3, h4, h5, h6': {
+                                    fontFamily: heading.join(', '),
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        };
+    })();
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="/assets/css/baguetteBox.min.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="/assets/css/modus-vivendi-tinted.css" />
+    <link rel="stylesheet" href="/assets/css/tailwind-base.css" />
+    %if has_custom_css:
+        <link href="/assets/css/custom.css" rel="stylesheet" type="text/css">
+    %endif
+    % if needs_ipython_css:
+        <link href="/assets/css/ipython.min.css" rel="stylesheet" type="text/css">
+        <link href="/assets/css/nikola_ipython.css" rel="stylesheet" type="text/css">
+    % endif
+</%def>
+
+<%def name="html_feedlinks()">
+    ${feeds_translations.head(classification=None, kind='index', other=False)}
+</%def>
+
+<%def name="html_translations()">
+    <ul class="translations">
+    %for langname in sorted(translations):
+        %if langname != lang:
+            <li><a href="${_link("root", None, langname)}" rel="alternate" hreflang="${langname}">${messages("LANGUAGE", langname)}</a></li>
+        %endif
+    %endfor
+    </ul>
+</%def>

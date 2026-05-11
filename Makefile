@@ -124,6 +124,26 @@ bash zsh: venv
 bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
+MODUS_CSS_DIR := themes/sdowney-tailwind/assets/css
+
+.PHONY: strip-modus-css
+strip-modus-css: ## Clean modus CSS files (legacy fallback; prefer M-x secretaire-css-export)
+	@for f in $(MODUS_CSS_DIR)/modus-*.css; do \
+		[ -f "$$f" ] || continue; \
+		changed=0; \
+		if grep -q '<style\|<!--\|-->\|</style>' "$$f"; then \
+			echo "Stripping HTML wrappers from $$f"; \
+			sed -i '/^<style/d; /^[[:space:]]*<!--[[:space:]]*$$/d; /^[[:space:]]*-->[[:space:]]*$$/d; /^<\/style>/d' "$$f"; \
+			changed=1; \
+		fi; \
+		if grep -qP '^\s*(?:/\*\s*)?(?:body|a(?::hover)?)\s*\{' "$$f"; then \
+			echo "Stripping base element rules from $$f"; \
+			$(PYEXEC) plugins/orgmode/strip_base_rules.py "$$f"; \
+			changed=1; \
+		fi; \
+		if [ "$$changed" = "0" ]; then echo "$$f: already clean"; fi; \
+	done
+
 .PHONY: lint
 lint: venv
 lint: ## Run all configured tools in pre-commit
