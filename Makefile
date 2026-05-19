@@ -126,9 +126,9 @@ bash zsh: venv
 bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
-TAILWIND_TIER ?= 4
+TAILWIND_THEME ?= 4
 
-ifeq ($(TAILWIND_TIER),3)
+ifeq ($(TAILWIND_THEME),3)
 TAILWIND_VERSION := 3.4.17
 TAILWIND_INPUT := themes/nikola-tailwind3-base/tailwind.input.css
 TAILWIND_EXTRA := --config themes/nikola-tailwind3-base/tailwind.config.js
