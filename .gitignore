@@ -11,4 +11,4 @@ nikolaserve.pid
 /plugins/orgmode/elpa/
 /uv.lock
 .tools/
-themes/sdowney-tailwind/assets/css/tailwind.css
+themes/nikola-tailwind-base/assets/css/tailwind.css

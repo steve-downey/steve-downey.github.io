@@ -2,10 +2,10 @@
 
 @plugin "@tailwindcss/typography";
 
-@source "./themes/**/*.tmpl";
-@source "./posts/**/*.md";
-@source "./pages/**/*.md";
-@source "./pages/**/*.rst";
+@source "../../themes/**/*.tmpl";
+@source "../../posts/**/*.md";
+@source "../../pages/**/*.md";
+@source "../../pages/**/*.rst";
 
 @variant dark (&:where(.dark, .dark *));
 

@@ -1,6 +1,6 @@
 [Theme]
 engine = mako
-parent = nikola-tailwind-blog
+parent = nikola-tailwind4
 
 [Family]
 family = nikola-tailwind
