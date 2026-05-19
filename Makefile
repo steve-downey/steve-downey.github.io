@@ -35,7 +35,7 @@ nikola: venv
 
 .PHONY: compile
 compile:  ## Compile the project
-compile: nikola
+compile: nikola $(TAILWIND_OUTPUT)
 	$(NIKOLA) build
 
 .PHONY: test
@@ -79,6 +79,8 @@ clean:  ## Clean the build artifacts
 realclean: ## Delete all produced artifacts
 	rm -rf $(_output_path)
 	rm -rf $(_cache_path)
+	rm -rf .tools
+	rm -f $(TAILWIND_OUTPUT)
 
 .PHONY: env
 env:
@@ -123,6 +125,22 @@ dev-shell: ## Shell with the venv activated
 bash zsh: venv
 bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
+
+TAILWIND_VERSION := 3.4.17
+TAILWIND := .tools/tailwindcss
+TAILWIND_OUTPUT := themes/sdowney-tailwind/assets/css/tailwind.css
+TAILWIND_URL := https://github.com/tailwindlabs/tailwindcss/releases/download/v$(TAILWIND_VERSION)/tailwindcss-linux-x64
+
+$(TAILWIND):
+	mkdir -p .tools
+	curl -sL $(TAILWIND_URL) -o $@
+	chmod +x $@
+
+.PHONY: build-css
+build-css: $(TAILWIND_OUTPUT)  ## Build Tailwind CSS from source
+
+$(TAILWIND_OUTPUT): $(TAILWIND) tailwind.config.js tailwind.input.css
+	$(TAILWIND) -i tailwind.input.css -o $@ --minify
 
 MODUS_CSS_DIR := themes/sdowney-tailwind/assets/css
 
