@@ -21,7 +21,7 @@
 % for post in posts:
     <article class="blog-post">
         <h3 class="not-prose text-2xl font-semibold">
-            <a href="${post.permalink()}" class="text-gray-900 hover:text-indigo-600 transition-colors">${post.title()|h}</a>
+            <a href="${post.permalink()}" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">${post.title()|h}</a>
         </h3>
         <p class="not-prose text-sm text-gray-500 mt-1">
             <time class="published dt-published" datetime="${post.formatted_date('webiso')}" title="${post.formatted_date(date_format)|h}">${post.formatted_date(date_format)|h}</time>
