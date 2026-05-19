@@ -126,8 +126,8 @@ bash zsh: venv
 bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
-TAILWIND_VERSION := 3.4.17
-TAILWIND := .tools/tailwindcss
+TAILWIND_VERSION := 4.3.0
+TAILWIND := .tools/tailwindcss-$(TAILWIND_VERSION)
 TAILWIND_OUTPUT := themes/sdowney-tailwind/assets/css/tailwind.css
 TAILWIND_URL := https://github.com/tailwindlabs/tailwindcss/releases/download/v$(TAILWIND_VERSION)/tailwindcss-linux-x64
 
@@ -139,7 +139,7 @@ $(TAILWIND):
 .PHONY: build-css
 build-css: $(TAILWIND_OUTPUT)  ## Build Tailwind CSS from source
 
-$(TAILWIND_OUTPUT): $(TAILWIND) tailwind.config.js tailwind.input.css
+$(TAILWIND_OUTPUT): $(TAILWIND) tailwind.input.css
 	$(TAILWIND) -i tailwind.input.css -o $@ --minify
 
 MODUS_CSS_DIR := themes/sdowney-tailwind/assets/css
