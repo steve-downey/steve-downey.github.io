@@ -9,13 +9,27 @@
  */
 
 :root {
-    --code-bg: #0d0e1c;   /* fallback; custom.css overrides */
-    --code-fg: #ffffff;
+    --code-bg: #f5f5f0;
+    --code-fg: #1a1a2e;
     --code-radius: 0.5rem;
     --code-padding: 1rem 1.5rem;
     --code-font-size: 0.875rem;
     --code-line-height: 1.7;
     --inline-code-bg: #f1f5f9;
+    --copy-btn-color: #6b7280;
+    --copy-btn-border: #d1d5db;
+    --copy-btn-hover-color: #374151;
+    --copy-btn-hover-border: #9ca3af;
+}
+
+.dark {
+    --code-bg: #0d0e1c;
+    --code-fg: #ffffff;
+    --inline-code-bg: #2d3748;
+    --copy-btn-color: #8b8fa3;
+    --copy-btn-border: #3a3d52;
+    --copy-btn-hover-color: #d0d4e8;
+    --copy-btn-hover-border: #6b7094;
 }
 
 /* --- Org-mode source blocks -------------------------------------------- */
@@ -89,9 +103,9 @@ pre.example {
     top: 0.375rem;
     right: 0.5rem;
     font-size: 0.75rem;
-    color: #8b8fa3;
+    color: var(--copy-btn-color);
     background: transparent;
-    border: 1px solid #3a3d52;
+    border: 1px solid var(--copy-btn-border);
     border-radius: 0.25rem;
     padding: 0.125rem 0.5rem;
     cursor: pointer;
@@ -101,8 +115,8 @@ pre.example {
 
 .org-src-container .code-copy-btn:hover,
 .example-container .code-copy-btn:hover {
-    color: #d0d4e8;
-    border-color: #6b7094;
+    color: var(--copy-btn-hover-color);
+    border-color: var(--copy-btn-hover-border);
 }
 
 /* Ensure code inside source/example blocks inherits cleanly */
