@@ -130,16 +130,17 @@ TAILWIND_TIER ?= 4
 
 ifeq ($(TAILWIND_TIER),3)
 TAILWIND_VERSION := 3.4.17
-TAILWIND_INPUT := themes/nikola-tailwind3/tailwind.input.css
-TAILWIND_EXTRA := --config themes/nikola-tailwind3/tailwind.config.js
+TAILWIND_INPUT := themes/nikola-tailwind3-base/tailwind.input.css
+TAILWIND_EXTRA := --config themes/nikola-tailwind3-base/tailwind.config.js
+TAILWIND_OUTPUT := themes/nikola-tailwind3-base/assets/css/tailwind.css
 else
 TAILWIND_VERSION := 4.3.0
-TAILWIND_INPUT := themes/nikola-tailwind4/tailwind.input.css
+TAILWIND_INPUT := themes/nikola-tailwind4-base/tailwind.input.css
 TAILWIND_EXTRA :=
+TAILWIND_OUTPUT := themes/nikola-tailwind4-base/assets/css/tailwind.css
 endif
 
 TAILWIND := .tools/tailwindcss-$(TAILWIND_VERSION)
-TAILWIND_OUTPUT := themes/nikola-tailwind-base/assets/css/tailwind.css
 TAILWIND_URL := https://github.com/tailwindlabs/tailwindcss/releases/download/v$(TAILWIND_VERSION)/tailwindcss-linux-x64
 
 _tmpl_files := $(shell find themes -name '*.tmpl' 2>/dev/null)

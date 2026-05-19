@@ -1,6 +1,6 @@
 [Theme]
 engine = mako
-parent = nikola-tailwind-blog
+parent = base
 author = Steve Downey
 author_url = https://github.com/steve-downey
 based_on = Tailwind CSS v3 <https://v3.tailwindcss.com/>
@@ -8,4 +8,4 @@ license = MIT
 tags = tailwind, tailwind3
 
 [Family]
-family = nikola-tailwind
+family = nikola-tailwind3

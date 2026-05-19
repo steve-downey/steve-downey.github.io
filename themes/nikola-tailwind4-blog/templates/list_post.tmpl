@@ -1,0 +1,32 @@
+## -*- coding: utf-8 -*-
+<%inherit file="base.tmpl"/>
+<%namespace name="archive_nav" file="archive_navigation_helper.tmpl" import="*"/>
+<%namespace name="feeds_translations" file="feeds_translations_helper.tmpl" import="*"/>
+
+<%block name="extra_head">
+    ${feeds_translations.head(kind=kind, rss_override=False)}
+</%block>
+
+<%block name="page_header">
+<h1 class="text-4xl font-bold">${blog_title|h}</h1>
+<p class="mt-2 text-lg text-indigo-200">${title|h}</p>
+</%block>
+
+<%block name="content">
+<article class="listpage">
+    ${archive_nav.archive_navigation()}
+    ${feeds_translations.translation_link(kind)}
+    %if posts:
+    <ul class="not-prose space-y-2">
+    % for post in posts:
+        <li class="flex items-baseline gap-3">
+            <time class="text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap font-mono" datetime="${post.formatted_date('webiso')}" title="${post.formatted_date(date_format)|h}">${post.formatted_date(date_format)|h}</time>
+            <a href="${post.permalink()}" class="text-indigo-600 hover:underline dark:text-indigo-400">${post.title()|h}</a>
+        </li>
+    % endfor
+    </ul>
+    %else:
+    <p class="text-gray-500">${messages("No posts found.")}</p>
+    %endif
+</article>
+</%block>

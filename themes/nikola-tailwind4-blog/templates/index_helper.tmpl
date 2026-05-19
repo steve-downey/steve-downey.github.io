@@ -1,0 +1,22 @@
+## -*- coding: utf-8 -*-
+
+<%def name="html_pager()">
+    %if prevlink or nextlink:
+        <nav class="not-prose mt-10 flex justify-between items-center" aria-label="Pagination">
+        %if prevlink:
+            <a href="${prevlink}" rel="prev" class="text-indigo-600 hover:underline">
+                &laquo; ${messages("Newer posts")}
+            </a>
+        %else:
+            <span></span>
+        %endif
+        %if nextlink:
+            <a href="${nextlink}" rel="next" class="text-indigo-600 hover:underline">
+                ${messages("Older posts")} &raquo;
+            </a>
+        %else:
+            <span></span>
+        %endif
+        </nav>
+    %endif
+</%def>

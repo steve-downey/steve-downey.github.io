@@ -1,0 +1,4 @@
+/* Intentionally empty.
+ * Overrides Nikola base theme's rst_base.css which sets bare element selectors
+ * (pre, table, img) that conflict with Tailwind. This blog uses org-mode, not rST.
+ */
