@@ -7,7 +7,7 @@
 @source "../../pages/**/*.md";
 @source "../../pages/**/*.rst";
 
-@variant dark (&:where(.dark, .dark *));
+@variant dark (&:is(.dark, .dark *));
 
 @theme {
     --font-sans: "Source Sans 3", "Open Sans", Roboto, Arial, sans-serif;
