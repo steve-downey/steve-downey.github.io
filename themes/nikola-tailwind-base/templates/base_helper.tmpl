@@ -85,14 +85,14 @@ lang="${lang}">
 </%def>
 
 <%def name="html_stylesheets()">
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-    <%block name="tailwind_config">
     <script>
-    tailwind.config = {
-        theme: { extend: {} },
-    };
+    (function () {
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+    })();
     </script>
-    </%block>
+    <link rel="stylesheet" href="/assets/css/tailwind.css" />
     <link href="/assets/css/baguetteBox.min.css" rel="stylesheet" type="text/css">
     <link rel="stylesheet" href="/assets/css/tailwind-base.css" />
     <%block name="extra_stylesheets"></%block>

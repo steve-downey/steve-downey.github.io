@@ -18,11 +18,11 @@
     <header>
         <h1 class="text-3xl font-bold mb-2">${title|h}</h1>
         %if description:
-        <p class="text-gray-600 mb-4">${description}</p>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">${description}</p>
         %endif
         %if subcategories:
         <div class="mb-4">
-            <span class="text-sm font-medium text-gray-600">${messages('Subcategories:')}</span>
+            <span class="text-sm font-medium text-gray-600 dark:text-gray-400">${messages('Subcategories:')}</span>
             <ul class="list-disc list-inside ml-4 mt-1">
                 %for name, link in subcategories:
                 <li><a href="${link}" class="text-indigo-600 hover:underline">${name|h}</a></li>

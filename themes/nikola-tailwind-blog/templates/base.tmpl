@@ -9,21 +9,21 @@ ${base.html_headstart()}
 </%block>
 ${template_hooks['extra_head']()}
 </head>
-<body class="bg-white text-gray-900 font-sans">
+<body class="bg-white text-gray-900 font-sans dark:bg-gray-900 dark:text-gray-100">
     <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-white focus:px-4 focus:py-2 focus:z-50">${messages("Skip to main content")}</a>
     ${header.html_header()}
-    <div class="bg-indigo-700 text-white py-10 text-center">
+    <div class="bg-indigo-700 dark:bg-indigo-900 text-white py-10 text-center">
     <%block name="page_header">
         <h1 class="text-4xl font-bold">${blog_title|h}</h1>
         <p class="mt-2 text-lg text-indigo-200">${blog_description|h}</p>
     </%block>
     </div>
     <main id="content" class="max-w-prose mx-auto px-4 py-8">
-        <div class="prose prose-lg max-w-none prose-indigo">
+        <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert">
         <%block name="content"></%block>
         </div>
     </main>
-    <hr class="max-w-prose mx-auto border-gray-200">
+    <hr class="max-w-prose mx-auto border-gray-200 dark:border-gray-700">
     <div class="max-w-prose mx-auto px-4 py-6">
         ${footer.html_footer()}
     </div>

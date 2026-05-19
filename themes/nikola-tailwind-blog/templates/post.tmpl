@@ -52,8 +52,8 @@
         ${post.text()}
     </div>
 
-    <div class="not-prose mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <ul class="text-sm text-gray-600 space-y-1">
+    <div class="not-prose mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
         % if author_pages_generated:
             <li>Author: <a href="${_link('author', post.author())}" class="text-indigo-600 hover:underline">${post.author()|h}</a></li>
         % else:
