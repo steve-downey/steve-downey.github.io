@@ -126,10 +126,23 @@ bash zsh: venv
 bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
+TAILWIND_TIER ?= 3
+
+ifeq ($(TAILWIND_TIER),3)
 TAILWIND_VERSION := 3.4.17
-TAILWIND := .tools/tailwindcss
-TAILWIND_OUTPUT := themes/sdowney-tailwind/assets/css/tailwind.css
+TAILWIND_INPUT := themes/nikola-tailwind3/tailwind.input.css
+TAILWIND_EXTRA := --config themes/nikola-tailwind3/tailwind.config.js
+else
+TAILWIND_VERSION := 4.3.0
+TAILWIND_INPUT := themes/nikola-tailwind4/tailwind.input.css
+TAILWIND_EXTRA :=
+endif
+
+TAILWIND := .tools/tailwindcss-$(TAILWIND_VERSION)
+TAILWIND_OUTPUT := themes/nikola-tailwind-base/assets/css/tailwind.css
 TAILWIND_URL := https://github.com/tailwindlabs/tailwindcss/releases/download/v$(TAILWIND_VERSION)/tailwindcss-linux-x64
+
+_tmpl_files := $(shell find themes -name '*.tmpl' 2>/dev/null)
 
 $(TAILWIND):
 	mkdir -p .tools
@@ -139,8 +152,8 @@ $(TAILWIND):
 .PHONY: build-css
 build-css: $(TAILWIND_OUTPUT)  ## Build Tailwind CSS from source
 
-$(TAILWIND_OUTPUT): $(TAILWIND) tailwind.config.js tailwind.input.css
-	$(TAILWIND) -i tailwind.input.css -o $@ --minify
+$(TAILWIND_OUTPUT): $(TAILWIND) $(TAILWIND_INPUT) $(_tmpl_files)
+	$(TAILWIND) $(TAILWIND_EXTRA) -i $(TAILWIND_INPUT) -o $@ --minify
 
 MODUS_CSS_DIR := themes/sdowney-tailwind/assets/css
 
