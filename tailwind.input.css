@@ -7,12 +7,15 @@
 @source "./pages/**/*.md";
 @source "./pages/**/*.rst";
 
-@variant dark (&:is(.dark, .dark *));
+@variant dark (&:where(.dark, .dark *));
 
 @theme {
     --font-sans: "Source Sans 3", "Open Sans", Roboto, Arial, sans-serif;
-    --font-heading: "Open Sans", Roboto, Arial, sans-serif;
     --font-mono: "Source Code Pro", Inconsolata, ui-monospace, Courier, monospace;
+}
+
+@theme inline {
+    --font-heading: "Open Sans", Roboto, Arial, sans-serif;
 }
 
 /* Port of v3 typography.extend.DEFAULT.css heading override */

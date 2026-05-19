@@ -139,7 +139,9 @@ $(TAILWIND):
 .PHONY: build-css
 build-css: $(TAILWIND_OUTPUT)  ## Build Tailwind CSS from source
 
-$(TAILWIND_OUTPUT): $(TAILWIND) tailwind.input.css
+_tmpl_files := $(shell find themes -name '*.tmpl' 2>/dev/null)
+
+$(TAILWIND_OUTPUT): $(TAILWIND) tailwind.input.css $(_tmpl_files)
 	$(TAILWIND) -i tailwind.input.css -o $@ --minify
 
 MODUS_CSS_DIR := themes/sdowney-tailwind/assets/css
