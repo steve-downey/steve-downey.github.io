@@ -194,6 +194,8 @@ THEME_CONFIG = {
         'featured_strip_html': True,
         # Contents of the sidebar, If empty, the sidebar is not displayed.
         'sidebar': '',
+        # Header background image URL for sdowney-tailwind theme
+        'header_image': '/wp-content/uploads/2020/11/cropped-blog-header.jpg',
     }
 }
 # Config for bootstrap4:
