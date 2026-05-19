@@ -126,7 +126,7 @@ bash zsh: venv
 bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
-TAILWIND_TIER ?= 3
+TAILWIND_TIER ?= 4
 
 ifeq ($(TAILWIND_TIER),3)
 TAILWIND_VERSION := 3.4.17

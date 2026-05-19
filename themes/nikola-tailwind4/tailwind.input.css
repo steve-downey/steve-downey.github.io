@@ -1,0 +1,24 @@
+@import "tailwindcss";
+
+@plugin "@tailwindcss/typography";
+
+@source "../../themes/**/*.tmpl";
+@source "../../posts/**/*.md";
+@source "../../pages/**/*.md";
+@source "../../pages/**/*.rst";
+
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-sans: "Source Sans 3", "Open Sans", Roboto, Arial, sans-serif;
+    --font-mono: "Source Code Pro", Inconsolata, ui-monospace, Courier, monospace;
+}
+
+@theme inline {
+    --font-heading: "Open Sans", Roboto, Arial, sans-serif;
+}
+
+/* Port of v3 typography.extend.DEFAULT.css heading override */
+.prose :is(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--font-heading);
+}

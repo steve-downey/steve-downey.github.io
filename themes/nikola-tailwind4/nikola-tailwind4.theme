@@ -1,0 +1,11 @@
+[Theme]
+engine = mako
+parent = nikola-tailwind-blog
+author = Steve Downey
+author_url = https://github.com/steve-downey
+based_on = Tailwind CSS v4 <https://tailwindcss.com/>
+license = MIT
+tags = tailwind, tailwind4
+
+[Family]
+family = nikola-tailwind
