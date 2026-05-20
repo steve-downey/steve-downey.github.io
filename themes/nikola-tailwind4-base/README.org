@@ -1,0 +1,51 @@
+* nikola-tailwind4-base
+
+Base Nikola theme built on Tailwind CSS v4.
+
+** Theory of operation
+
+This theme splits responsibilities across three layers.
+
+1. =tailwind.input.css= and the generated =assets/css/tailwind.css= own Tailwind itself, the Typography plugin, tokens, utilities, and Preflight.
+2. =assets/css/tailwind-base.css= owns shared structural behavior that is outside Tailwind Typography's normal remit, especially Org source blocks, example blocks, copy controls, and a narrowly scoped prose correction for dark mode.
+3. Site-local =custom.css= should be a last-loaded escape hatch only, not a place to re-theme the whole site.
+
+** Prose ownership
+
+Tailwind Typography owns prose.
+
+In practice that means:
+
+- the normal =.prose= token set belongs to generated Tailwind CSS
+- heading typography belongs in =tailwind.input.css=
+- any correction in =tailwind-base.css= should be small and justified
+- full prose-palette overrides do not belong in =custom.css=
+
+If prose colors or spacing are wrong, fix them closest to the owning layer instead of piling a later override on top.
+
+** Source block ownership
+
+Source and example blocks are owned structurally by =assets/css/tailwind-base.css=.
+
+That file intentionally uses CSS variables for presentation so a derived theme can change the chrome without replacing the selectors.
+
+If a derived theme wants different source block colors, it should override the variables, not fork the layout rules.
+
+** Dark mode
+
+Tailwind v4 dark mode here is class-driven via the custom variant in =tailwind.input.css=.
+
+Treat =html.dark= as the switch.
+
+Do not let a second independent theme layer fight that model.
+
+** Derived themes
+
+Derived themes should treat this theme as the owner of:
+
+- Tailwind build inputs
+- Typography defaults
+- source block structure and control placement
+- shared dark-mode semantics
+
+Override only the site- or product-specific pieces.

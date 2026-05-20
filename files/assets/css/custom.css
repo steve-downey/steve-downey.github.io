@@ -1,60 +1,6 @@
-/* custom.css — site-level theme configuration for What Comes to Mind
+/* custom.css — site-level compatibility overrides for What Comes to Mind.
  *
- * This is the single file to edit for visual theming. It loads last,
- * after Tailwind, tailwind-base.css, and modus-vivendi-tinted.css,
- * so declarations here win over all theme defaults.
- *
- * Two sections:
- *   1. Code block palette  — controls all source/example block colours
- *   2. Prose colours       — controls all article typography via
- *                            Tailwind Typography custom properties
+ * Theme behavior should live in the active theme and be configured through
+ * THEME_CONFIG. This file stays last-loaded and should therefore remain a
+ * narrow escape hatch for temporary compatibility patches only.
  */
-
-/* ── 1. Code block palette ──────────────────────────────────────────────── *
- * Used by tailwind-base.css via var(). Change these to restyle all          *
- * code blocks (both org-mode src blocks and markdown fenced blocks).        *
- * ────────────────────────────────────────────────────────────────────────── */
-:root {
-    --code-bg:         #0d0e1c; /* block background — matches modus-vivendi-tinted body */
-    --code-fg:         #ffffff; /* block foreground */
-    --inline-code-bg:  #f1f5f9; /* inline code chip (slate-100) */
-}
-
-/* ── 2. Prose / article typography ─────────────────────────────────────── *
- * Tailwind Typography CSS custom properties. All article text (posts,       *
- * pages) is wrapped in .prose, so these control the full reading            *
- * experience. Reference: tailwindcss.com/docs/typography-plugin             *
- * ────────────────────────────────────────────────────────────────────────── */
-.prose {
-    /* Body and headings */
-    --tw-prose-body:            #374151; /* gray-700  */
-    --tw-prose-headings:        #111827; /* gray-900  */
-    --tw-prose-lead:            #4b5563; /* gray-600  */
-    --tw-prose-bold:            #111827;
-
-    /* Links */
-    --tw-prose-links:           #4f46e5; /* indigo-600 — change to rebrand */
-
-    /* Lists */
-    --tw-prose-counters:        #6b7280; /* gray-500  */
-    --tw-prose-bullets:         #d1d5db; /* gray-300  */
-
-    /* Rules and borders */
-    --tw-prose-hr:              #e5e7eb; /* gray-200  */
-    --tw-prose-th-borders:      #d1d5db;
-    --tw-prose-td-borders:      #e5e7eb;
-
-    /* Blockquotes */
-    --tw-prose-quotes:          #111827;
-    --tw-prose-quote-borders:   #e5e7eb;
-
-    /* Captions */
-    --tw-prose-captions:        #6b7280;
-
-    /* Inline code */
-    --tw-prose-code:            #111827;
-
-    /* Fenced/pre code blocks — background matched to --code-bg above */
-    --tw-prose-pre-code:        var(--code-fg);
-    --tw-prose-pre-bg:          var(--code-bg);
-}

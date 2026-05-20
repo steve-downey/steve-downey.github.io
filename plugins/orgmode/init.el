@@ -77,6 +77,9 @@
 ;;   :custom
 ;;   )
 
+(use-package ox-nikolahtml
+  :load-path "./")
+
 (setq plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
 (setq plantuml-default-exec-mode 'jar)
 
@@ -127,5 +130,5 @@
   "Export the body only of the input file and write it to
 specified location."
   (with-current-buffer (find-file infile)
-    (org-html-export-as-html nil nil t t)
+    (nikola-export-as-html nil nil t t)
     (write-file outfile nil)))

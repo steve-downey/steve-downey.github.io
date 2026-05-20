@@ -9,32 +9,22 @@ ${base.html_headstart()}
 </%block>
 ${template_hooks['extra_head']()}
 </head>
-<body class="bg-white text-gray-900 font-sans dark:bg-gray-900 dark:text-gray-100">
+<body class="bg-white text-gray-900 font-sans">
     <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-white focus:px-4 focus:py-2 focus:z-50">${messages("Skip to main content")}</a>
     ${header.html_header()}
-    <div class="relative text-white py-10 text-center bg-cover bg-center" \
-% if theme_config.get('header_image'):
-         style="background-image: url('${theme_config.get("header_image")}');" \
-% endif
->
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="relative z-10">
-        <%block name="page_header">
-            <h1 class="text-4xl font-bold text-balance">${blog_title|h}</h1>
-            <p class="mt-2 text-lg text-gray-100">${blog_description|h}</p>
-        </%block>
-        </div>
+    <div class="bg-gray-800 text-white py-10 text-center">
+    <%block name="page_header">
+        <h1 class="text-4xl font-bold">${blog_title|h}</h1>
+        <p class="mt-2 text-lg text-gray-300">${blog_description|h}</p>
+    </%block>
     </div>
-    <main id="content" class="max-w-6xl mx-auto px-4 py-8">
-        <div class="lg:flex lg:gap-10">
-            <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
-            <%block name="content"></%block>
-            </div>
-            <%include file="sidebar.tmpl"/>
+    <main id="content" class="max-w-3xl mx-auto px-4 py-8">
+        <div class="prose prose-lg max-w-none">
+        <%block name="content"></%block>
         </div>
     </main>
-    <hr class="max-w-6xl mx-auto border-gray-200">
-    <div class="max-w-6xl mx-auto px-4 py-6">
+    <hr class="max-w-3xl mx-auto border-gray-200">
+    <div class="max-w-3xl mx-auto px-4 py-6">
         ${footer.html_footer()}
     </div>
     ${base.late_load_js()}

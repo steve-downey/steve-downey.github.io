@@ -1,0 +1,78 @@
+## -*- coding: utf-8 -*-
+<%namespace name="helper" file="post_helper.tmpl"/>
+<%namespace name="pheader" file="post_header.tmpl"/>
+<%namespace name="comments" file="comments_helper.tmpl"/>
+<%namespace name="math" file="math_helper.tmpl"/>
+<%inherit file="base.tmpl"/>
+
+<%block name="extra_head">
+    ${parent.extra_head()}
+    % if post.meta('keywords'):
+    <meta name="keywords" content="${post.meta('keywords')|h}">
+    % endif
+    %if post.description():
+    <meta name="description" content="${post.description()|h}">
+    %endif
+    <meta name="author" content="${post.author()|h}">
+    %if post.prev_post:
+        <link rel="prev" href="${post.prev_post.permalink()}" title="${post.prev_post.title()|h}" type="text/html">
+    %endif
+    %if post.next_post:
+        <link rel="next" href="${post.next_post.permalink()}" title="${post.next_post.title()|h}" type="text/html">
+    %endif
+    % if post.is_draft:
+        <meta name="robots" content="noindex">
+    % endif
+    ${helper.open_graph_metadata(post)}
+    ${helper.twitter_card_information(post)}
+    ${helper.meta_translations(post)}
+    ${math.math_styles()}
+</%block>
+
+<%block name="page_header">
+%if title and not post.meta('hidetitle'):
+    <h1 class="text-4xl font-bold">${post.title()|h}</h1>
+    <p class="mt-2 text-indigo-200">
+        <time class="published dt-published" datetime="${post.formatted_date('webiso')}">${post.formatted_date(date_format)|h}</time>
+        % if post.reading_time:
+            <span class="mx-2 opacity-50">·</span>
+            <span>${post.reading_time} min read</span>
+        % endif
+    </p>
+%else:
+    <h1 class="text-4xl font-bold">${blog_title|h}</h1>
+    <p class="mt-2 text-lg text-indigo-200">${blog_description|h}</p>
+%endif
+</%block>
+
+<%block name="content">
+<article class="blog-post h-entry">
+    ${pheader.html_post_header()}
+    <div class="e-content entry-content">
+        ${post.text()}
+    </div>
+
+    <div class="not-prose mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+        % if author_pages_generated:
+            <li>Author: <a href="${_link('author', post.author())}" class="text-indigo-600 hover:underline">${post.author()|h}</a></li>
+        % else:
+            <li>Author: ${post.author()|h}</li>
+        % endif
+        % if post.meta('link'):
+            <li><a href="${post.meta('link')}" class="text-indigo-600 hover:underline">${messages("Original site")}</a></li>
+        % endif
+        </ul>
+    </div>
+
+    ${helper.html_tags(post)}
+    ${helper.html_pager(post)}
+    % if not post.meta('nocomments') and site_has_comments:
+        <section class="not-prose mt-8">
+        ${comments.comment_form(post.permalink(absolute=True), post.title(), post._base_path)}
+        </section>
+    % endif
+    ${comments.comment_link_script()}
+</article>
+${math.math_scripts()}
+</%block>

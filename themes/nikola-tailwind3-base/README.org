@@ -1,0 +1,52 @@
+* nikola-tailwind3-base
+
+Base Nikola theme built on Tailwind CSS v3.
+
+** Theory of operation
+
+This theme has three distinct CSS ownership layers.
+
+1. =tailwind.config.js= and the generated =tailwind.css= own the utility layer, Tailwind Preflight, and Tailwind Typography.
+2. =assets/css/tailwind-base.css= owns shared structural behavior that Tailwind Typography does not know about, especially Org source blocks, example blocks, copy-button chrome, and a small dark-mode prose correction.
+3. Site-local =custom.css= should be an escape hatch only, not a second theme engine.
+
+** Prose ownership
+
+Tailwind Typography owns prose.
+
+That means:
+
+- body copy colors, heading colors, link colors, code colors, and the normal =.prose= token set should come from Tailwind Typography and the theme configuration that feeds it
+- =tailwind-base.css= may only patch prose where the generated Typography cascade is insufficient, such as the scoped =.dark .prose= variable correction already present here
+- =custom.css= should not redefine the full =.prose { --tw-prose-* }= palette
+
+If prose looks wrong, fix the problem in this order:
+
+1. Tailwind Typography configuration in =tailwind.config.js=
+2. a narrowly scoped adjustment in =assets/css/tailwind-base.css=
+3. only as a last resort, a temporary site-local patch
+
+** Source block ownership
+
+Source and example blocks are owned by =assets/css/tailwind-base.css=.
+
+That file defines the layout and consumes CSS variables such as =--code-bg=, =--code-fg=, =--code-label-color=, and the copy-button tokens.
+
+If a derived theme wants different source block colors, prefer overriding the variables rather than rewriting the structural selectors.
+
+** Dark mode
+
+Tailwind v3 uses =darkMode: 'class'=.
+
+The theme should therefore treat =html.dark= as the dark-mode switch and avoid mixing that with a separate media-query-owned theme model.
+
+** Derived themes
+
+Derived themes should treat this theme as the owner of:
+
+- Tailwind build configuration
+- Typography defaults
+- source block structure
+- shared dark-mode behavior
+
+They should override only the pieces that are genuinely product- or site-specific.
