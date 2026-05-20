@@ -4,18 +4,3 @@
  * THEME_CONFIG. This file stays last-loaded and should therefore remain a
  * narrow escape hatch for temporary compatibility patches only.
  */
-
-/* Org exports section wrappers as `.outline-N`.
- * Tailwind also uses `.outline-*` utility classes, so neutralize those wrappers
- * inside article content until the exporter stops emitting colliding class names.
- */
-main#content .outline-1,
-main#content .outline-2,
-main#content .outline-3,
-main#content .outline-4,
-main#content .outline-5,
-main#content .outline-6,
-main#content .outline-7,
-main#content .outline-8 {
-    outline: none;
-}
