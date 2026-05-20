@@ -1,0 +1,48 @@
+* sdowney-tailwind
+
+Site-specific theme built on top of [[../nikola-tailwind4-blog/README.org][nikola-tailwind4-blog]].
+
+** Parent theme
+
+This theme derives from =nikola-tailwind4-blog=.
+
+Read [[../nikola-tailwind4-blog/README.org][the parent blog theme README]] and [[../nikola-tailwind4-base/README.org][the Tailwind 4 base theme README]] first.
+
+** Theory of operation
+
+This theme is where site-specific policy should live, not where shared Tailwind infrastructure should be reinvented.
+
+Right now this theme owns two important site-level behaviors.
+
+1. The syntax-highlighting stylesheet pair and matching code-block chrome are configured through =THEME_CONFIG['syntax_theme']= in =conf.py= and emitted by =templates/base_helper.tmpl=.
+2. =assets/js/theme-toggle.js= keeps the configured light and dark syntax stylesheets aligned with the =html.dark= class.
+
+** Prose ownership
+
+This theme should not take ownership of general prose styling.
+
+That still belongs to Tailwind Typography and the upstream Tailwind base theme.
+
+If prose looks wrong, fix it in the owning layer unless the problem is explicitly site policy.
+
+** Syntax highlighting ownership
+
+This theme does own which syntax-highlighting assets are paired with light mode and dark mode.
+
+The important rule is: change the configuration, not the structural files.
+
+If you want a different pair of stylesheets, update =THEME_CONFIG['syntax_theme']= in =conf.py= rather than editing:
+
+- =themes/sdowney-tailwind/templates/base_helper.tmpl=
+- =themes/sdowney-tailwind/assets/js/theme-toggle.js=
+- =themes/nikola-tailwind4-base/assets/css/tailwind-base.css=
+
+Those files should remain generic and configuration-driven.
+
+** custom.css
+
+Site-local =custom.css= should remain a narrow escape hatch.
+
+At the moment it intentionally contains only the temporary Org export compatibility patch for =.outline-N= wrapper classes colliding with Tailwind's =.outline-*= utilities.
+
+Once the exporter stops emitting those colliding classes, remove that patch rather than growing =custom.css= into a second theme system.
