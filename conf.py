@@ -196,6 +196,30 @@ THEME_CONFIG = {
         'sidebar': '',
         # Header background image URL for sdowney-tailwind theme
         'header_image': '/assets/images/cropped-blog-header.jpg',
+        # Syntax highlighting and code block chrome are configured as a pair.
+        # Switch asset choices here rather than editing theme CSS files.
+        'syntax_theme': {
+            'light': {
+                'stylesheet': '/assets/css/modus-vivendi-tinted.css',
+                'code_bg': '#1d2235',
+                'code_fg': '#ffffff',
+                'code_label_color': '#989898',
+                'copy_btn_color': '#8b8fa3',
+                'copy_btn_border': '#3a3d52',
+                'copy_btn_hover_color': '#d0d4e8',
+                'copy_btn_hover_border': '#6b7094',
+            },
+            'dark': {
+                'stylesheet': '/assets/css/modus-operandi-tinted.css',
+                'code_bg': '#efe9dd',
+                'code_fg': '#1a1a2e',
+                'code_label_color': '#595959',
+                'copy_btn_color': '#6b7280',
+                'copy_btn_border': '#d1d5db',
+                'copy_btn_hover_color': '#374151',
+                'copy_btn_hover_border': '#9ca3af',
+            },
+        },
     }
 }
 # Config for bootstrap4:

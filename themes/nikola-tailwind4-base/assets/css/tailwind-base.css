@@ -16,6 +16,7 @@
     --code-font-size: 0.875rem;
     --code-line-height: 1.7;
     --inline-code-bg: #f1f5f9;
+    --code-label-color: #6b7280;
     --copy-btn-color: #6b7280;
     --copy-btn-border: #d1d5db;
     --copy-btn-hover-color: #374151;
@@ -26,6 +27,7 @@
     --code-bg: #0d0e1c;
     --code-fg: #ffffff;
     --inline-code-bg: #2d3748;
+    --code-label-color: #8b8fa3;
     --copy-btn-color: #8b8fa3;
     --copy-btn-border: #3a3d52;
     --copy-btn-hover-color: #d0d4e8;
@@ -91,7 +93,7 @@ pre.example {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #8b8fa3;
+    color: var(--code-label-color);
     pointer-events: none;
     user-select: none;
 }
@@ -138,30 +140,14 @@ pre.example code {
     margin-top: 0.5rem;
 }
 
-/* --- Tailwind Typography prose overrides ------------------------------- */
+/* --- Dark mode prose overrides ---------------------------------------- */
+/* Explicit override because Tailwind's @layer cascade can prevent
+   dark:prose-invert from overriding the base .prose custom properties. */
 
-/* Remove backtick pseudo-elements that Typography adds to inline code */
-.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::before,
-.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::after {
-    content: none;
-}
-
-/* Inline code styling within prose */
-.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
-    font-weight: 600;
-    font-size: 0.875em;
-    background-color: var(--inline-code-bg);
-    padding: 0.125rem 0.375rem;
-    border-radius: 0.25rem;
-}
-
-/* But not code inside source/example blocks */
-.org-src-container code,
-pre.example code {
-    background-color: transparent;
-    padding: 0;
-    border-radius: 0;
-    font-weight: inherit;
+.dark .prose {
+    --tw-prose-links: #93c5fd;
+    --tw-prose-code: #fff;
+    --tw-prose-kbd: #fff;
 }
 
 /* --- Scoped element refinements ---------------------------------------- */

@@ -22,6 +22,13 @@ lang="${lang}">
         <meta name="description" content="${description|h}">
     %endif
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+    (function () {
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+    })();
+    </script>
     %if title == blog_title:
         <title>${blog_title|h}</title>
     %else:

@@ -90,6 +90,13 @@ lang="${lang}">
 
 ## --- This is the only function that differs from nikola-tailwind-base ---
 <%def name="html_stylesheets()">
+    <%
+    syntax_theme = theme_config.get('syntax_theme', {})
+    light_syntax = syntax_theme.get('light', {})
+    dark_syntax = syntax_theme.get('dark', {})
+    light_stylesheet = light_syntax.get('stylesheet', '/assets/css/modus-operandi-tinted.css')
+    dark_stylesheet = dark_syntax.get('stylesheet', '/assets/css/modus-vivendi-tinted.css')
+    %>
     <script>
     (function () {
         var s = localStorage.getItem('theme');
@@ -103,9 +110,30 @@ lang="${lang}">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&family=Source+Sans+3:ital,wght@0,200..900;1,200..900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link href="/assets/css/baguetteBox.min.css" rel="stylesheet" type="text/css">
-    <link id="modus-light" rel="stylesheet" href="/assets/css/modus-operandi-tinted.css" media="(prefers-color-scheme: light)">
-    <link id="modus-dark"  rel="stylesheet" href="/assets/css/modus-vivendi-tinted.css"  media="(prefers-color-scheme: dark)">
+    <link id="modus-light" rel="stylesheet" href="${light_stylesheet}" media="(prefers-color-scheme: light)">
+    <link id="modus-dark" rel="stylesheet" href="${dark_stylesheet}" media="(prefers-color-scheme: dark)">
     <link rel="stylesheet" href="/assets/css/tailwind-base.css" />
+    <style>
+    :root {
+        --code-bg: ${light_syntax.get('code_bg', '#f5f5f0')};
+        --code-fg: ${light_syntax.get('code_fg', '#1a1a2e')};
+        --code-label-color: ${light_syntax.get('code_label_color', '#6b7280')};
+        --copy-btn-color: ${light_syntax.get('copy_btn_color', '#6b7280')};
+        --copy-btn-border: ${light_syntax.get('copy_btn_border', '#d1d5db')};
+        --copy-btn-hover-color: ${light_syntax.get('copy_btn_hover_color', '#374151')};
+        --copy-btn-hover-border: ${light_syntax.get('copy_btn_hover_border', '#9ca3af')};
+    }
+
+    .dark {
+        --code-bg: ${dark_syntax.get('code_bg', '#0d0e1c')};
+        --code-fg: ${dark_syntax.get('code_fg', '#ffffff')};
+        --code-label-color: ${dark_syntax.get('code_label_color', '#8b8fa3')};
+        --copy-btn-color: ${dark_syntax.get('copy_btn_color', '#8b8fa3')};
+        --copy-btn-border: ${dark_syntax.get('copy_btn_border', '#3a3d52')};
+        --copy-btn-hover-color: ${dark_syntax.get('copy_btn_hover_color', '#d0d4e8')};
+        --copy-btn-hover-border: ${dark_syntax.get('copy_btn_hover_border', '#6b7094')};
+    }
+    </style>
     %if has_custom_css:
         <link href="/assets/css/custom.css" rel="stylesheet" type="text/css">
     %endif
