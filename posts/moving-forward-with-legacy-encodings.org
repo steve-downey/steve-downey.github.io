@@ -1,0 +1,137 @@
+#+TITLE: The Story of Failing to Find a Way Out: Reverse-Parsing Legacy Encodings
+#+AUTHOR: Steve Downey
+#+DATE: {{{modification-time(%Y-%m-%d, VC)}}}
+#+TAGS: text, encoding, unicode, c++, whatwg, algorithms
+#+OPTIONS: toc:t
+
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:nil arch:headline author:t
+#+options: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+options: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:nil todo:t |:t
+#+options: html5-fancy:t
+
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+DESCRIPTION:
+#+KEYWORDS:
+#+STARTUP: showall
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:nil html-preamble:t
+#+OPTIONS: html-scripts:n html-style:nil html5-fancy:nil tex:t
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD:
+#+HTML_HEAD_EXTRA:
+#+SUBTITLE:
+#+INFOJS_OPT:
+
+* Abstract
+Reverse-parsing legacy multibyte text encodings --- such as Shift_JIS, Big5, or GB18030 --- using only local context is an unsolvable problem. Unlike UTF-8, which guarantees $O(1)$ self-synchronization, legacy encodings have heavily overlapping lead and trail byte ranges. Consequently, even if you begin at a known, valid character boundary, computing the byte-width of the preceding character requires an $O(N)$ backward scan to the beginning of the string to resolve the parity of the sequence.
+
+The WHATWG decoding algorithms provide no mitigation, as their forward-looking state machines reset completely at every boundary. Robust reverse iteration through these encodings cannot be solved algorithmically /in situ/; it requires maintaining an external cache of boundary offsets established during a forward pass.
+
+What follows is the story of attempting to find a way out, and why the math forces us to fail.
+{{{TEASER_END}}}
+
+* The Story of Failing to Find a Way Out
+
+** Act I: The Overlapping Abyss
+
+If you are dropped into the middle of an arbitrary point in a string using a WHATWG legacy multibyte encoding, you cannot find the beginning of a character just by reading backward.
+
+This happens because legacy encodings lack /self-synchronization/. Let $L$ be the set of valid lead bytes and $T$ be the set of valid trail bytes. In UTF-8, these sets are strictly disjoint ($L \cap T = \emptyset$). In legacy encodings, the sets intersect aggressively. In Shift_JIS, the byte ~0x81~ is valid as /both/ a lead byte and a trail byte.
+
+*** The Specific Example
+Imagine you are handed a data buffer and dropped at index 3:
+
+#+begin_example
+Buffer: [0x81, 0x81, 0x81, 0x81, 0x81]
+Index:    0     1     2     3     4
+#+end_example
+
+If you look locally at index 3 (which is ~0x81~), is it the start of a character or the second half of one? You cannot know without scanning backward to the true beginning of the string:
+
+- *If the string actually started at index 1:* The parsing goes ~[0x81 0x81]~ (Char 1) and ~[0x81 0x81]~ (Char 2). Your byte at index 3 is a *lead byte*.
+- *If the string actually started at index 0:* The parsing goes ~[0x81 0x81]~ (Char 1), ~[0x81 0x81]~ (Char 2), leaving index 4 orphaned. Your byte at index 3 is a *trail byte*.
+
+Every single byte relies entirely on the even/odd parity established by the byte preceding it. If the string is malformed or sliced, the ambiguity is even worse, as dropped trail bytes leave no algorithmic breadcrumbs going backward.
+
+** Act II: The Illusion of the Anchor
+
+Suppose your position is not random. You just parsed forward from the beginning of the string, so you know for an absolute fact you are sitting exactly at a valid character boundary.
+
+You still cannot reliably step backward. Knowing the /end/ of the previous character does not tell you its /length/.
+
+*** The Specific Example
+Imagine looking backward from your known, forward-parsed cursor and seeing this sequence in Shift_JIS:
+
+#+begin_example
+... 0x81 0x81 0x81 0x40 | <CURSOR>
+#+end_example
+
+We know ~0x40~ is ASCII ~@~ (a valid 1-byte character) AND a valid trail byte. We know ~0x81~ is a lead byte AND a trail byte. Where does the character /before/ your cursor begin?
+
+- *Scenario A (Odd number of preceding ~0x81~s):* The sequence from the start of the string was ~[0x81 0x81]~ (U+3001 Ideographic Comma) followed by ~[0x81 0x40]~ (U+3000 Ideographic Space).
+  $\rightarrow$ /Result:/ The character before your cursor is *2 bytes long*, and you just parsed a Japanese space.
+- *Scenario B (Even number of preceding ~0x81~s):* The sequence from the start of the string was ~[0x81 0x81]~ (U+3001), ~[0x81 0x81]~ (U+3001), followed by a standalone ~[0x40]~ (U+0040 '@').
+  $\rightarrow$ /Result:/ The character before your cursor is *1 byte long*, and you just parsed an English '@' symbol.
+
+Even though you are sitting at a known boundary, you are forced into the exact same backward dependency chain to resolve the parity of the preceding bytes just to know if you should step back 1 byte or 2 bytes.
+
+** Act III: State Machine Amnesia
+
+Finally, you might think to capture the exact WHATWG parser state at your cursor position, rather than just the pointer.
+
+This is the final dead end. Having the parser state provides absolutely zero historical context because the WHATWG state machine suffers from "amnesia" at character boundaries. Decoders operate as forward-looking Mealy machines. When you reach a valid character boundary, the decoder finishes emitting the Unicode scalar value and immediately resets its internal state to the /Default/ state (waiting for a new ASCII character or a new multibyte lead byte).
+
+*** The Specific Example
+Let's track the exact parser state for the end of the two scenarios from Act II to see why it fails to help us read backwards.
+
+- *Trace A (The preceding character was '@'):*
+  1. Parser reads ~0x81~ $\rightarrow$ State changes to: /Shift_JIS lead/
+  2. Parser reads ~0x81~ (Emits U+3001) $\rightarrow$ State resets to: /Default/
+  3. Parser reads ~0x40~ (Emits U+0040) $\rightarrow$ State resets to: *Default*
+
+- *Trace B (The preceding character was Ideographic Space):*
+  1. Parser reads ~0x81~ $\rightarrow$ State changes to: /Shift_JIS lead/
+  2. Parser reads ~0x40~ (Emits U+3000) $\rightarrow$ State resets to: *Default*
+
+In both traces, you are left at the exact same byte position, looking at the exact same bytes behind you, and your parser state is completely identical: *Default*. The parser state only tells you what to do with the /next/ byte you encounter.
+
+* Formal Definitions
+
+** Self-Synchronizing Code
+A code is self-synchronizing if, given an arbitrary point in a bit stream, the decoder can determine the boundaries of the next encoded sequence within a bounded number of bits ($O(1)$ scan). UTF-8 achieves this via distinct prefix bit-patterns (e.g., ~110xxxxx~ for a 2-byte lead, ~10xxxxxx~ for a trail).
+
+** Decoder State Amnesia
+The property of WHATWG decoders where the internal state matrix transitions to the origin state upon the emission of any complete scalar value. Because the state maps purely to /pending/ bytes, no history of /completed/ byte widths is preserved.
+
+* Tables and Proofs (For the Unbelieving)
+
+If you still suspect there might be a clever bitwise trick to differentiate a lead byte from a trail byte in Shift_JIS, observe the exact byte ranges defined by the standard.
+
+The overlap is not a minor edge case; it is systemic. Every single valid lead byte is also a valid trail byte.
+
+| Byte Type | Allowed Hexadecimal Ranges |
+|-----------+----------------------------|
+| *Lead* | ~[0x81, 0x9F]~ $\cup$ ~[0xE0, 0xFC]~ |
+| *Trail* | ~[0x40, 0x7E]~ $\cup$ ~[0x80, 0xFC]~ |
+
+If we compute the intersection ($Lead \cap Trail$), we find that the /entirety/ of the lead byte range is subsumed by the trail byte range.
+
+| Condition | Hexadecimal Range | Consequence for Reverse Parsing |
+|-----------+-------------------+---------------------------------|
+| $B \in L \land B \notin T$ | $\emptyset$ | No byte unambiguously marks the start of a multibyte character. |
+| $B \in T \land B \notin L$ | ~[0x40, 0x7E]~ $\cup$ ~0x80~ | Can be an ASCII character /or/ a trail byte. |
+| $B \in (L \cap T)$ | ~[0x81, 0x9F]~ $\cup$ ~[0xE0, 0xFC]~ | Utter ambiguity. Requires $O(N)$ lookbehind. |
+
+* References
+
+- *WHATWG Encoding Standard, Section 4 (Decoders):* Explicitly defines the forward-looking architecture of legacy decoders and the mandatory /Shift_JIS lead/ to /Default/ state transitions. [[https://encoding.spec.whatwg.org/#decoders][Link]]
+- *WHATWG Encoding Standard, Section 13 (Shift_JIS):* Outlines the index pointer maps showing the overlapping lead and trail ranges. [[https://encoding.spec.whatwg.org/#shift_jis][Link]]
+- *The Unicode Standard, Version 15.0, Section 2.5 (Encoding Forms):* Discusses the architectural necessity of non-overlapping (self-synchronizing) code unit boundaries, contrasting UTF-8 with legacy designs. [[https://www.unicode.org/versions/Unicode15.0.0/ch02.pdf][Link]]Write your post here.
