@@ -1,0 +1,369 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?xml-stylesheet href="https://sdowney.org/assets/xml/atom.xsl" type="text/xsl media="all"?>
+<feed xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
+  <title>What Comes to Mind (Posts about tailwind)</title>
+  <id>https://sdowney.org/categories/tailwind.atom</id>
+  <updated>2026-06-27T17:06:47Z</updated>
+  <author>
+    <name>Steve Downey</name>
+  </author>
+  <link rel="self" type="application/atom+xml" href="https://sdowney.org/categories/tailwind.atom"/>
+  <link rel="alternate" type="text/html" href="https://sdowney.org/categories/tailwind/"/>
+  <generator uri="https://getnikola.com/">Nikola</generator>
+  <entry>
+    <title>Tailwind, Modus Themes, and the Blog Theming Workflow</title>
+    <id>https://sdowney.org/posts/tailwind-theme-workflow/</id>
+    <updated>2026-05-10T18:00:00-04:00</updated>
+    <published>2026-05-10T18:00:00-04:00</published>
+    <author>
+      <name>Steve Downey</name>
+    </author>
+    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/tailwind-theme-workflow/"/>
+    <summary type="html">&lt;div&gt;&lt;p&gt;
+I replaced the Foundation 6 theme on this blog with Tailwind CSS.  The
+immediate motivation was a CSS conflict—Foundation's global &lt;code&gt;code&lt;/code&gt; and &lt;code&gt;kbd&lt;/code&gt;
+rules bled into org-mode source blocks—but the deeper reason is that Tailwind
+has the community and documentation that Foundation no longer does.
+&lt;/p&gt;
+
+&lt;p&gt;
+This post documents the workflow: how the theme is structured, how syntax
+highlighting CSS connects Emacs to the browser, and what the current
+configuration choices are.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;a href="https://sdowney.org/posts/tailwind-theme-workflow/"&gt;Read more…&lt;/a&gt; (4 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
+    <content type="html">&lt;p&gt;
+I replaced the Foundation 6 theme on this blog with Tailwind CSS.  The
+immediate motivation was a CSS conflict—Foundation's global &lt;code&gt;code&lt;/code&gt; and &lt;code&gt;kbd&lt;/code&gt;
+rules bled into org-mode source blocks—but the deeper reason is that Tailwind
+has the community and documentation that Foundation no longer does.
+&lt;/p&gt;
+
+&lt;p&gt;
+This post documents the workflow: how the theme is structured, how syntax
+highlighting CSS connects Emacs to the browser, and what the current
+configuration choices are.
+&lt;/p&gt;
+
+&lt;!-- TEASER_END --&gt;
+&lt;div id="ox-nikola-outline-container-org3a88deb" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org3a88deb"&gt;The Theme Stack&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org3a88deb"&gt;
+&lt;p&gt;
+The blog uses three Nikola themes stacked via the parent chain:
+&lt;/p&gt;
+
+&lt;pre class="example" id="org60bc8b9"&gt;
+sdowney-tailwind → nikola-tailwind-blog → nikola-tailwind-base → base
+&lt;/pre&gt;
+
+&lt;p&gt;
+&lt;code&gt;nikola-tailwind-base&lt;/code&gt; provides the Tailwind Play CDN loading, a responsive
+navbar, a centered content column wrapped in Tailwind's &lt;code&gt;prose&lt;/code&gt; class, and CSS
+for org-mode source blocks (centering, language labels, copy buttons).  It has
+no opinions about fonts or accent colors.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;code&gt;nikola-tailwind-blog&lt;/code&gt; adds an indigo accent, post/index/tag templates, and the
+visual structure of a blog.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;code&gt;sdowney-tailwind&lt;/code&gt; is just my personal layer: Google Fonts (Source Sans 3, Open
+Sans, Source Code Pro), Font Awesome, and the modus-vivendi syntax highlighting
+CSS.
+&lt;/p&gt;
+
+&lt;p&gt;
+Each tier is a standard Nikola theme directory under &lt;code&gt;themes/&lt;/code&gt;.  Nikola finds
+templates by walking the chain, so I only override what I actually change.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org52b8b85" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org52b8b85"&gt;How Tailwind Is Loaded&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org52b8b85"&gt;
+&lt;p&gt;
+The Tailwind Play CDN is a &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; tag that processes utility classes at
+runtime:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-html"&gt;&lt;code&gt;&amp;lt;&lt;span class="org-function-name"&gt;script&lt;/span&gt; &lt;span class="org-variable-name"&gt;src&lt;/span&gt;=&lt;span class="org-string"&gt;"https://cdn.tailwindcss.com?plugins=typography"&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span class="org-function-name"&gt;script&lt;/span&gt;&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The Typography plugin provides the &lt;code&gt;prose&lt;/code&gt; class, which styles all content
+elements (headings, paragraphs, lists, blockquotes, code, tables) inside the
+main content area.  For a blog where content comes from org-mode export, this
+is exactly right—I don't control the HTML org produces, and &lt;code&gt;prose&lt;/code&gt; handles
+it gracefully.
+&lt;/p&gt;
+
+&lt;p&gt;
+The Tailwind config is inline in a &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; block, defined in my personal
+&lt;code&gt;base_helper.tmpl&lt;/code&gt;:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-javascript"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;var&lt;/span&gt; &lt;span class="org-variable-name"&gt;heading&lt;/span&gt; = [&lt;span class="org-string"&gt;'"Open Sans"'&lt;/span&gt;, &lt;span class="org-string"&gt;'Roboto'&lt;/span&gt;, &lt;span class="org-string"&gt;'Arial'&lt;/span&gt;, &lt;span class="org-string"&gt;'sans-serif'&lt;/span&gt;];
+tailwind.config = {
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: [&lt;span class="org-string"&gt;'"Source Sans 3"'&lt;/span&gt;].concat(heading),
+                heading: heading,
+                mono: [&lt;span class="org-string"&gt;'"Source Code Pro"'&lt;/span&gt;, &lt;span class="org-string"&gt;'Inconsolata'&lt;/span&gt;, &lt;span class="org-string"&gt;'ui-monospace'&lt;/span&gt;, &lt;span class="org-string"&gt;'Courier'&lt;/span&gt;, &lt;span class="org-string"&gt;'monospace'&lt;/span&gt;],
+            },
+            typography: {
+                DEFAULT: {
+                    css: {
+                        &lt;span class="org-string"&gt;'h1, h2, h3, h4, h5, h6'&lt;/span&gt;: {
+                            fontFamily: heading.join(&lt;span class="org-string"&gt;', '&lt;/span&gt;),
+                        },
+                    },
+                },
+            },
+        },
+    },
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Font stacks are defined once.  The &lt;code&gt;heading&lt;/code&gt; array is reused in three places.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgee8adc9" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgee8adc9"&gt;Source Block Rendering&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orgee8adc9"&gt;
+&lt;p&gt;
+Org-mode's HTML exporter produces this structure:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-html"&gt;&lt;code&gt;&amp;lt;&lt;span class="org-function-name"&gt;div&lt;/span&gt; &lt;span class="org-variable-name"&gt;class&lt;/span&gt;=&lt;span class="org-string"&gt;"org-src-container"&lt;/span&gt;&amp;gt;
+  &amp;lt;&lt;span class="org-function-name"&gt;pre&lt;/span&gt; &lt;span class="org-variable-name"&gt;class&lt;/span&gt;=&lt;span class="org-string"&gt;"src src-cpp"&lt;/span&gt;&amp;gt;
+    &amp;lt;&lt;span class="org-function-name"&gt;code&lt;/span&gt;&amp;gt;&amp;lt;&lt;span class="org-function-name"&gt;span&lt;/span&gt; &lt;span class="org-variable-name"&gt;class&lt;/span&gt;=&lt;span class="org-string"&gt;"org-keyword"&lt;/span&gt;&amp;gt;template&amp;lt;/&lt;span class="org-function-name"&gt;span&lt;/span&gt;&amp;gt; ...&amp;lt;/&lt;span class="org-function-name"&gt;code&lt;/span&gt;&amp;gt;
+  &amp;lt;/&lt;span class="org-function-name"&gt;pre&lt;/span&gt;&amp;gt;
+&amp;lt;/&lt;span class="org-function-name"&gt;div&lt;/span&gt;&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The &lt;code&gt;src-cpp&lt;/code&gt; class carries the language.  JavaScript in &lt;code&gt;base.tmpl&lt;/code&gt; reads it,
+maps &lt;code&gt;cpp&lt;/code&gt; to "C++", and injects a label in the top-left corner and a copy
+button in the top-right.  Any language works—unknown ones display their raw
+name.
+&lt;/p&gt;
+
+&lt;p&gt;
+The CSS positions the container with &lt;code&gt;position: relative&lt;/code&gt;, &lt;code&gt;margin: auto&lt;/code&gt;,
+&lt;code&gt;width: fit-content&lt;/code&gt;, &lt;code&gt;min-width: 60%&lt;/code&gt;, and gives the &lt;code&gt;pre&lt;/code&gt; a dark background
+(&lt;code&gt;--code-bg&lt;/code&gt;) with padding.  The &lt;code&gt;padding-top: 2.25rem&lt;/code&gt; makes room for the
+label and button.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org5578a91" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org5578a91"&gt;Syntax Highlighting: The Modus Connection&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org5578a91"&gt;
+&lt;p&gt;
+Org-mode's HTML exporter uses &lt;code&gt;htmlize&lt;/code&gt; to apply face colors as CSS classes.
+When &lt;code&gt;org-html-htmlize-output-type&lt;/code&gt; is &lt;code&gt;'css&lt;/code&gt;, it produces &lt;code&gt;&amp;lt;span
+class&lt;/code&gt;"org-keyword"&amp;gt;=, &lt;code&gt;&amp;lt;span class&lt;/code&gt;"org-type"&amp;gt;=, etc.  The corresponding CSS
+must exist in an external stylesheet.
+&lt;/p&gt;
+
+&lt;p&gt;
+Protesilaos Stavrou's &lt;a href="https://protesilaos.com/emacs/modus-themes"&gt;modus-themes&lt;/a&gt; provide a structured palette: an alist of
+&lt;code&gt;(semantic-name . hex-color)&lt;/code&gt; pairs.  Face definitions reference these palette
+names.  &lt;code&gt;font-lock-keyword-face&lt;/code&gt;, for example, maps to &lt;code&gt;magenta-alt-other&lt;/code&gt; in
+modus-vivendi.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;code&gt;secretaire-css.el&lt;/code&gt; bridges Emacs and the browser:
+&lt;/p&gt;
+
+&lt;ol class="org-ol"&gt;
+&lt;li&gt;Load the target theme (e.g., &lt;code&gt;modus-vivendi-tinted&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;Require deferred major modes so their faces exist&lt;/li&gt;
+&lt;li&gt;Read the palette via &lt;code&gt;(modus-themes-current-palette)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;For each face, resolve attributes and reverse-map hex → palette name&lt;/li&gt;
+&lt;li&gt;Emit CSS rules using &lt;code&gt;var(--palette-name)&lt;/code&gt; references&lt;/li&gt;
+&lt;li&gt;Include only referenced palette entries in the &lt;code&gt;:root&lt;/code&gt; block&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;
+The result:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-css"&gt;&lt;code&gt;&lt;span class="org-css-selector"&gt;:root&lt;/span&gt; {
+    &lt;span class="org-variable-name"&gt;--bg-main&lt;/span&gt;: &lt;span class="custom-3"&gt;#0d0e1c&lt;/span&gt;;
+    &lt;span class="org-variable-name"&gt;--fg-main&lt;/span&gt;: &lt;span class="custom-2"&gt;#ffffff&lt;/span&gt;;
+    &lt;span class="org-variable-name"&gt;--magenta-alt-other&lt;/span&gt;: &lt;span class="custom-1"&gt;#b6a0ff&lt;/span&gt;;
+    &lt;span class="org-variable-name"&gt;--green&lt;/span&gt;: &lt;span class="custom"&gt;#44bc44&lt;/span&gt;;
+    &lt;span class="org-comment-delimiter"&gt;/* &lt;/span&gt;&lt;span class="org-comment"&gt;... only used entries ...&lt;/span&gt;&lt;span class="org-comment-delimiter"&gt; */&lt;/span&gt;
+}
+
+&lt;span class="org-comment-delimiter"&gt;/* &lt;/span&gt;&lt;span class="org-comment"&gt;font-lock-keyword-face: magenta-alt-other&lt;/span&gt;&lt;span class="org-comment-delimiter"&gt; */&lt;/span&gt;
+&lt;span class="org-css-selector"&gt;.org-keyword&lt;/span&gt; {
+    &lt;span class="org-css-property"&gt;color&lt;/span&gt;: var(&lt;span class="org-variable-name"&gt;--magenta-alt-other&lt;/span&gt;);
+    &lt;span class="org-css-property"&gt;font-weight&lt;/span&gt;: bold;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The &lt;code&gt;tailwind-base.css&lt;/code&gt; file in the base tier references these variables:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-css"&gt;&lt;code&gt;&lt;span class="org-css-selector"&gt;:root&lt;/span&gt; {
+    &lt;span class="org-variable-name"&gt;--code-bg&lt;/span&gt;: var(&lt;span class="org-variable-name"&gt;--bg-main&lt;/span&gt;, &lt;span class="custom-1"&gt;#1e1e2e&lt;/span&gt;);
+    &lt;span class="org-variable-name"&gt;--code-fg&lt;/span&gt;: var(&lt;span class="org-variable-name"&gt;--fg-main&lt;/span&gt;, &lt;span class="custom"&gt;#cdd6f4&lt;/span&gt;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Change the modus variant, regenerate, and code block backgrounds follow.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org8558353" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org8558353"&gt;Current Configuration&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org8558353"&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org2b6e842" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org2b6e842"&gt;What's using the Play CDN&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org2b6e842"&gt;
+&lt;p&gt;
+The Tailwind Play CDN generates CSS client-side.  There is no &lt;code&gt;node_modules&lt;/code&gt;,
+no &lt;code&gt;package.json&lt;/code&gt;, no build step.  Page load includes a brief delay while
+Tailwind processes the utility classes.  For a personal blog with moderate
+traffic, this is acceptable.
+&lt;/p&gt;
+
+&lt;p&gt;
+If it becomes a problem, the switch to a pre-built CSS file is
+straightforward: install the Tailwind CLI, run &lt;code&gt;npx tailwindcss -o
+tailwind.css&lt;/code&gt;, replace the &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; with a &lt;code&gt;&amp;lt;link&amp;gt;&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org5872b01" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org5872b01"&gt;Typography plugin via prose&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org5872b01"&gt;
+&lt;p&gt;
+The &lt;code&gt;prose prose-lg prose-indigo&lt;/code&gt; classes on the content &lt;code&gt;&amp;lt;div&amp;gt;&lt;/code&gt; provide:
+&lt;/p&gt;
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;Reasonable line lengths and spacing&lt;/li&gt;
+&lt;li&gt;Styled headings, links, lists, blockquotes, tables&lt;/li&gt;
+&lt;li&gt;Code blocks with monospace font&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;prose-indigo&lt;/code&gt; for accent-colored links&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+Anything outside &lt;code&gt;prose&lt;/code&gt; (navbar, footer, tag pills) uses &lt;code&gt;not-prose&lt;/code&gt; or
+lives outside the &lt;code&gt;prose&lt;/code&gt; wrapper.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orga983851" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orga983851"&gt;Fonts&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orga983851"&gt;
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;Body: Source Sans 3 (with Open Sans fallback)&lt;/li&gt;
+&lt;li&gt;Headings: Open Sans&lt;/li&gt;
+&lt;li&gt;Code: Source Code Pro&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+All loaded via Google Fonts.  Tailwind's &lt;code&gt;font-sans&lt;/code&gt; and &lt;code&gt;font-mono&lt;/code&gt; utilities
+reference these through the config.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org1617cdf" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org1617cdf"&gt;Accent color: indigo&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org1617cdf"&gt;
+&lt;p&gt;
+Tailwind's &lt;code&gt;indigo&lt;/code&gt; palette provides the accent: &lt;code&gt;bg-indigo-700&lt;/code&gt; for the
+header banner, &lt;code&gt;text-indigo-600&lt;/code&gt; for links, &lt;code&gt;bg-indigo-100 text-indigo-700&lt;/code&gt;
+for tag pills.  Changing to another color is a mechanical search-replace
+across the blog tier templates.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org16a2edf" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org16a2edf"&gt;Icons: Font Awesome 7.0.1&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org16a2edf"&gt;
+&lt;p&gt;
+Loaded via CDN in the personal tier.  Navigation links in &lt;code&gt;conf.py&lt;/code&gt; include
+Font Awesome &lt;code&gt;&amp;lt;i&amp;gt;&lt;/code&gt; tags directly in the link text.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orga740c92" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orga740c92"&gt;What I Might Tweak Later&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orga740c92"&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orga4685f3" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orga4685f3"&gt;Dark mode&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orga4685f3"&gt;
+&lt;p&gt;
+The syntax highlighting is already dark (modus-vivendi).  The page chrome is
+light.  A proper dark mode would add &lt;code&gt;dark:&lt;/code&gt; variants to the templates and
+switch the modus CSS to operandi for the light code blocks.  Tailwind makes
+this straightforward with &lt;code&gt;darkMode: 'media'&lt;/code&gt; in the config.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org851ab98" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org851ab98"&gt;Production Tailwind&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org851ab98"&gt;
+&lt;p&gt;
+If page load times bother me, switching to a pre-built CSS file removes the
+Play CDN runtime cost.  The config is already defined inline; moving it to
+&lt;code&gt;tailwind.config.js&lt;/code&gt; is mechanical.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org1cf420c" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org1cf420c"&gt;Palette-aware CSS generation&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org1cf420c"&gt;
+&lt;p&gt;
+&lt;code&gt;secretaire-css&lt;/code&gt; currently falls back to htmlize for the actual face scanning
+when the modus palette API isn't available.  The full palette-aware path (emitting
+&lt;code&gt;var()&lt;/code&gt; references instead of flat hex) works with modus-themes 3.x and 4.x.
+See &lt;code&gt;docs/secretaire-css-design.org&lt;/code&gt; for what the ideal output looks like.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgbecd46a" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgbecd46a"&gt;Fonts&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orgbecd46a"&gt;
+&lt;p&gt;
+I'm eyeing &lt;a href="https://www.brailleinstitute.org/freefont/"&gt;Atkinson Hyperlegible Next&lt;/a&gt; for body text.  Changing fonts is a
+two-place edit: the Google Fonts &lt;code&gt;&amp;lt;link&amp;gt;&lt;/code&gt; tag and the Tailwind config in
+&lt;code&gt;base_helper.tmpl&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;</content>
+    <category term="emacs" label="emacs"/>
+    <category term="modus-themes" label="modus-themes"/>
+    <category term="nikola" label="nikola"/>
+    <category term="org-mode" label="org-mode"/>
+    <category term="tailwind" label="tailwind"/>
+  </entry>
+</feed>

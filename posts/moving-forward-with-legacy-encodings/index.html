@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html prefix="        og: http://ogp.me/ns# article: http://ogp.me/ns/article#     " vocab="http://ogp.me/ns" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moving Forward With Legacy Encodings | What Comes to Mind</title>
+<script>
+    (function () {
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+    })();
+    </script><link rel="stylesheet" href="../../assets/css/tailwind.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&amp;family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&amp;family=Source+Sans+3:ital,wght@0,200..900;1,200..900&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link href="../../assets/css/baguetteBox.min.css" rel="stylesheet" type="text/css">
+<link id="modus-light" rel="stylesheet" href="../../assets/css/modus-vivendi-tinted.css" media="(prefers-color-scheme: light)">
+<link id="modus-dark" rel="stylesheet" href="../../assets/css/modus-operandi-tinted.css" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="../../assets/css/tailwind-base.css">
+<style>
+    :root {
+        --code-bg: #1d2235;
+        --code-fg: #ffffff;
+        --code-label-color: #989898;
+        --copy-btn-color: #8b8fa3;
+        --copy-btn-border: #3a3d52;
+        --copy-btn-hover-color: #d0d4e8;
+        --copy-btn-hover-border: #6b7094;
+    }
+
+    .dark {
+        --code-bg: #efe9dd;
+        --code-fg: #1a1a2e;
+        --code-label-color: #595959;
+        --copy-btn-color: #6b7280;
+        --copy-btn-border: #d1d5db;
+        --copy-btn-hover-color: #374151;
+        --copy-btn-hover-border: #9ca3af;
+    }
+    </style>
+<link href="../../assets/css/custom.css" rel="stylesheet" type="text/css">
+<script src="../../assets/js/theme-toggle.js" defer></script><meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="../../feed.atom">
+<link rel="canonical" href="https://sdowney.org/posts/moving-forward-with-legacy-encodings/">
+<meta name="author" content="Steve Downey">
+<link rel="prev" href="../tailwind-theme-workflow/" title="Tailwind, Modus Themes, and the Blog Theming Workflow" type="text/html">
+<meta property="og:site_name" content="What Comes to Mind">
+<meta property="og:title" content="Moving Forward With Legacy Encodings">
+<meta property="og:url" content="https://sdowney.org/posts/moving-forward-with-legacy-encodings/">
+<meta property="og:description" content="1. Abstract
+
+
+Reverse-parsing legacy multibyte text encodings — such as Shift_JIS, Big5, or GB18030 — using only local context is an unsolvable problem. Unlike UTF-8, which guarantees \(O(1)\) self-sy">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2026-05-24T13:11:21-04:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@sdowney.org">
+<meta name="twitter:creator" content="@sdowney">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+</head>
+<body class="bg-white text-gray-900 font-sans dark:bg-gray-900 dark:text-gray-100">
+    <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-white focus:px-4 focus:py-2 focus:z-50">Skip to main content</a>
+    
+    
+
+    
+<nav class="bg-gray-800"><div class="max-w-5xl mx-auto px-4">
+        <div class="flex items-center justify-between h-14">
+            <a href="https://sdowney.org/" title="What Comes to Mind" rel="home" class="text-white text-lg font-semibold hover:text-gray-300 transition-colors">What Comes to Mind</a>
+            <button id="nav-toggle" class="md:hidden text-gray-300 hover:text-white focus:outline-none" aria-label="Toggle navigation">
+                <svg class="size-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+            <ul class="hidden md:flex items-center space-x-4 text-sm">
+<li><a href="../../archive.html" class="text-gray-300 hover:text-white transition-colors">Archives</a></li>
+                    
+                    <li><a href="../../categories/index.html" class="text-gray-300 hover:text-white transition-colors">Tags</a></li>
+                    
+                    <li><a href="mailto:sdowney@sdowney.dev" class="text-gray-300 hover:text-white transition-colors">Email <i class="fa fa-envelope"></i></a></li>
+                    
+                    <li><a href="https://github.com/steve-downey" class="text-gray-300 hover:text-white transition-colors">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                    
+                    <li><a href="https://mastodon.social/@Sdowney" class="text-gray-300 hover:text-white transition-colors">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                    
+                    <li><a href="https://bsky.app/profile/sdowney.org" class="text-gray-300 hover:text-white transition-colors">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
+                    
+                    <li><a href="../../feed.atom" class="text-gray-300 hover:text-white transition-colors">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                    
+                    <li><a href="../../rss.xml" class="text-gray-300 hover:text-white transition-colors">RSS <i class="fa-solid fa-rss"></i></a></li>
+            
+            
+            </ul>
+</div>
+        <ul id="nav-mobile" class="hidden md:hidden flex-col space-y-2 pb-4 text-sm">
+<li><a href="../../archive.html" class="text-gray-300 hover:text-white transition-colors">Archives</a></li>
+                
+                <li><a href="../../categories/index.html" class="text-gray-300 hover:text-white transition-colors">Tags</a></li>
+                
+                <li><a href="mailto:sdowney@sdowney.dev" class="text-gray-300 hover:text-white transition-colors">Email <i class="fa fa-envelope"></i></a></li>
+                
+                <li><a href="https://github.com/steve-downey" class="text-gray-300 hover:text-white transition-colors">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                
+                <li><a href="https://mastodon.social/@Sdowney" class="text-gray-300 hover:text-white transition-colors">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                
+                <li><a href="https://bsky.app/profile/sdowney.org" class="text-gray-300 hover:text-white transition-colors">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
+                
+                <li><a href="../../feed.atom" class="text-gray-300 hover:text-white transition-colors">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                
+                <li><a href="../../rss.xml" class="text-gray-300 hover:text-white transition-colors">RSS <i class="fa-solid fa-rss"></i></a></li>
+        </ul>
+</div>
+</nav><script>
+document.getElementById('nav-toggle').addEventListener('click', function() {
+    var menu = document.getElementById('nav-mobile');
+    menu.classList.toggle('hidden');
+    menu.classList.toggle('flex');
+});
+</script><div class="relative text-white py-10 text-center bg-cover bg-center" style="background-image: url('../../assets/images/cropped-blog-header.jpg');">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10">
+        
+    <h1 class="text-4xl font-bold">Moving Forward With Legacy Encodings</h1>
+    <p class="mt-2 text-indigo-200">
+        <time class="published dt-published" datetime="2026-05-24T13:11:21-04:00">2026-05-24 13:11</time><span class="mx-2 opacity-50">·</span>
+            <span>6 min read</span>
+    </p>
+
+        </div>
+    </div>
+    <main id="content" class="max-w-6xl mx-auto px-4 py-8"><div class="lg:flex lg:gap-10">
+            <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
+            
+<article class="blog-post h-entry"><div class="e-content entry-content">
+        <div id="ox-nikola-outline-container-org9a8da94" class="ox-nikola-outline-2">
+<h2 id="org9a8da94">
+<span class="section-number-2">1.</span> Abstract</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Reverse-parsing legacy multibyte text encodings — such as Shift_JIS, Big5, or GB18030 — using only local context is an unsolvable problem. Unlike UTF-8, which guarantees \(O(1)\) self-synchronization, legacy encodings have heavily overlapping lead and trail byte ranges. Consequently, even if you begin at a known, valid character boundary, computing the byte-width of the preceding character requires an \(O(N)\) backward scan to the beginning of the string to resolve the parity of the sequence.
+</p>
+
+<p>
+The WHATWG decoding algorithms provide no mitigation, as their forward-looking state machines reset completely at every boundary. Robust reverse iteration through these encodings cannot be solved algorithmically <i>in situ</i>; it requires maintaining an external cache of boundary offsets established during a forward pass.
+</p>
+
+<p>
+What follows is the story of attempting to find a way out, and why the math forces us to fail.
+</p>
+<!-- TEASER_END -->
+</div>
+</div>
+<div id="ox-nikola-outline-container-org2020253" class="ox-nikola-outline-2">
+<h2 id="org2020253">
+<span class="section-number-2">2.</span> The Story of Failing to Find a Way Out</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="ox-nikola-outline-container-org8e4c67f" class="ox-nikola-outline-3">
+<h3 id="org8e4c67f">
+<span class="section-number-3">2.1.</span> Act I: The Overlapping Abyss</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+If you are dropped into the middle of an arbitrary point in a string using a WHATWG legacy multibyte encoding, you cannot find the beginning of a character just by reading backward.
+</p>
+
+<p>
+This happens because legacy encodings lack <i>self-synchronization</i>. Let \(L\) be the set of valid lead bytes and \(T\) be the set of valid trail bytes. In UTF-8, these sets are strictly disjoint (\(L \cap T = \emptyset\)). In legacy encodings, the sets intersect aggressively. In Shift_JIS, the byte <code>0x81</code> is valid as <i>both</i> a lead byte and a trail byte.
+</p>
+</div>
+<div id="ox-nikola-outline-container-org463740b" class="ox-nikola-outline-4">
+<h4 id="org463740b">
+<span class="section-number-4">2.1.1.</span> The Specific Example</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+Imagine you are handed a data buffer and dropped at index 3:
+</p>
+
+<pre class="example" id="orgb5e5ec5">
+Buffer: [0x81, 0x81, 0x81, 0x81, 0x81]
+Index:    0     1     2     3     4
+</pre>
+
+<p>
+If you look locally at index 3 (which is <code>0x81</code>), is it the start of a character or the second half of one? You cannot know without scanning backward to the true beginning of the string:
+</p>
+
+<ul class="org-ul">
+<li>
+<b>If the string actually started at index 1:</b> The parsing goes <code>[0x81 0x81]</code> (Char 1) and <code>[0x81 0x81]</code> (Char 2). Your byte at index 3 is a <b>lead byte</b>.</li>
+<li>
+<b>If the string actually started at index 0:</b> The parsing goes <code>[0x81 0x81]</code> (Char 1), <code>[0x81 0x81]</code> (Char 2), leaving index 4 orphaned. Your byte at index 3 is a <b>trail byte</b>.</li>
+</ul>
+<p>
+Every single byte relies entirely on the even/odd parity established by the byte preceding it. If the string is malformed or sliced, the ambiguity is even worse, as dropped trail bytes leave no algorithmic breadcrumbs going backward.
+</p>
+</div>
+</div>
+</div>
+<div id="ox-nikola-outline-container-org8ac1aa3" class="ox-nikola-outline-3">
+<h3 id="org8ac1aa3">
+<span class="section-number-3">2.2.</span> Act II: The Illusion of the Anchor</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+Suppose your position is not random. You just parsed forward from the beginning of the string, so you know for an absolute fact you are sitting exactly at a valid character boundary.
+</p>
+
+<p>
+You still cannot reliably step backward. Knowing the <i>end</i> of the previous character does not tell you its <i>length</i>.
+</p>
+</div>
+<div id="ox-nikola-outline-container-org6438b92" class="ox-nikola-outline-4">
+<h4 id="org6438b92">
+<span class="section-number-4">2.2.1.</span> The Specific Example</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+Imagine looking backward from your known, forward-parsed cursor and seeing this sequence in Shift_JIS:
+</p>
+
+<pre class="example" id="org809ce2b">
+... 0x81 0x81 0x81 0x40 | &lt;CURSOR&gt;
+</pre>
+
+<p>
+We know <code>0x40</code> is ASCII <code>@</code> (a valid 1-byte character) AND a valid trail byte. We know <code>0x81</code> is a lead byte AND a trail byte. Where does the character <i>before</i> your cursor begin?
+</p>
+
+<ul class="org-ul">
+<li>
+<b>Scenario A (Odd number of preceding ~0x81~s):</b> The sequence from the start of the string was <code>[0x81 0x81]</code> (U+3001 Ideographic Comma) followed by <code>[0x81 0x40]</code> (U+3000 Ideographic Space).
+\(\rightarrow\) <i>Result:</i> The character before your cursor is <b>2 bytes long</b>, and you just parsed a Japanese space.</li>
+<li>
+<b>Scenario B (Even number of preceding ~0x81~s):</b> The sequence from the start of the string was <code>[0x81 0x81]</code> (U+3001), <code>[0x81 0x81]</code> (U+3001), followed by a standalone <code>[0x40]</code> (U+0040 '@').
+\(\rightarrow\) <i>Result:</i> The character before your cursor is <b>1 byte long</b>, and you just parsed an English '@' symbol.</li>
+</ul>
+<p>
+Even though you are sitting at a known boundary, you are forced into the exact same backward dependency chain to resolve the parity of the preceding bytes just to know if you should step back 1 byte or 2 bytes.
+</p>
+</div>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orgf9e8fcb" class="ox-nikola-outline-3">
+<h3 id="orgf9e8fcb">
+<span class="section-number-3">2.3.</span> Act III: State Machine Amnesia</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+Finally, you might think to capture the exact WHATWG parser state at your cursor position, rather than just the pointer.
+</p>
+
+<p>
+This is the final dead end. Having the parser state provides absolutely zero historical context because the WHATWG state machine suffers from "amnesia" at character boundaries. Decoders operate as forward-looking Mealy machines. When you reach a valid character boundary, the decoder finishes emitting the Unicode scalar value and immediately resets its internal state to the <i>Default</i> state (waiting for a new ASCII character or a new multibyte lead byte).
+</p>
+</div>
+<div id="ox-nikola-outline-container-org0bbd99b" class="ox-nikola-outline-4">
+<h4 id="org0bbd99b">
+<span class="section-number-4">2.3.1.</span> The Specific Example</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<p>
+Let's track the exact parser state for the end of the two scenarios from Act II to see why it fails to help us read backwards.
+</p>
+
+<ul class="org-ul">
+<li>
+<b>Trace A (The preceding character was '@'):</b>
+<ol class="org-ol">
+<li>Parser reads <code>0x81</code> \(\rightarrow\) State changes to: <i>Shift_JIS lead</i>
+</li>
+<li>Parser reads <code>0x81</code> (Emits U+3001) \(\rightarrow\) State resets to: <i>Default</i>
+</li>
+<li>Parser reads <code>0x40</code> (Emits U+0040) \(\rightarrow\) State resets to: <b>Default</b>
+</li>
+</ol>
+</li>
+
+<li>
+<b>Trace B (The preceding character was Ideographic Space):</b>
+<ol class="org-ol">
+<li>Parser reads <code>0x81</code> \(\rightarrow\) State changes to: <i>Shift_JIS lead</i>
+</li>
+<li>Parser reads <code>0x40</code> (Emits U+3000) \(\rightarrow\) State resets to: <b>Default</b>
+</li>
+</ol>
+</li>
+</ul>
+<p>
+In both traces, you are left at the exact same byte position, looking at the exact same bytes behind you, and your parser state is completely identical: <b>Default</b>. The parser state only tells you what to do with the <i>next</i> byte you encounter.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orgd078686" class="ox-nikola-outline-2">
+<h2 id="orgd078686">
+<span class="section-number-2">3.</span> Formal Definitions</h2>
+<div class="outline-text-2" id="text-3">
+</div>
+<div id="ox-nikola-outline-container-org7496194" class="ox-nikola-outline-3">
+<h3 id="org7496194">
+<span class="section-number-3">3.1.</span> Self-Synchronizing Code</h3>
+<div class="outline-text-3" id="text-3-1">
+<p>
+A code is self-synchronizing if, given an arbitrary point in a bit stream, the decoder can determine the boundaries of the next encoded sequence within a bounded number of bits (\(O(1)\) scan). UTF-8 achieves this via distinct prefix bit-patterns (e.g., <code>110xxxxx</code> for a 2-byte lead, <code>10xxxxxx</code> for a trail).
+</p>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orgca3c1ad" class="ox-nikola-outline-3">
+<h3 id="orgca3c1ad">
+<span class="section-number-3">3.2.</span> Decoder State Amnesia</h3>
+<div class="outline-text-3" id="text-3-2">
+<p>
+The property of WHATWG decoders where the internal state matrix transitions to the origin state upon the emission of any complete scalar value. Because the state maps purely to <i>pending</i> bytes, no history of <i>completed</i> byte widths is preserved.
+</p>
+</div>
+</div>
+</div>
+<div id="ox-nikola-outline-container-org86a5cb6" class="ox-nikola-outline-2">
+<h2 id="org86a5cb6">
+<span class="section-number-2">4.</span> Tables and Proofs (For the Unbelieving)</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+If you still suspect there might be a clever bitwise trick to differentiate a lead byte from a trail byte in Shift_JIS, observe the exact byte ranges defined by the standard.
+</p>
+
+<p>
+The overlap is not a minor edge case; it is systemic. Every single valid lead byte is also a valid trail byte.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col class="org-left">
+<col class="org-left">
+</colgroup>
+<thead><tr>
+<th scope="col" class="org-left">Byte Type</th>
+<th scope="col" class="org-left">Allowed Hexadecimal Ranges</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="org-left"><b>Lead</b></td>
+<td class="org-left">
+<code>[0x81, 0x9F]</code> \(\cup\) <code>[0xE0, 0xFC]</code>
+</td>
+</tr>
+<tr>
+<td class="org-left"><b>Trail</b></td>
+<td class="org-left">
+<code>[0x40, 0x7E]</code> \(\cup\) <code>[0x80, 0xFC]</code>
+</td>
+</tr>
+</tbody>
+</table>
+<p>
+If we compute the intersection (\(Lead \cap Trail\)), we find that the <i>entirety</i> of the lead byte range is subsumed by the trail byte range.
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+<colgroup>
+<col class="org-left">
+<col class="org-left">
+<col class="org-left">
+</colgroup>
+<thead><tr>
+<th scope="col" class="org-left">Condition</th>
+<th scope="col" class="org-left">Hexadecimal Range</th>
+<th scope="col" class="org-left">Consequence for Reverse Parsing</th>
+</tr></thead>
+<tbody>
+<tr>
+<td class="org-left">\(B \in L \land B \notin T\)</td>
+<td class="org-left">\(\emptyset\)</td>
+<td class="org-left">No byte unambiguously marks the start of a multibyte character.</td>
+</tr>
+<tr>
+<td class="org-left">\(B \in T \land B \notin L\)</td>
+<td class="org-left">
+<code>[0x40, 0x7E]</code> \(\cup\) <code>0x80</code>
+</td>
+<td class="org-left">Can be an ASCII character <i>or</i> a trail byte.</td>
+</tr>
+<tr>
+<td class="org-left">\(B \in (L \cap T)\)</td>
+<td class="org-left">
+<code>[0x81, 0x9F]</code> \(\cup\) <code>[0xE0, 0xFC]</code>
+</td>
+<td class="org-left">Utter ambiguity. Requires \(O(N)\) lookbehind.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="ox-nikola-outline-container-org4f55677" class="ox-nikola-outline-2">
+<h2 id="org4f55677">
+<span class="section-number-2">5.</span> References</h2>
+<div class="outline-text-2" id="text-5">
+<ul class="org-ul">
+<li>
+<b>WHATWG Encoding Standard, Section 4 (Decoders):</b> Explicitly defines the forward-looking architecture of legacy decoders and the mandatory <i>Shift_JIS lead</i> to <i>Default</i> state transitions. <a href="https://encoding.spec.whatwg.org/#decoders">Link</a>
+</li>
+<li>
+<b>WHATWG Encoding Standard, Section 13 (Shift_JIS):</b> Outlines the index pointer maps showing the overlapping lead and trail ranges. <a href="https://encoding.spec.whatwg.org/#shift_jis">Link</a>
+</li>
+<li>
+<b>The Unicode Standard, Version 15.0, Section 2.5 (Encoding Forms):</b> Discusses the architectural necessity of non-overlapping (self-synchronizing) code unit boundaries, contrasting UTF-8 with legacy designs. <a href="https://www.unicode.org/versions/Unicode15.0.0/ch02.pdf">Link</a>Write your post here.</li>
+</ul>
+</div>
+</div>
+    </div>
+
+    <div class="not-prose mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+<li>Author: Steve Downey</li>
+        </ul>
+</div>
+
+    
+
+    
+        <nav class="not-prose mt-8 flex justify-between items-center" aria-label="Post navigation"><a href="../tailwind-theme-workflow/" rel="prev" class="text-indigo-600 hover:underline" title="Tailwind, Modus Themes, and the Blog Theming Workflow">
+                « <span class="hidden sm:inline">Previous post</span>
+            </a>
+            <span></span>
+        </nav></article><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
+                renderMathInElement(document.body,
+                    {
+                        
+delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "\\[", right: "\\]", display: true},
+    {left: "\\begin{equation*}", right: "\\end{equation*}", display: true},
+    {left: "$latex ", right: "$", display: false},
+    {left: "$", right: "$", display: false},
+    {left: "\\(", right: "\\)", display: false}
+]
+
+                    }
+                );
+            </script>
+</div>
+            
+<aside class="not-prose mt-10 lg:mt-0 lg:w-64 lg:shrink-0 lg:sticky lg:top-6 lg:self-start space-y-8"><section><button id="theme-toggle" class="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+            <span>Toggle theme</span>
+        </button>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Recent Posts</h2>
+        <ul class="space-y-3">
+<li>
+                <a href="." class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Moving Forward With Legacy Encodings</a>
+                <time class="text-xs text-gray-400" datetime="2026-05-24T13:11:21-04:00">2026-05-24 13:11</time>
+</li>
+            <li>
+                <a href="../tailwind-theme-workflow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Tailwind, Modus Themes, and the Blog Theming Workflow</a>
+                <time class="text-xs text-gray-400" datetime="2026-05-10T18:00:00-04:00">2026-05-10 18:00</time>
+</li>
+            <li>
+                <a href="../surround-with-uuid/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Surround With UUID</a>
+                <time class="text-xs text-gray-400" datetime="2026-04-09T17:41:26-04:00">2026-04-09 17:41</time>
+</li>
+            <li>
+                <a href="../why-standard-organizations/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Why Standard Organizations</a>
+                <time class="text-xs text-gray-400" datetime="2026-03-07T10:21:36-05:00">2026-03-07 10:21</time>
+</li>
+            <li>
+                <a href="../the-sender-sub-language/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">The Sender Sub-Language</a>
+                <time class="text-xs text-gray-400" datetime="2026-02-28T18:40:21-05:00">2026-02-28 18:40</time>
+</li>
+            <li>
+                <a href="../building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
+                <time class="text-xs text-gray-400" datetime="2025-12-27T12:03:15-05:00">2025-12-27 12:03</time>
+</li>
+            <li>
+                <a href="../substitution-is-sometimes-a-failure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Substitution is Sometimes a Failure</a>
+                <time class="text-xs text-gray-400" datetime="2025-11-28T12:06:58-05:00">2025-11-28 12:06</time>
+</li>
+            <li>
+                <a href="../nikola-blog-infrastructure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Nikola Blog Infrastructure</a>
+                <time class="text-xs text-gray-400" datetime="2024-12-23T13:15:27-05:00">2024-12-23 13:15</time>
+</li>
+            <li>
+                <a href="../index.php/2024/05/19/concept-maps-using-c23-library-tech/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Concept Maps using C++23 Library Tech</a>
+                <time class="text-xs text-gray-400" datetime="2024-05-19T11:51:00-04:00">2024-05-19 11:51</time>
+</li>
+            <li>
+                <a href="../index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Slides from C++Now 2023 Async Control Flow</a>
+                <time class="text-xs text-gray-400" datetime="2024-05-18T18:27:00-04:00">2024-05-18 18:27</time>
+</li>
+        </ul></section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Archives</h2>
+        <a href="../../archive.html" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">All posts →</a>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Tags</h2>
+        <a href="../../categories/" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">Browse tags →</a>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Feeds</h2>
+        <ul class="space-y-1">
+<li><a href="../../feed.atom" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">Atom</a></li>
+            <li><a href="../../rss.xml" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">RSS</a></li>
+        </ul></section></aside>
+</div>
+    </main><hr class="max-w-6xl mx-auto border-gray-200">
+<div class="max-w-6xl mx-auto px-4 py-6">
+        
+        <footer id="footer" class="text-center text-sm text-gray-500"><p>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+ <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></p>
+            
+        </footer>
+</div>
+    
+            <script src="../../assets/js/baguetteBox.min.js"></script><script src="../../assets/js/luxon.min.js"></script><script src="../../assets/js/fancydates.min.js"></script><!-- fancy dates --><script>
+    luxon.Settings.defaultLocale = "en";
+    fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
+    </script><!-- end fancy dates --><script>
+    baguetteBox.run('main#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><script>
+    (function() {
+        var langNames = {
+            'cpp': 'C++', 'c++': 'C++', 'C++': 'C++', 'C+': 'C++',
+            'haskell': 'Haskell', 'Haskell': 'Haskell',
+            'python': 'Python', 'rust': 'Rust', 'cmake': 'CMake',
+            'bash': 'Bash', 'sh': 'Shell', 'shell': 'Shell', 'zsh': 'Zsh',
+            'makefile': 'Makefile', 'latex': 'LaTeX', 'asm': 'Assembly',
+            'nil': '', 'emacs-lisp': 'Emacs Lisp', 'elisp': 'Emacs Lisp',
+            'javascript': 'JavaScript', 'js': 'JavaScript',
+            'typescript': 'TypeScript', 'ts': 'TypeScript',
+            'html': 'HTML', 'css': 'CSS', 'json': 'JSON', 'yaml': 'YAML',
+            'sql': 'SQL', 'ruby': 'Ruby', 'perl': 'Perl',
+            'java': 'Java', 'go': 'Go', 'swift': 'Swift',
+            'org': 'Org', 'xml': 'XML', 'toml': 'TOML'
+        };
+        function getLang(pre) {
+            var classes = pre.className.split(/\s+/);
+            for (var i = 0; i < classes.length; i++) {
+                if (classes[i].indexOf('src-') === 0) return classes[i].substring(4);
+            }
+            return '';
+        }
+        function addControls(container, pre, lang) {
+            var displayName = langNames[lang] || lang;
+            if (displayName) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = displayName;
+                container.appendChild(label);
+            }
+            var btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.textContent = 'Copy';
+            btn.setAttribute('aria-label', 'Copy code to clipboard');
+            btn.addEventListener('click', function() {
+                var code = pre.querySelector('code');
+                var text = (code || pre).textContent;
+                navigator.clipboard.writeText(text).then(function() {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                });
+            });
+            container.appendChild(btn);
+        }
+        document.querySelectorAll('.org-src-container').forEach(function(container) {
+            var pre = container.querySelector('pre.src');
+            if (pre) addControls(container, pre, getLang(pre));
+        });
+        document.querySelectorAll('pre.example').forEach(function(pre) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'example-container';
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+            addControls(wrapper, pre, '');
+        });
+    })();
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VGV27RDN3E');
+</script>
+</body>
+</html>

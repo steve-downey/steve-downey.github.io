@@ -1,20 +1,52 @@
 <!DOCTYPE html>
-<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " vocab="http://ogp.me/ns" lang="en">
+<html prefix="        og: http://ogp.me/ns# article: http://ogp.me/ns/article#     " vocab="http://ogp.me/ns" lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>36 | What Comes to Mind</title>
+<script>
+    (function () {
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+    })();
+    </script><link rel="stylesheet" href="../../../../../../assets/css/tailwind.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&amp;family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&amp;family=Source+Sans+3:ital,wght@0,200..900;1,200..900&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
-<link rel="stylesheet" href="../../../../../../assets/css/rst.min.css">
-<link rel="stylesheet" href="../../../../../../assets/css/foundation.min.css">
-<link rel="stylesheet" href="../../../../../../assets/css/app.css">
-<link rel="stylesheet" href="../../../../../../assets/css/modus-vivendi-tinted.css">
+<link href="../../../../../../assets/css/baguetteBox.min.css" rel="stylesheet" type="text/css">
+<link id="modus-light" rel="stylesheet" href="../../../../../../assets/css/modus-vivendi-tinted.css" media="(prefers-color-scheme: light)">
+<link id="modus-dark" rel="stylesheet" href="../../../../../../assets/css/modus-operandi-tinted.css" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="../../../../../../assets/css/tailwind-base.css">
+<style>
+    :root {
+        --code-bg: #1d2235;
+        --code-fg: #ffffff;
+        --code-label-color: #989898;
+        --copy-btn-color: #8b8fa3;
+        --copy-btn-border: #3a3d52;
+        --copy-btn-hover-color: #d0d4e8;
+        --copy-btn-hover-border: #6b7094;
+    }
+
+    .dark {
+        --code-bg: #efe9dd;
+        --code-fg: #1a1a2e;
+        --code-label-color: #595959;
+        --copy-btn-color: #6b7280;
+        --copy-btn-border: #d1d5db;
+        --copy-btn-hover-color: #374151;
+        --copy-btn-hover-border: #9ca3af;
+    }
+    </style>
 <link href="../../../../../../assets/css/custom.css" rel="stylesheet" type="text/css">
-<meta content="#5670d4" name="theme-color">
-<link rel="alternate" type="application/rss+xml" title="RSS" href="../../../../../../rss.xml">
-<link rel="alternate" type="application/atom+xml" title="Atom" href="../../../../../../feed.atom">
+<script src="../../../../../../assets/js/theme-toggle.js" defer></script><meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../../../../../rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="../../../../../../feed.atom">
 <link rel="canonical" href="https://sdowney.org/posts/index.php/2007/02/19/36/">
-<!--[if lt IE 9]><script src="../../../../../../assets/js/html5.js"></script><![endif]--><meta name="author" content="Steve Downey">
+<meta name="author" content="Steve Downey">
 <link rel="prev" href="../../07/what-is-currying-an-aha-moment/" title="What is currying? an aha! moment" type="text/html">
 <link rel="next" href="../../../04/18/this-showed-up-in-my-local-bookstore/" title="This showed up in my local bookstore" type="text/html">
 <meta property="og:site_name" content="What Comes to Mind">
@@ -26,49 +58,80 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@sdowney.org">
 <meta name="twitter:creator" content="@sdowney">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
 </head>
-<body>
+<body class="bg-white text-gray-900 font-sans dark:bg-gray-900 dark:text-gray-100">
+    <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-white focus:px-4 focus:py-2 focus:z-50">Skip to main content</a>
+    
+    
 
     
-
-    
-<div class="top-bar">
-<div class="top-bar-left">
-<ul class="menu">
-<li class="menu-text"><a href="https://sdowney.org/" title="What Comes to Mind" rel="home">What Comes to Mind</a></li>
-                <li><a href="../../../../../../archive.html">Archives</a></li>
-                <li><a href="../../../../../../categories/index.html">Tags</a></li>
-                <li><a href="mailto:sdowney@sdowney.dev">Email <i class="fa fa-envelope"></i></a></li>
-                <li><a href="https://github.com/steve-downey">GitHub <i class="fa-brands fa-github"></i></a></li>
-                <li><a href="https://mastodon.social/@Sdowney">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
-                <li><a href="https://bsky.app/profile/sdowney.org">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
-                <li><a href="../../../../../../feed.atom">ATOM <i class="fa-solid fa-atom"></i></a></li>
-                <li><a href="../../../../../../rss.xml">RSS <i class="fa-solid fa-rss"></i></a></li>
-    
-    
-    </ul>
+<nav class="bg-gray-800"><div class="max-w-5xl mx-auto px-4">
+        <div class="flex items-center justify-between h-14">
+            <a href="https://sdowney.org/" title="What Comes to Mind" rel="home" class="text-white text-lg font-semibold hover:text-gray-300 transition-colors">What Comes to Mind</a>
+            <button id="nav-toggle" class="md:hidden text-gray-300 hover:text-white focus:outline-none" aria-label="Toggle navigation">
+                <svg class="size-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+            <ul class="hidden md:flex items-center space-x-4 text-sm">
+<li><a href="../../../../../../archive.html" class="text-gray-300 hover:text-white transition-colors">Archives</a></li>
+                    
+                    <li><a href="../../../../../../categories/index.html" class="text-gray-300 hover:text-white transition-colors">Tags</a></li>
+                    
+                    <li><a href="mailto:sdowney@sdowney.dev" class="text-gray-300 hover:text-white transition-colors">Email <i class="fa fa-envelope"></i></a></li>
+                    
+                    <li><a href="https://github.com/steve-downey" class="text-gray-300 hover:text-white transition-colors">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                    
+                    <li><a href="https://mastodon.social/@Sdowney" class="text-gray-300 hover:text-white transition-colors">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                    
+                    <li><a href="https://bsky.app/profile/sdowney.org" class="text-gray-300 hover:text-white transition-colors">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
+                    
+                    <li><a href="../../../../../../feed.atom" class="text-gray-300 hover:text-white transition-colors">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                    
+                    <li><a href="../../../../../../rss.xml" class="text-gray-300 hover:text-white transition-colors">RSS <i class="fa-solid fa-rss"></i></a></li>
+            
+            
+            </ul>
 </div>
+        <ul id="nav-mobile" class="hidden md:hidden flex-col space-y-2 pb-4 text-sm">
+<li><a href="../../../../../../archive.html" class="text-gray-300 hover:text-white transition-colors">Archives</a></li>
+                
+                <li><a href="../../../../../../categories/index.html" class="text-gray-300 hover:text-white transition-colors">Tags</a></li>
+                
+                <li><a href="mailto:sdowney@sdowney.dev" class="text-gray-300 hover:text-white transition-colors">Email <i class="fa fa-envelope"></i></a></li>
+                
+                <li><a href="https://github.com/steve-downey" class="text-gray-300 hover:text-white transition-colors">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                
+                <li><a href="https://mastodon.social/@Sdowney" class="text-gray-300 hover:text-white transition-colors">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                
+                <li><a href="https://bsky.app/profile/sdowney.org" class="text-gray-300 hover:text-white transition-colors">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
+                
+                <li><a href="../../../../../../feed.atom" class="text-gray-300 hover:text-white transition-colors">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                
+                <li><a href="../../../../../../rss.xml" class="text-gray-300 hover:text-white transition-colors">RSS <i class="fa-solid fa-rss"></i></a></li>
+        </ul>
 </div>
+</nav><script>
+document.getElementById('nav-toggle').addEventListener('click', function() {
+    var menu = document.getElementById('nav-mobile');
+    menu.classList.toggle('hidden');
+    menu.classList.toggle('flex');
+});
+</script><div class="relative text-white py-10 text-center bg-cover bg-center" style="background-image: url('../../../../../../assets/images/cropped-blog-header.jpg');">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10">
+        
+    <h1 class="text-4xl font-bold">36</h1>
+    <p class="mt-2 text-indigo-200">
+        <time class="published dt-published" datetime="2007-02-19T03:22:00-05:00">2007-02-19 03:22</time><span class="mx-2 opacity-50">·</span>
+            <span>10 min read</span>
+    </p>
 
-    
-
-<div class="callout large primary">
-<div class="row column text-center">
-
-    <h1>36</h1>
-    <h2 class="subheader"><small>2007-02-19 03:22</small></h2>
-
-</div>
-</div>
-
-<div class="row medium-8 large-7 columns">
-
-<div class="blog-post">
-    
-    
-
-
-    <h2>Using the Standard C++ Library in a Functional style.</h2> <p>The standard C++ library offers a number of  algorithms that have nearly exact analogues in functional languages, and are used in almost the same way. In particular std::accumulate and std::transform are powerful, and very general, algorithms. In functional programming literature, accumulate is usually referred to as fold, or foldl, and transform is known as map, or zipWith, depending on whether transform is the unary or binary function form.  </p> <p>To quickly review, accumulate takes an iterator range, and either sums the range, or applies a functor to each value together with the result of the last application of the functor. This can be thought of as putting the operation between each pair of elements in the range. When the operation is plus or times, the result is the sum or product of all of the elements in the list. This is useful, but not really exciting to most programmers. However, when you consider carefully what can be used as the functor argument, you realize that fold is a an extremely powerful algorithm.</p> <p>A quick example:</p> <p>std::list<int>&amp; cons(std::list<int>&amp; xs,int x)</int></int></p> <p>{</p> <p>    xs.push_back(x);</p> <p>    return xs;</p> <p>}</p> <p><br></p>
+        </div>
+    </div>
+    <main id="content" class="max-w-6xl mx-auto px-4 py-8"><div class="lg:flex lg:gap-10">
+            <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
+            
+<article class="blog-post h-entry"><div class="e-content entry-content">
+        <h2>Using the Standard C++ Library in a Functional style.</h2> <p>The standard C++ library offers a number of  algorithms that have nearly exact analogues in functional languages, and are used in almost the same way. In particular std::accumulate and std::transform are powerful, and very general, algorithms. In functional programming literature, accumulate is usually referred to as fold, or foldl, and transform is known as map, or zipWith, depending on whether transform is the unary or binary function form.  </p> <p>To quickly review, accumulate takes an iterator range, and either sums the range, or applies a functor to each value together with the result of the last application of the functor. This can be thought of as putting the operation between each pair of elements in the range. When the operation is plus or times, the result is the sum or product of all of the elements in the list. This is useful, but not really exciting to most programmers. However, when you consider carefully what can be used as the functor argument, you realize that fold is a an extremely powerful algorithm.</p> <p>A quick example:</p> <p>std::list<int>&amp; cons(std::list<int>&amp; xs,int x)</int></int></p> <p>{</p> <p>    xs.push_back(x);</p> <p>    return xs;</p> <p>}</p> <p><br></p>
 <p>int init[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10};</p> <p>vector<int> v(init, init + 10);</int></p> <p><br></p> <p>std::list<int> empty;</int></p> <p>std::list<int> v2 = std::accumulate(v.begin(), v.end(), empty, cons);</int></p> <p><br></p> <p><br></p> <p>&gt; foldr (:) [] [1..10]</p>   <p>(Note, the lines of code starting with &gt; are Haskell equivalents to the C++ code, and SHOULD work at a ghci Prelude&gt; prompt. Since that's where I'm cutting and pasting from. Although it's sort of like literate haskell, the whole article probably won't compile since early definitions may conflict with later ones.)</p> <p>Cons is a list constructor function. It pushes its argument onto the end of the linked list, and then returns a reference to the list that the element was appended to. The fact that this function takes and returns a reference to a list is a compromise I've made between the C++ library and functional purity. Really, I should be taking and returning lists by value. Except that the overhead is unconscionable, turning an O(n) operation into an O(n^2) operation. Since there is no way of accessing the intermediate state, in this case, I'm safe, but you need to be careful in this analysis. Using cons() in your own code will modify the value, and you lose the referential transparency we're trying to maintain.  </p> <p>So the application of cons() using accumulate against an empty list copies the list into a new list. If we had supplied a non-empty list, we would have appended the lists together. Interesting, for an algorithm that's usually considered a purely numerical one.   </p> <p>Functional languages usually work with singly linked lists. A singly linked list has an append at the head only, and therefore the tail remains unchanged, and any references to the tail can not tell that there is a new list that uses it. In fact, a list might be the tail of several other lists, and there is no way of telling the difference. It would be possible to create a version of list that is singly linked, where cons returned by value, and in that case, two lists could share a tail, but have distinct heads. So long as the list held only immutable values (and properly, all values are immutable), you would be completely safe. <br><br></p> <p>Transform, or map, as it's know in FP circles, is another fundamental algorithm. Transform takes an iterator range and applies a functor to each element in the range and copies the result into a destination output iterator, or, in its second form, takes two ranges and a binary operator, and outputs the result of pair -wise evaluation of the elements in each range, through the output iterator.</p> <p><br></p>
 <p>int func(int x)</p> <p>{</p> <p>    return x*x + x + 1;</p> <p>}</p> <p>// ...</p> <p>std::transform(v.begin(), v.end(), v2.begin(), func);</p> <p><br></p> <p>&gt; let func x = x*x + x + 1</p> <p>&gt; map func [1 .. 10]</p> <h2>Functions and function objects as first-class entities</h2> <p>As you can see, the core STL algorithms are fairly weak by themselves. That is, they don't really do anything by themselves. What they do is capture conventional patterns of function applications to collections. The real power is in the functions themselves. However, C++ functions are fairly limited. Let's say you wanted to write a function that added a constant K to its argument. One way is to write int adder(int x, int  K); Unfortunately, it's rather difficult to apply this function with the same constant to every element in a collection.</p> <p>{Actually, in a few moments we'll see how we can do exactly that almost trivially, but let's hold on to that thought.}</p> <p>Function objects, aka functors in the OO community (the name means something _entirely_ different in functional programming) , give us a way of extending what functions can do by letting us associate some additional information with the function call. We do this by creating an object with an operator()() method. That lets the object be used where a function is called for, and also to supply the additional information as part of the object the operator is part of.  </p> <p><br></p>
 <p>class adder</p> <p>{</p> <p>    int K;</p> <p>public:</p> <p>    adder(int k) : K(k) <br></p>
@@ -79,49 +142,172 @@
 <p> </p> <p>The interesting part is the final stanza. What are foldl1 and composer?  Lets work our way outward. The composer is a functor that takes two boost::functions and returns a boost::function that composes them. It assumes that each of the functions has the same signature, which in this case is reasonable, since they've come out of a single sequence.  It binds together the two functions and a lambda placeholder, then converts that to a new boost::function.  </p> <p>class composer</p> <p>{</p> <p>public:</p> <p>    template<typename sig></typename></p> <p>    boost::function<sig></sig></p> <p>    operator()(boost::function<sig> f,</sig></p> <p>                          boost::function<sig> g)</sig></p> <p>            {</p> <p>        using boost::lambda::_1;</p> <p>        return bind(f, bind(g, _1));</p> <p>        }</p> <p>};</p> <p><br></p> <p>Constructing a version of composer that takes functions with different signatures and generates the correct return type is a little more complicated. Take a look at the example code. The trick is to use a nested struct that does the type computation based on the template arguments of the member function. A conventional template metaprogramming approach, but quite strange the first time you come across it.</p> <p>The next part is the function foldl1. The unusual name is borrowed from Haskell. Once you've learned C++, Java, and Ruby, Haskell is the next language you should learn. Foldl1 is an abbreviation for fold left with one argument. It's very similar to std::accumulate, with one key difference. Instead of starting with a base value, the first value in the sequence is used. This means that it can not be applied to an empty list, but it does avoid having to come up with an identity value, such as 0 for addition, or 1 for multiplication. We could use the function identity(x){return x;}, but that's an extra function call we don't need, and an extra argument to constructing the composed function. And, not all sets have an identity.</p> <p><br></p>
 <p>template <typename iter><p>                    typename BinOp&gt;</p> <p>typename Iter::value_type</p> <p>foldl1(Iter first,</p> <p>              Iter last,</p> <p>              BinOp oper)</p> <p>{</p> <p>        typename Iter::value_type n</p> <p>                = *first++;</p> <p>        return std::accumulate(first,</p> <p>                                                      last,</p> <p>                                                      n,</p> <p>                                                      oper);</p> <p>}</p> <p>So, assuming that fns is, say, a std::vector<boost::function> &gt;,  then it's just a matter of pushing the elements of the sequence v through the composed function, and streaming them out through the ostream_iterator.   </boost::function></p>
 <br></typename></p>
+    </div>
 
-    <div class="callout">
-    <ul class="menu simple">
+    <div class="not-prose mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
 <li>Author: Steve Downey</li>
-
-    </ul>
+        </ul>
 </div>
+
     
 
     
-        <div class="column row">
-            <ul class="pagination" role="navigation" aria-label="Pagination">
+        <nav class="not-prose mt-8 flex justify-between items-center" aria-label="Post navigation"><a href="../../07/what-is-currying-an-aha-moment/" rel="prev" class="text-indigo-600 hover:underline" title="What is currying? an aha! moment">
+                « <span class="hidden sm:inline">Previous post</span>
+            </a>
+            <a href="../../../04/18/this-showed-up-in-my-local-bookstore/" rel="next" class="text-indigo-600 hover:underline" title="This showed up in my local bookstore">
+                <span class="hidden sm:inline">Next post</span> »
+            </a>
+        </nav></article><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
+                renderMathInElement(document.body,
+                    {
+                        
+delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "\\[", right: "\\]", display: true},
+    {left: "\\begin{equation*}", right: "\\end{equation*}", display: true},
+    {left: "$latex ", right: "$", display: false},
+    {left: "$", right: "$", display: false},
+    {left: "\\(", right: "\\)", display: false}
+]
+
+                    }
+                );
+            </script>
+</div>
+            
+<aside class="not-prose mt-10 lg:mt-0 lg:w-64 lg:shrink-0 lg:sticky lg:top-6 lg:self-start space-y-8"><section><button id="theme-toggle" class="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+            <span>Toggle theme</span>
+        </button>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Recent Posts</h2>
+        <ul class="space-y-3">
 <li>
-                    <a href="../../07/what-is-currying-an-aha-moment/" rel="prev" title="What is currying? an aha! moment">« <span class="show-for-sr">Previous post</span></a>
-                </li>
-                <li>
-                    <a href="../../../04/18/this-showed-up-in-my-local-bookstore/" rel="next" title="This showed up in my local bookstore" aria-label="Next page">» <span class="show-for-sr">Next post</span></a>
-                </li>
-            </ul>
+                <a href="../../../../../moving-forward-with-legacy-encodings/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Moving Forward With Legacy Encodings</a>
+                <time class="text-xs text-gray-400" datetime="2026-05-24T13:11:21-04:00">2026-05-24 13:11</time>
+</li>
+            <li>
+                <a href="../../../../../tailwind-theme-workflow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Tailwind, Modus Themes, and the Blog Theming Workflow</a>
+                <time class="text-xs text-gray-400" datetime="2026-05-10T18:00:00-04:00">2026-05-10 18:00</time>
+</li>
+            <li>
+                <a href="../../../../../surround-with-uuid/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Surround With UUID</a>
+                <time class="text-xs text-gray-400" datetime="2026-04-09T17:41:26-04:00">2026-04-09 17:41</time>
+</li>
+            <li>
+                <a href="../../../../../why-standard-organizations/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Why Standard Organizations</a>
+                <time class="text-xs text-gray-400" datetime="2026-03-07T10:21:36-05:00">2026-03-07 10:21</time>
+</li>
+            <li>
+                <a href="../../../../../the-sender-sub-language/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">The Sender Sub-Language</a>
+                <time class="text-xs text-gray-400" datetime="2026-02-28T18:40:21-05:00">2026-02-28 18:40</time>
+</li>
+            <li>
+                <a href="../../../../../building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
+                <time class="text-xs text-gray-400" datetime="2025-12-27T12:03:15-05:00">2025-12-27 12:03</time>
+</li>
+            <li>
+                <a href="../../../../../substitution-is-sometimes-a-failure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Substitution is Sometimes a Failure</a>
+                <time class="text-xs text-gray-400" datetime="2025-11-28T12:06:58-05:00">2025-11-28 12:06</time>
+</li>
+            <li>
+                <a href="../../../../../nikola-blog-infrastructure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Nikola Blog Infrastructure</a>
+                <time class="text-xs text-gray-400" datetime="2024-12-23T13:15:27-05:00">2024-12-23 13:15</time>
+</li>
+            <li>
+                <a href="../../../../2024/05/19/concept-maps-using-c23-library-tech/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Concept Maps using C++23 Library Tech</a>
+                <time class="text-xs text-gray-400" datetime="2024-05-19T11:51:00-04:00">2024-05-19 11:51</time>
+</li>
+            <li>
+                <a href="../../../../2024/05/18/slides-from-cnow-2023-async-control-flow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Slides from C++Now 2023 Async Control Flow</a>
+                <time class="text-xs text-gray-400" datetime="2024-05-18T18:27:00-04:00">2024-05-18 18:27</time>
+</li>
+        </ul></section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Archives</h2>
+        <a href="../../../../../../archive.html" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">All posts →</a>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Tags</h2>
+        <a href="../../../../../../categories/" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">Browse tags →</a>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Feeds</h2>
+        <ul class="space-y-1">
+<li><a href="../../../../../../feed.atom" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">Atom</a></li>
+            <li><a href="../../../../../../rss.xml" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">RSS</a></li>
+        </ul></section></aside>
 </div>
-
-    
-    
-
-
-</div>
-
-
-
-<hr>
-<footer id="footer"><p><small>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+    </main><hr class="max-w-6xl mx-auto border-gray-200">
+<div class="max-w-6xl mx-auto px-4 py-6">
+        
+        <footer id="footer" class="text-center text-sm text-gray-500"><p>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
  <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
- <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></p>
             
         </footer>
 </div>
-
     
-
-
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+            <script src="../../../../../../assets/js/baguetteBox.min.js"></script><script src="../../../../../../assets/js/luxon.min.js"></script><script src="../../../../../../assets/js/fancydates.min.js"></script><!-- fancy dates --><script>
+    luxon.Settings.defaultLocale = "en";
+    fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
+    </script><!-- end fancy dates --><script>
+    baguetteBox.run('main#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><script>
+    (function() {
+        var langNames = {
+            'cpp': 'C++', 'c++': 'C++', 'C++': 'C++', 'C+': 'C++',
+            'haskell': 'Haskell', 'Haskell': 'Haskell',
+            'python': 'Python', 'rust': 'Rust', 'cmake': 'CMake',
+            'bash': 'Bash', 'sh': 'Shell', 'shell': 'Shell', 'zsh': 'Zsh',
+            'makefile': 'Makefile', 'latex': 'LaTeX', 'asm': 'Assembly',
+            'nil': '', 'emacs-lisp': 'Emacs Lisp', 'elisp': 'Emacs Lisp',
+            'javascript': 'JavaScript', 'js': 'JavaScript',
+            'typescript': 'TypeScript', 'ts': 'TypeScript',
+            'html': 'HTML', 'css': 'CSS', 'json': 'JSON', 'yaml': 'YAML',
+            'sql': 'SQL', 'ruby': 'Ruby', 'perl': 'Perl',
+            'java': 'Java', 'go': 'Go', 'swift': 'Swift',
+            'org': 'Org', 'xml': 'XML', 'toml': 'TOML'
+        };
+        function getLang(pre) {
+            var classes = pre.className.split(/\s+/);
+            for (var i = 0; i < classes.length; i++) {
+                if (classes[i].indexOf('src-') === 0) return classes[i].substring(4);
+            }
+            return '';
+        }
+        function addControls(container, pre, lang) {
+            var displayName = langNames[lang] || lang;
+            if (displayName) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = displayName;
+                container.appendChild(label);
+            }
+            var btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.textContent = 'Copy';
+            btn.setAttribute('aria-label', 'Copy code to clipboard');
+            btn.addEventListener('click', function() {
+                var code = pre.querySelector('code');
+                var text = (code || pre).textContent;
+                navigator.clipboard.writeText(text).then(function() {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                });
+            });
+            container.appendChild(btn);
+        }
+        document.querySelectorAll('.org-src-container').forEach(function(container) {
+            var pre = container.querySelector('pre.src');
+            if (pre) addControls(container, pre, getLang(pre));
+        });
+        document.querySelectorAll('pre.example').forEach(function(pre) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'example-container';
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+            addControls(wrapper, pre, '');
+        });
+    })();
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());

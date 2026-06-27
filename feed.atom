@@ -3,13 +3,674 @@
 <feed xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
   <title>What Comes to Mind</title>
   <id>https://sdowney.org/feed.atom</id>
-  <updated>2026-03-07T16:59:38Z</updated>
+  <updated>2026-06-27T17:06:47Z</updated>
   <author>
     <name>Steve Downey</name>
   </author>
   <link rel="self" type="application/atom+xml" href="https://sdowney.org/feed.atom"/>
   <link rel="alternate" type="text/html" href="https://sdowney.org/"/>
   <generator uri="https://getnikola.com/">Nikola</generator>
+  <entry>
+    <title>Moving Forward With Legacy Encodings</title>
+    <id>https://sdowney.org/posts/moving-forward-with-legacy-encodings/</id>
+    <updated>2026-05-24T13:11:21-04:00</updated>
+    <published>2026-05-24T13:11:21-04:00</published>
+    <author>
+      <name>Steve Downey</name>
+    </author>
+    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/moving-forward-with-legacy-encodings/"/>
+    <summary type="html">&lt;div id="ox-nikola-outline-container-org9a8da94" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org9a8da94"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Abstract&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+Reverse-parsing legacy multibyte text encodings — such as Shift_JIS, Big5, or GB18030 — using only local context is an unsolvable problem. Unlike UTF-8, which guarantees \(O(1)\) self-synchronization, legacy encodings have heavily overlapping lead and trail byte ranges. Consequently, even if you begin at a known, valid character boundary, computing the byte-width of the preceding character requires an \(O(N)\) backward scan to the beginning of the string to resolve the parity of the sequence.
+&lt;/p&gt;
+
+&lt;p&gt;
+The WHATWG decoding algorithms provide no mitigation, as their forward-looking state machines reset completely at every boundary. Robust reverse iteration through these encodings cannot be solved algorithmically &lt;i&gt;in situ&lt;/i&gt;; it requires maintaining an external cache of boundary offsets established during a forward pass.
+&lt;/p&gt;
+
+&lt;p&gt;
+What follows is the story of attempting to find a way out, and why the math forces us to fail.
+&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://sdowney.org/posts/moving-forward-with-legacy-encodings/"&gt;Read more…&lt;/a&gt; (5 min remaining to read)&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;</summary>
+    <content type="html">&lt;div id="ox-nikola-outline-container-org9a8da94" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org9a8da94"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Abstract&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+Reverse-parsing legacy multibyte text encodings — such as Shift_JIS, Big5, or GB18030 — using only local context is an unsolvable problem. Unlike UTF-8, which guarantees \(O(1)\) self-synchronization, legacy encodings have heavily overlapping lead and trail byte ranges. Consequently, even if you begin at a known, valid character boundary, computing the byte-width of the preceding character requires an \(O(N)\) backward scan to the beginning of the string to resolve the parity of the sequence.
+&lt;/p&gt;
+
+&lt;p&gt;
+The WHATWG decoding algorithms provide no mitigation, as their forward-looking state machines reset completely at every boundary. Robust reverse iteration through these encodings cannot be solved algorithmically &lt;i&gt;in situ&lt;/i&gt;; it requires maintaining an external cache of boundary offsets established during a forward pass.
+&lt;/p&gt;
+
+&lt;p&gt;
+What follows is the story of attempting to find a way out, and why the math forces us to fail.
+&lt;/p&gt;
+&lt;!-- TEASER_END --&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org2020253" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org2020253"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; The Story of Failing to Find a Way Out&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org8e4c67f" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org8e4c67f"&gt;&lt;span class="section-number-3"&gt;2.1.&lt;/span&gt; Act I: The Overlapping Abyss&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-2-1"&gt;
+&lt;p&gt;
+If you are dropped into the middle of an arbitrary point in a string using a WHATWG legacy multibyte encoding, you cannot find the beginning of a character just by reading backward.
+&lt;/p&gt;
+
+&lt;p&gt;
+This happens because legacy encodings lack &lt;i&gt;self-synchronization&lt;/i&gt;. Let \(L\) be the set of valid lead bytes and \(T\) be the set of valid trail bytes. In UTF-8, these sets are strictly disjoint (\(L \cap T = \emptyset\)). In legacy encodings, the sets intersect aggressively. In Shift_JIS, the byte &lt;code&gt;0x81&lt;/code&gt; is valid as &lt;i&gt;both&lt;/i&gt; a lead byte and a trail byte.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org463740b" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org463740b"&gt;&lt;span class="section-number-4"&gt;2.1.1.&lt;/span&gt; The Specific Example&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-1-1"&gt;
+&lt;p&gt;
+Imagine you are handed a data buffer and dropped at index 3:
+&lt;/p&gt;
+
+&lt;pre class="example" id="orgb5e5ec5"&gt;
+Buffer: [0x81, 0x81, 0x81, 0x81, 0x81]
+Index:    0     1     2     3     4
+&lt;/pre&gt;
+
+&lt;p&gt;
+If you look locally at index 3 (which is &lt;code&gt;0x81&lt;/code&gt;), is it the start of a character or the second half of one? You cannot know without scanning backward to the true beginning of the string:
+&lt;/p&gt;
+
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;&lt;b&gt;If the string actually started at index 1:&lt;/b&gt; The parsing goes &lt;code&gt;[0x81 0x81]&lt;/code&gt; (Char 1) and &lt;code&gt;[0x81 0x81]&lt;/code&gt; (Char 2). Your byte at index 3 is a &lt;b&gt;lead byte&lt;/b&gt;.&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;If the string actually started at index 0:&lt;/b&gt; The parsing goes &lt;code&gt;[0x81 0x81]&lt;/code&gt; (Char 1), &lt;code&gt;[0x81 0x81]&lt;/code&gt; (Char 2), leaving index 4 orphaned. Your byte at index 3 is a &lt;b&gt;trail byte&lt;/b&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+Every single byte relies entirely on the even/odd parity established by the byte preceding it. If the string is malformed or sliced, the ambiguity is even worse, as dropped trail bytes leave no algorithmic breadcrumbs going backward.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org8ac1aa3" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org8ac1aa3"&gt;&lt;span class="section-number-3"&gt;2.2.&lt;/span&gt; Act II: The Illusion of the Anchor&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-2-2"&gt;
+&lt;p&gt;
+Suppose your position is not random. You just parsed forward from the beginning of the string, so you know for an absolute fact you are sitting exactly at a valid character boundary.
+&lt;/p&gt;
+
+&lt;p&gt;
+You still cannot reliably step backward. Knowing the &lt;i&gt;end&lt;/i&gt; of the previous character does not tell you its &lt;i&gt;length&lt;/i&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org6438b92" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org6438b92"&gt;&lt;span class="section-number-4"&gt;2.2.1.&lt;/span&gt; The Specific Example&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-2-1"&gt;
+&lt;p&gt;
+Imagine looking backward from your known, forward-parsed cursor and seeing this sequence in Shift_JIS:
+&lt;/p&gt;
+
+&lt;pre class="example" id="org809ce2b"&gt;
+... 0x81 0x81 0x81 0x40 | &amp;lt;CURSOR&amp;gt;
+&lt;/pre&gt;
+
+&lt;p&gt;
+We know &lt;code&gt;0x40&lt;/code&gt; is ASCII &lt;code&gt;@&lt;/code&gt; (a valid 1-byte character) AND a valid trail byte. We know &lt;code&gt;0x81&lt;/code&gt; is a lead byte AND a trail byte. Where does the character &lt;i&gt;before&lt;/i&gt; your cursor begin?
+&lt;/p&gt;
+
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;&lt;b&gt;Scenario A (Odd number of preceding ~0x81~s):&lt;/b&gt; The sequence from the start of the string was &lt;code&gt;[0x81 0x81]&lt;/code&gt; (U+3001 Ideographic Comma) followed by &lt;code&gt;[0x81 0x40]&lt;/code&gt; (U+3000 Ideographic Space).
+\(\rightarrow\) &lt;i&gt;Result:&lt;/i&gt; The character before your cursor is &lt;b&gt;2 bytes long&lt;/b&gt;, and you just parsed a Japanese space.&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;Scenario B (Even number of preceding ~0x81~s):&lt;/b&gt; The sequence from the start of the string was &lt;code&gt;[0x81 0x81]&lt;/code&gt; (U+3001), &lt;code&gt;[0x81 0x81]&lt;/code&gt; (U+3001), followed by a standalone &lt;code&gt;[0x40]&lt;/code&gt; (U+0040 '@').
+\(\rightarrow\) &lt;i&gt;Result:&lt;/i&gt; The character before your cursor is &lt;b&gt;1 byte long&lt;/b&gt;, and you just parsed an English '@' symbol.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+Even though you are sitting at a known boundary, you are forced into the exact same backward dependency chain to resolve the parity of the preceding bytes just to know if you should step back 1 byte or 2 bytes.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgf9e8fcb" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgf9e8fcb"&gt;&lt;span class="section-number-3"&gt;2.3.&lt;/span&gt; Act III: State Machine Amnesia&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-2-3"&gt;
+&lt;p&gt;
+Finally, you might think to capture the exact WHATWG parser state at your cursor position, rather than just the pointer.
+&lt;/p&gt;
+
+&lt;p&gt;
+This is the final dead end. Having the parser state provides absolutely zero historical context because the WHATWG state machine suffers from "amnesia" at character boundaries. Decoders operate as forward-looking Mealy machines. When you reach a valid character boundary, the decoder finishes emitting the Unicode scalar value and immediately resets its internal state to the &lt;i&gt;Default&lt;/i&gt; state (waiting for a new ASCII character or a new multibyte lead byte).
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org0bbd99b" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org0bbd99b"&gt;&lt;span class="section-number-4"&gt;2.3.1.&lt;/span&gt; The Specific Example&lt;/h4&gt;
+&lt;div class="outline-text-4" id="text-2-3-1"&gt;
+&lt;p&gt;
+Let's track the exact parser state for the end of the two scenarios from Act II to see why it fails to help us read backwards.
+&lt;/p&gt;
+
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;&lt;b&gt;Trace A (The preceding character was '@'):&lt;/b&gt;
+&lt;ol class="org-ol"&gt;
+&lt;li&gt;Parser reads &lt;code&gt;0x81&lt;/code&gt; \(\rightarrow\) State changes to: &lt;i&gt;Shift_JIS lead&lt;/i&gt;&lt;/li&gt;
+&lt;li&gt;Parser reads &lt;code&gt;0x81&lt;/code&gt; (Emits U+3001) \(\rightarrow\) State resets to: &lt;i&gt;Default&lt;/i&gt;&lt;/li&gt;
+&lt;li&gt;Parser reads &lt;code&gt;0x40&lt;/code&gt; (Emits U+0040) \(\rightarrow\) State resets to: &lt;b&gt;Default&lt;/b&gt;&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;b&gt;Trace B (The preceding character was Ideographic Space):&lt;/b&gt;
+&lt;ol class="org-ol"&gt;
+&lt;li&gt;Parser reads &lt;code&gt;0x81&lt;/code&gt; \(\rightarrow\) State changes to: &lt;i&gt;Shift_JIS lead&lt;/i&gt;&lt;/li&gt;
+&lt;li&gt;Parser reads &lt;code&gt;0x40&lt;/code&gt; (Emits U+3000) \(\rightarrow\) State resets to: &lt;b&gt;Default&lt;/b&gt;&lt;/li&gt;
+&lt;/ol&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+In both traces, you are left at the exact same byte position, looking at the exact same bytes behind you, and your parser state is completely identical: &lt;b&gt;Default&lt;/b&gt;. The parser state only tells you what to do with the &lt;i&gt;next&lt;/i&gt; byte you encounter.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgd078686" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgd078686"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Formal Definitions&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-3"&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org7496194" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org7496194"&gt;&lt;span class="section-number-3"&gt;3.1.&lt;/span&gt; Self-Synchronizing Code&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-3-1"&gt;
+&lt;p&gt;
+A code is self-synchronizing if, given an arbitrary point in a bit stream, the decoder can determine the boundaries of the next encoded sequence within a bounded number of bits (\(O(1)\) scan). UTF-8 achieves this via distinct prefix bit-patterns (e.g., &lt;code&gt;110xxxxx&lt;/code&gt; for a 2-byte lead, &lt;code&gt;10xxxxxx&lt;/code&gt; for a trail).
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgca3c1ad" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgca3c1ad"&gt;&lt;span class="section-number-3"&gt;3.2.&lt;/span&gt; Decoder State Amnesia&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-3-2"&gt;
+&lt;p&gt;
+The property of WHATWG decoders where the internal state matrix transitions to the origin state upon the emission of any complete scalar value. Because the state maps purely to &lt;i&gt;pending&lt;/i&gt; bytes, no history of &lt;i&gt;completed&lt;/i&gt; byte widths is preserved.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org86a5cb6" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org86a5cb6"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Tables and Proofs (For the Unbelieving)&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-4"&gt;
+&lt;p&gt;
+If you still suspect there might be a clever bitwise trick to differentiate a lead byte from a trail byte in Shift_JIS, observe the exact byte ranges defined by the standard.
+&lt;/p&gt;
+
+&lt;p&gt;
+The overlap is not a minor edge case; it is systemic. Every single valid lead byte is also a valid trail byte.
+&lt;/p&gt;
+
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+
+&lt;colgroup&gt;
+&lt;col class="org-left"&gt;
+
+&lt;col class="org-left"&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th scope="col" class="org-left"&gt;Byte Type&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;Allowed Hexadecimal Ranges&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;&lt;b&gt;Lead&lt;/b&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;&lt;code&gt;[0x81, 0x9F]&lt;/code&gt; \(\cup\) &lt;code&gt;[0xE0, 0xFC]&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;&lt;b&gt;Trail&lt;/b&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;&lt;code&gt;[0x40, 0x7E]&lt;/code&gt; \(\cup\) &lt;code&gt;[0x80, 0xFC]&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;
+If we compute the intersection (\(Lead \cap Trail\)), we find that the &lt;i&gt;entirety&lt;/i&gt; of the lead byte range is subsumed by the trail byte range.
+&lt;/p&gt;
+
+&lt;table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides"&gt;
+
+
+&lt;colgroup&gt;
+&lt;col class="org-left"&gt;
+
+&lt;col class="org-left"&gt;
+
+&lt;col class="org-left"&gt;
+&lt;/colgroup&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th scope="col" class="org-left"&gt;Condition&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;Hexadecimal Range&lt;/th&gt;
+&lt;th scope="col" class="org-left"&gt;Consequence for Reverse Parsing&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td class="org-left"&gt;\(B \in L \land B \notin T\)&lt;/td&gt;
+&lt;td class="org-left"&gt;\(\emptyset\)&lt;/td&gt;
+&lt;td class="org-left"&gt;No byte unambiguously marks the start of a multibyte character.&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;\(B \in T \land B \notin L\)&lt;/td&gt;
+&lt;td class="org-left"&gt;&lt;code&gt;[0x40, 0x7E]&lt;/code&gt; \(\cup\) &lt;code&gt;0x80&lt;/code&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;Can be an ASCII character &lt;i&gt;or&lt;/i&gt; a trail byte.&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td class="org-left"&gt;\(B \in (L \cap T)\)&lt;/td&gt;
+&lt;td class="org-left"&gt;&lt;code&gt;[0x81, 0x9F]&lt;/code&gt; \(\cup\) &lt;code&gt;[0xE0, 0xFC]&lt;/code&gt;&lt;/td&gt;
+&lt;td class="org-left"&gt;Utter ambiguity. Requires \(O(N)\) lookbehind.&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org4f55677" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org4f55677"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; References&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-5"&gt;
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;&lt;b&gt;WHATWG Encoding Standard, Section 4 (Decoders):&lt;/b&gt; Explicitly defines the forward-looking architecture of legacy decoders and the mandatory &lt;i&gt;Shift_JIS lead&lt;/i&gt; to &lt;i&gt;Default&lt;/i&gt; state transitions. &lt;a href="https://encoding.spec.whatwg.org/#decoders"&gt;Link&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;WHATWG Encoding Standard, Section 13 (Shift_JIS):&lt;/b&gt; Outlines the index pointer maps showing the overlapping lead and trail ranges. &lt;a href="https://encoding.spec.whatwg.org/#shift_jis"&gt;Link&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;The Unicode Standard, Version 15.0, Section 2.5 (Encoding Forms):&lt;/b&gt; Discusses the architectural necessity of non-overlapping (self-synchronizing) code unit boundaries, contrasting UTF-8 with legacy designs. &lt;a href="https://www.unicode.org/versions/Unicode15.0.0/ch02.pdf"&gt;Link&lt;/a&gt;Write your post here.&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/div&gt;
+&lt;/div&gt;</content>
+  </entry>
+  <entry>
+    <title>Tailwind, Modus Themes, and the Blog Theming Workflow</title>
+    <id>https://sdowney.org/posts/tailwind-theme-workflow/</id>
+    <updated>2026-05-10T18:00:00-04:00</updated>
+    <published>2026-05-10T18:00:00-04:00</published>
+    <author>
+      <name>Steve Downey</name>
+    </author>
+    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/tailwind-theme-workflow/"/>
+    <summary type="html">&lt;div&gt;&lt;p&gt;
+I replaced the Foundation 6 theme on this blog with Tailwind CSS.  The
+immediate motivation was a CSS conflict—Foundation's global &lt;code&gt;code&lt;/code&gt; and &lt;code&gt;kbd&lt;/code&gt;
+rules bled into org-mode source blocks—but the deeper reason is that Tailwind
+has the community and documentation that Foundation no longer does.
+&lt;/p&gt;
+
+&lt;p&gt;
+This post documents the workflow: how the theme is structured, how syntax
+highlighting CSS connects Emacs to the browser, and what the current
+configuration choices are.
+&lt;/p&gt;
+
+&lt;p&gt;&lt;a href="https://sdowney.org/posts/tailwind-theme-workflow/"&gt;Read more…&lt;/a&gt; (4 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
+    <content type="html">&lt;p&gt;
+I replaced the Foundation 6 theme on this blog with Tailwind CSS.  The
+immediate motivation was a CSS conflict—Foundation's global &lt;code&gt;code&lt;/code&gt; and &lt;code&gt;kbd&lt;/code&gt;
+rules bled into org-mode source blocks—but the deeper reason is that Tailwind
+has the community and documentation that Foundation no longer does.
+&lt;/p&gt;
+
+&lt;p&gt;
+This post documents the workflow: how the theme is structured, how syntax
+highlighting CSS connects Emacs to the browser, and what the current
+configuration choices are.
+&lt;/p&gt;
+
+&lt;!-- TEASER_END --&gt;
+&lt;div id="ox-nikola-outline-container-org3a88deb" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org3a88deb"&gt;The Theme Stack&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org3a88deb"&gt;
+&lt;p&gt;
+The blog uses three Nikola themes stacked via the parent chain:
+&lt;/p&gt;
+
+&lt;pre class="example" id="org60bc8b9"&gt;
+sdowney-tailwind → nikola-tailwind-blog → nikola-tailwind-base → base
+&lt;/pre&gt;
+
+&lt;p&gt;
+&lt;code&gt;nikola-tailwind-base&lt;/code&gt; provides the Tailwind Play CDN loading, a responsive
+navbar, a centered content column wrapped in Tailwind's &lt;code&gt;prose&lt;/code&gt; class, and CSS
+for org-mode source blocks (centering, language labels, copy buttons).  It has
+no opinions about fonts or accent colors.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;code&gt;nikola-tailwind-blog&lt;/code&gt; adds an indigo accent, post/index/tag templates, and the
+visual structure of a blog.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;code&gt;sdowney-tailwind&lt;/code&gt; is just my personal layer: Google Fonts (Source Sans 3, Open
+Sans, Source Code Pro), Font Awesome, and the modus-vivendi syntax highlighting
+CSS.
+&lt;/p&gt;
+
+&lt;p&gt;
+Each tier is a standard Nikola theme directory under &lt;code&gt;themes/&lt;/code&gt;.  Nikola finds
+templates by walking the chain, so I only override what I actually change.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org52b8b85" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org52b8b85"&gt;How Tailwind Is Loaded&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org52b8b85"&gt;
+&lt;p&gt;
+The Tailwind Play CDN is a &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; tag that processes utility classes at
+runtime:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-html"&gt;&lt;code&gt;&amp;lt;&lt;span class="org-function-name"&gt;script&lt;/span&gt; &lt;span class="org-variable-name"&gt;src&lt;/span&gt;=&lt;span class="org-string"&gt;"https://cdn.tailwindcss.com?plugins=typography"&lt;/span&gt;&amp;gt;&amp;lt;/&lt;span class="org-function-name"&gt;script&lt;/span&gt;&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The Typography plugin provides the &lt;code&gt;prose&lt;/code&gt; class, which styles all content
+elements (headings, paragraphs, lists, blockquotes, code, tables) inside the
+main content area.  For a blog where content comes from org-mode export, this
+is exactly right—I don't control the HTML org produces, and &lt;code&gt;prose&lt;/code&gt; handles
+it gracefully.
+&lt;/p&gt;
+
+&lt;p&gt;
+The Tailwind config is inline in a &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; block, defined in my personal
+&lt;code&gt;base_helper.tmpl&lt;/code&gt;:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-javascript"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;var&lt;/span&gt; &lt;span class="org-variable-name"&gt;heading&lt;/span&gt; = [&lt;span class="org-string"&gt;'"Open Sans"'&lt;/span&gt;, &lt;span class="org-string"&gt;'Roboto'&lt;/span&gt;, &lt;span class="org-string"&gt;'Arial'&lt;/span&gt;, &lt;span class="org-string"&gt;'sans-serif'&lt;/span&gt;];
+tailwind.config = {
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: [&lt;span class="org-string"&gt;'"Source Sans 3"'&lt;/span&gt;].concat(heading),
+                heading: heading,
+                mono: [&lt;span class="org-string"&gt;'"Source Code Pro"'&lt;/span&gt;, &lt;span class="org-string"&gt;'Inconsolata'&lt;/span&gt;, &lt;span class="org-string"&gt;'ui-monospace'&lt;/span&gt;, &lt;span class="org-string"&gt;'Courier'&lt;/span&gt;, &lt;span class="org-string"&gt;'monospace'&lt;/span&gt;],
+            },
+            typography: {
+                DEFAULT: {
+                    css: {
+                        &lt;span class="org-string"&gt;'h1, h2, h3, h4, h5, h6'&lt;/span&gt;: {
+                            fontFamily: heading.join(&lt;span class="org-string"&gt;', '&lt;/span&gt;),
+                        },
+                    },
+                },
+            },
+        },
+    },
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Font stacks are defined once.  The &lt;code&gt;heading&lt;/code&gt; array is reused in three places.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgee8adc9" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgee8adc9"&gt;Source Block Rendering&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orgee8adc9"&gt;
+&lt;p&gt;
+Org-mode's HTML exporter produces this structure:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-html"&gt;&lt;code&gt;&amp;lt;&lt;span class="org-function-name"&gt;div&lt;/span&gt; &lt;span class="org-variable-name"&gt;class&lt;/span&gt;=&lt;span class="org-string"&gt;"org-src-container"&lt;/span&gt;&amp;gt;
+  &amp;lt;&lt;span class="org-function-name"&gt;pre&lt;/span&gt; &lt;span class="org-variable-name"&gt;class&lt;/span&gt;=&lt;span class="org-string"&gt;"src src-cpp"&lt;/span&gt;&amp;gt;
+    &amp;lt;&lt;span class="org-function-name"&gt;code&lt;/span&gt;&amp;gt;&amp;lt;&lt;span class="org-function-name"&gt;span&lt;/span&gt; &lt;span class="org-variable-name"&gt;class&lt;/span&gt;=&lt;span class="org-string"&gt;"org-keyword"&lt;/span&gt;&amp;gt;template&amp;lt;/&lt;span class="org-function-name"&gt;span&lt;/span&gt;&amp;gt; ...&amp;lt;/&lt;span class="org-function-name"&gt;code&lt;/span&gt;&amp;gt;
+  &amp;lt;/&lt;span class="org-function-name"&gt;pre&lt;/span&gt;&amp;gt;
+&amp;lt;/&lt;span class="org-function-name"&gt;div&lt;/span&gt;&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The &lt;code&gt;src-cpp&lt;/code&gt; class carries the language.  JavaScript in &lt;code&gt;base.tmpl&lt;/code&gt; reads it,
+maps &lt;code&gt;cpp&lt;/code&gt; to "C++", and injects a label in the top-left corner and a copy
+button in the top-right.  Any language works—unknown ones display their raw
+name.
+&lt;/p&gt;
+
+&lt;p&gt;
+The CSS positions the container with &lt;code&gt;position: relative&lt;/code&gt;, &lt;code&gt;margin: auto&lt;/code&gt;,
+&lt;code&gt;width: fit-content&lt;/code&gt;, &lt;code&gt;min-width: 60%&lt;/code&gt;, and gives the &lt;code&gt;pre&lt;/code&gt; a dark background
+(&lt;code&gt;--code-bg&lt;/code&gt;) with padding.  The &lt;code&gt;padding-top: 2.25rem&lt;/code&gt; makes room for the
+label and button.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org5578a91" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org5578a91"&gt;Syntax Highlighting: The Modus Connection&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org5578a91"&gt;
+&lt;p&gt;
+Org-mode's HTML exporter uses &lt;code&gt;htmlize&lt;/code&gt; to apply face colors as CSS classes.
+When &lt;code&gt;org-html-htmlize-output-type&lt;/code&gt; is &lt;code&gt;'css&lt;/code&gt;, it produces &lt;code&gt;&amp;lt;span
+class&lt;/code&gt;"org-keyword"&amp;gt;=, &lt;code&gt;&amp;lt;span class&lt;/code&gt;"org-type"&amp;gt;=, etc.  The corresponding CSS
+must exist in an external stylesheet.
+&lt;/p&gt;
+
+&lt;p&gt;
+Protesilaos Stavrou's &lt;a href="https://protesilaos.com/emacs/modus-themes"&gt;modus-themes&lt;/a&gt; provide a structured palette: an alist of
+&lt;code&gt;(semantic-name . hex-color)&lt;/code&gt; pairs.  Face definitions reference these palette
+names.  &lt;code&gt;font-lock-keyword-face&lt;/code&gt;, for example, maps to &lt;code&gt;magenta-alt-other&lt;/code&gt; in
+modus-vivendi.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;code&gt;secretaire-css.el&lt;/code&gt; bridges Emacs and the browser:
+&lt;/p&gt;
+
+&lt;ol class="org-ol"&gt;
+&lt;li&gt;Load the target theme (e.g., &lt;code&gt;modus-vivendi-tinted&lt;/code&gt;)&lt;/li&gt;
+&lt;li&gt;Require deferred major modes so their faces exist&lt;/li&gt;
+&lt;li&gt;Read the palette via &lt;code&gt;(modus-themes-current-palette)&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;For each face, resolve attributes and reverse-map hex → palette name&lt;/li&gt;
+&lt;li&gt;Emit CSS rules using &lt;code&gt;var(--palette-name)&lt;/code&gt; references&lt;/li&gt;
+&lt;li&gt;Include only referenced palette entries in the &lt;code&gt;:root&lt;/code&gt; block&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;
+The result:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-css"&gt;&lt;code&gt;&lt;span class="org-css-selector"&gt;:root&lt;/span&gt; {
+    &lt;span class="org-variable-name"&gt;--bg-main&lt;/span&gt;: &lt;span class="custom-3"&gt;#0d0e1c&lt;/span&gt;;
+    &lt;span class="org-variable-name"&gt;--fg-main&lt;/span&gt;: &lt;span class="custom-2"&gt;#ffffff&lt;/span&gt;;
+    &lt;span class="org-variable-name"&gt;--magenta-alt-other&lt;/span&gt;: &lt;span class="custom-1"&gt;#b6a0ff&lt;/span&gt;;
+    &lt;span class="org-variable-name"&gt;--green&lt;/span&gt;: &lt;span class="custom"&gt;#44bc44&lt;/span&gt;;
+    &lt;span class="org-comment-delimiter"&gt;/* &lt;/span&gt;&lt;span class="org-comment"&gt;... only used entries ...&lt;/span&gt;&lt;span class="org-comment-delimiter"&gt; */&lt;/span&gt;
+}
+
+&lt;span class="org-comment-delimiter"&gt;/* &lt;/span&gt;&lt;span class="org-comment"&gt;font-lock-keyword-face: magenta-alt-other&lt;/span&gt;&lt;span class="org-comment-delimiter"&gt; */&lt;/span&gt;
+&lt;span class="org-css-selector"&gt;.org-keyword&lt;/span&gt; {
+    &lt;span class="org-css-property"&gt;color&lt;/span&gt;: var(&lt;span class="org-variable-name"&gt;--magenta-alt-other&lt;/span&gt;);
+    &lt;span class="org-css-property"&gt;font-weight&lt;/span&gt;: bold;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The &lt;code&gt;tailwind-base.css&lt;/code&gt; file in the base tier references these variables:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-css"&gt;&lt;code&gt;&lt;span class="org-css-selector"&gt;:root&lt;/span&gt; {
+    &lt;span class="org-variable-name"&gt;--code-bg&lt;/span&gt;: var(&lt;span class="org-variable-name"&gt;--bg-main&lt;/span&gt;, &lt;span class="custom-1"&gt;#1e1e2e&lt;/span&gt;);
+    &lt;span class="org-variable-name"&gt;--code-fg&lt;/span&gt;: var(&lt;span class="org-variable-name"&gt;--fg-main&lt;/span&gt;, &lt;span class="custom"&gt;#cdd6f4&lt;/span&gt;);
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Change the modus variant, regenerate, and code block backgrounds follow.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org8558353" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org8558353"&gt;Current Configuration&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org8558353"&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org2b6e842" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org2b6e842"&gt;What's using the Play CDN&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org2b6e842"&gt;
+&lt;p&gt;
+The Tailwind Play CDN generates CSS client-side.  There is no &lt;code&gt;node_modules&lt;/code&gt;,
+no &lt;code&gt;package.json&lt;/code&gt;, no build step.  Page load includes a brief delay while
+Tailwind processes the utility classes.  For a personal blog with moderate
+traffic, this is acceptable.
+&lt;/p&gt;
+
+&lt;p&gt;
+If it becomes a problem, the switch to a pre-built CSS file is
+straightforward: install the Tailwind CLI, run &lt;code&gt;npx tailwindcss -o
+tailwind.css&lt;/code&gt;, replace the &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; with a &lt;code&gt;&amp;lt;link&amp;gt;&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org5872b01" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org5872b01"&gt;Typography plugin via prose&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org5872b01"&gt;
+&lt;p&gt;
+The &lt;code&gt;prose prose-lg prose-indigo&lt;/code&gt; classes on the content &lt;code&gt;&amp;lt;div&amp;gt;&lt;/code&gt; provide:
+&lt;/p&gt;
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;Reasonable line lengths and spacing&lt;/li&gt;
+&lt;li&gt;Styled headings, links, lists, blockquotes, tables&lt;/li&gt;
+&lt;li&gt;Code blocks with monospace font&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;prose-indigo&lt;/code&gt; for accent-colored links&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+Anything outside &lt;code&gt;prose&lt;/code&gt; (navbar, footer, tag pills) uses &lt;code&gt;not-prose&lt;/code&gt; or
+lives outside the &lt;code&gt;prose&lt;/code&gt; wrapper.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orga983851" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orga983851"&gt;Fonts&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orga983851"&gt;
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;Body: Source Sans 3 (with Open Sans fallback)&lt;/li&gt;
+&lt;li&gt;Headings: Open Sans&lt;/li&gt;
+&lt;li&gt;Code: Source Code Pro&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+All loaded via Google Fonts.  Tailwind's &lt;code&gt;font-sans&lt;/code&gt; and &lt;code&gt;font-mono&lt;/code&gt; utilities
+reference these through the config.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org1617cdf" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org1617cdf"&gt;Accent color: indigo&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org1617cdf"&gt;
+&lt;p&gt;
+Tailwind's &lt;code&gt;indigo&lt;/code&gt; palette provides the accent: &lt;code&gt;bg-indigo-700&lt;/code&gt; for the
+header banner, &lt;code&gt;text-indigo-600&lt;/code&gt; for links, &lt;code&gt;bg-indigo-100 text-indigo-700&lt;/code&gt;
+for tag pills.  Changing to another color is a mechanical search-replace
+across the blog tier templates.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org16a2edf" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org16a2edf"&gt;Icons: Font Awesome 7.0.1&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org16a2edf"&gt;
+&lt;p&gt;
+Loaded via CDN in the personal tier.  Navigation links in &lt;code&gt;conf.py&lt;/code&gt; include
+Font Awesome &lt;code&gt;&amp;lt;i&amp;gt;&lt;/code&gt; tags directly in the link text.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orga740c92" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orga740c92"&gt;What I Might Tweak Later&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orga740c92"&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orga4685f3" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orga4685f3"&gt;Dark mode&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orga4685f3"&gt;
+&lt;p&gt;
+The syntax highlighting is already dark (modus-vivendi).  The page chrome is
+light.  A proper dark mode would add &lt;code&gt;dark:&lt;/code&gt; variants to the templates and
+switch the modus CSS to operandi for the light code blocks.  Tailwind makes
+this straightforward with &lt;code&gt;darkMode: 'media'&lt;/code&gt; in the config.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org851ab98" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org851ab98"&gt;Production Tailwind&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org851ab98"&gt;
+&lt;p&gt;
+If page load times bother me, switching to a pre-built CSS file removes the
+Play CDN runtime cost.  The config is already defined inline; moving it to
+&lt;code&gt;tailwind.config.js&lt;/code&gt; is mechanical.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org1cf420c" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org1cf420c"&gt;Palette-aware CSS generation&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org1cf420c"&gt;
+&lt;p&gt;
+&lt;code&gt;secretaire-css&lt;/code&gt; currently falls back to htmlize for the actual face scanning
+when the modus palette API isn't available.  The full palette-aware path (emitting
+&lt;code&gt;var()&lt;/code&gt; references instead of flat hex) works with modus-themes 3.x and 4.x.
+See &lt;code&gt;docs/secretaire-css-design.org&lt;/code&gt; for what the ideal output looks like.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgbecd46a" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgbecd46a"&gt;Fonts&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orgbecd46a"&gt;
+&lt;p&gt;
+I'm eyeing &lt;a href="https://www.brailleinstitute.org/freefont/"&gt;Atkinson Hyperlegible Next&lt;/a&gt; for body text.  Changing fonts is a
+two-place edit: the Google Fonts &lt;code&gt;&amp;lt;link&amp;gt;&lt;/code&gt; tag and the Tailwind config in
+&lt;code&gt;base_helper.tmpl&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;</content>
+    <category term="emacs" label="emacs"/>
+    <category term="modus-themes" label="modus-themes"/>
+    <category term="nikola" label="nikola"/>
+    <category term="org-mode" label="org-mode"/>
+    <category term="tailwind" label="tailwind"/>
+  </entry>
+  <entry>
+    <title>Surround With UUID</title>
+    <id>https://sdowney.org/posts/surround-with-uuid/</id>
+    <updated>2026-04-09T17:41:26-04:00</updated>
+    <published>2026-04-09T17:41:26-04:00</published>
+    <author>
+      <name>Steve Downey</name>
+    </author>
+    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/surround-with-uuid/"/>
+    <summary type="html">&lt;div class="abstract" id="org2cbd595"&gt;
+&lt;p&gt;
+The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
+&lt;/p&gt;
+
+&lt;p&gt;
+It's a radically oversimplified too long elevator pitch.
+&lt;/p&gt;
+
+&lt;/div&gt;</summary>
+    <content type="html">&lt;div class="abstract" id="org2cbd595"&gt;
+&lt;p&gt;
+The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
+&lt;/p&gt;
+
+&lt;p&gt;
+It's a radically oversimplified too long elevator pitch.
+&lt;/p&gt;
+
+&lt;/div&gt;</content>
+  </entry>
   <entry>
     <title>Why Standard Organizations</title>
     <id>https://sdowney.org/posts/why-standard-organizations/</id>
@@ -2523,7 +3184,7 @@ The int is 55
 &lt;div id="outline-container-org5e7ea49" class="outline-5"&gt;
 &lt;h6 id="org5e7ea49"&gt;Sender&lt;/h6&gt;
 &lt;div class="outline-text-5" id="text-org5e7ea49"&gt;
-&lt;div id="org2d613b7" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/wp-content/uploads/2024/05/sender.png" alt="sender.png"&gt; &lt;/p&gt; &lt;/div&gt;
+&lt;div id="org2d613b7" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/images/sender.png" alt="sender.png"&gt; &lt;/p&gt; &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;div id="outline-container-orgb5de8b8" class="outline-5"&gt;
@@ -2535,7 +3196,7 @@ The int is 55
 &lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;div id="org23c38c7" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/wp-content/uploads/2024/05/just.png" alt="just.png"&gt; &lt;/p&gt; &lt;/div&gt;
+&lt;div id="org23c38c7" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/images/just.png" alt="just.png"&gt; &lt;/p&gt; &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;div id="outline-container-org533dd2e" class="outline-5"&gt;
@@ -2548,7 +3209,7 @@ The int is 55
 &lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;div id="org7400c8c" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/wp-content/uploads/2024/05/then.png" alt="then.png"&gt; &lt;/p&gt; &lt;/div&gt;
+&lt;div id="org7400c8c" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/images/then.png" alt="then.png"&gt; &lt;/p&gt; &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;div id="outline-container-orgf0c5b3f" class="outline-5"&gt;
@@ -2561,7 +3222,7 @@ The int is 55
 &lt;/pre&gt;
 &lt;/div&gt;
 
-&lt;div id="org8f34211" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/wp-content/uploads/2024/05/let_value.png" alt="let_value.png"&gt; &lt;/p&gt; &lt;/div&gt;
+&lt;div id="org8f34211" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/images/let_value.png" alt="let_value.png"&gt; &lt;/p&gt; &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
@@ -3093,526 +3754,6 @@ work  = 500
 &lt;p&gt;  &lt;/p&gt;
 
 &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;</content>
-  </entry>
-  <entry>
-    <title>Some Informal Remarks Towards a New Theory of Trait Customization</title>
-    <id>https://sdowney.org/posts/index.php/2023/12/24/some-informal-remarks-towards-a-new-theory-of-trait-customization/</id>
-    <updated>2023-12-24T00:00:00-05:00</updated>
-    <published>2023-12-24T00:00:00-05:00</published>
-    <author>
-      <name>Steve Downey</name>
-    </author>
-    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/index.php/2023/12/24/some-informal-remarks-towards-a-new-theory-of-trait-customization/"/>
-    <summary type="html">&lt;div&gt;&lt;div id="outline-container-org0a7dcc5" class="outline-2"&gt;
-&lt;h3 id="org0a7dcc5"&gt;A Possible Technique&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org0a7dcc5"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-function-name"&gt;g&lt;/span&gt;(&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;lhs&lt;/span&gt;, &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;) {
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;op&lt;/span&gt; = &lt;span class="org-type"&gt;partial_eq&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt;;
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; op.ne(lhs, rhs);
-}
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;a href="https://godbolt.org/z/Ge43cWfn8"&gt;Compiler Explorer with Supporting Code&lt;/a&gt;
-
-A trait is defined as a template variable that implements the required operations. Implementation of those operations is possible via a variety of techniques, but existence is concept checkable. It might prove useful to explicitly opt in to a sufficiently generic trait.
-
-The technique satisfies the openness requirement, that the trait can be created independently of the type that models the trait. There can still only be one definition, but this enables opting std:: types into new traits, for example.
-
-It also doesn't universally grab an operation name. The trait variable is namespaceable.
-
-Syntax isn't really awesome, but not utterly unworkable.
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;a href="https://sdowney.org/posts/index.php/2023/12/24/some-informal-remarks-towards-a-new-theory-of-trait-customization/"&gt;Read more…&lt;/a&gt; (4 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
-    <content type="html">&lt;div id="outline-container-org0a7dcc5" class="outline-2"&gt;
-&lt;h3 id="org0a7dcc5"&gt;A Possible Technique&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org0a7dcc5"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-function-name"&gt;g&lt;/span&gt;(&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;lhs&lt;/span&gt;, &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;) {
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;op&lt;/span&gt; = &lt;span class="org-type"&gt;partial_eq&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt;;
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; op.ne(lhs, rhs);
-}
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;a href="https://godbolt.org/z/Ge43cWfn8"&gt;Compiler Explorer with Supporting Code&lt;/a&gt;
-
-A trait is defined as a template variable that implements the required operations. Implementation of those operations is possible via a variety of techniques, but existence is concept checkable. It might prove useful to explicitly opt in to a sufficiently generic trait.
-
-The technique satisfies the openness requirement, that the trait can be created independently of the type that models the trait. There can still only be one definition, but this enables opting std:: types into new traits, for example.
-
-It also doesn't universally grab an operation name. The trait variable is namespaceable.
-
-Syntax isn't really awesome, but not utterly unworkable.
-
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;!-- TEASER_END --&gt;
-
-&lt;div id="outline-container-org5ad6709" class="outline-2"&gt;
-&lt;h3 id="org5ad6709"&gt;Background&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org5ad6709"&gt;
-
- Several years ago, Barry Revzin in "&lt;a href="https://brevzin.github.io/c++/2020/12/01/tag-invoke/"&gt;Why tag_invoke is not the solution I want"&lt;/a&gt; outlined the characteristics that a good customization interface would have. Quoting
-&lt;blockquote&gt;
-&lt;ol class="org-ol"&gt;
-    &lt;li&gt;The ability to see clearly, in code, what the interface is that can (or needs to) be customized.&lt;/li&gt;
-    &lt;li&gt;The ability to provide default implementations that can be overridden, not just non-defaulted functions.&lt;/li&gt;
-    &lt;li&gt;The ability to opt in explicitly to the interface.&lt;/li&gt;
-    &lt;li&gt;The inability to incorrectly opt in to the interface (for instance, if the interface has a function that takes an int, you cannot opt in by accidentally taking an unsigned int).&lt;/li&gt;
-    &lt;li&gt;The ability to easily invoke the customized implementation. Alternatively, the inability to accidentally invoke the base implementation.&lt;/li&gt;
-    &lt;li&gt;The ability to easily verify that a type implements an interface.&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/blockquote&gt;
-I believe that with some support on the implementation side, and some &lt;code&gt;concept&lt;/code&gt; definitions to assert correct usage, having an explicit object that implements the required traits for a concept can satisfy more of the requirements than &lt;code&gt;tag_invoke&lt;/code&gt; or &lt;code&gt;std::&lt;/code&gt; customization points. The trade-off is that usage of the trait is explicit and not dependent on arguments to the trait, which means that it is more verbose and possible to get wrong in both subtle and gross ways.
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org87d886f" class="outline-2"&gt;
-&lt;h3 id="org87d886f"&gt;&lt;code&gt;concept_map&lt;/code&gt;&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org87d886f"&gt;
-
- In the original proposal for C++ concepts, there was a facility called ~concept_map~s where
-&lt;blockquote&gt; Concept maps describe how a set of template arguments satisfy the requirements stated in the body of a concept definition.&lt;/blockquote&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;student_record&lt;/span&gt; {
-  &lt;span class="org-keyword"&gt;public&lt;/span&gt;:
-    &lt;span class="org-type"&gt;string&lt;/span&gt; &lt;span class="org-variable-name"&gt;id&lt;/span&gt;;
-    &lt;span class="org-type"&gt;string&lt;/span&gt; &lt;span class="org-variable-name"&gt;name&lt;/span&gt;;
-    &lt;span class="org-type"&gt;string&lt;/span&gt; &lt;span class="org-variable-name"&gt;address&lt;/span&gt;;
-};
-
-&lt;span class="org-keyword"&gt;concept&lt;/span&gt; &lt;span class="org-type"&gt;EqualityComparable&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt; {
-    &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-keyword"&gt;operator&lt;/span&gt;&lt;span class="org-variable-name"&gt;==&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt;, &lt;span class="org-type"&gt;T&lt;/span&gt;);
-}
-
-&lt;span class="org-type"&gt;concept_map&lt;/span&gt; &lt;span class="org-type"&gt;EqualityComparable&lt;/span&gt;&lt;span class="org-variable-name"&gt;&amp;lt;student_record&amp;gt;&lt;/span&gt; {
-    &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-keyword"&gt;operator&lt;/span&gt;&lt;span class="org-variable-name"&gt;==&lt;/span&gt;(&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;student_record&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;a&lt;/span&gt;, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;student_record&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;b&lt;/span&gt;) {
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; a.id == b.id;
-    }
-};
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;requires&lt;/span&gt; &lt;span class="org-type"&gt;EqualityComparable&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-type"&gt;void&lt;/span&gt; &lt;span class="org-function-name"&gt;f&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt;);
-
-f(student_record()); &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;okay, have concept_map EqualityComparable&amp;lt;student_record&amp;gt;&lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2008/n2617.pdf"&gt;n2617&lt;/a&gt;
-
-This allowed for customizing how the various requirements for a concept were implemented for a particular type.
-
-This was lost in Concepts Lite, a.k.a C++20 Concepts.
-
-Other generic type systems have implemented something like this feature, as well as definition checking. In particular, Rust Traits are an analagous feature.
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org71089d8" class="outline-2"&gt;
-&lt;h3 id="org71089d8"&gt;Rust Traits&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org71089d8"&gt;
-&lt;blockquote&gt; A trait is a collection of methods defined for an unknown type: &lt;code&gt;Self&lt;/code&gt;. They can access other methods declared in the same trait.&lt;/blockquote&gt;
-An example that Revzin mentions, and that my first example alludes to is PartialEq:
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-rust" id="nil"&gt;&lt;span class="org-keyword"&gt;pub&lt;/span&gt; &lt;span class="org-keyword"&gt;trait&lt;/span&gt; &lt;span class="org-type"&gt;PartialEq&lt;/span&gt;&amp;lt;&lt;span class="org-variable-name"&gt;Rhs&lt;/span&gt;: &lt;span class="org-rust-question-mark"&gt;?&lt;/span&gt;&lt;span class="org-type"&gt;Sized&lt;/span&gt; = &lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt; {
-    &lt;span class="org-doc"&gt;/// This method tests for `self` and `other` values to be equal, and is used&lt;/span&gt;
-    &lt;span class="org-doc"&gt;/// by `==`.&lt;/span&gt;
-    &lt;span class="org-keyword"&gt;fn&lt;/span&gt; &lt;span class="org-function-name"&gt;eq&lt;/span&gt;(&lt;span class="org-rust-ampersand"&gt;&amp;amp;&lt;/span&gt;&lt;span class="org-keyword"&gt;self&lt;/span&gt;, &lt;span class="org-variable-name"&gt;other&lt;/span&gt;: &lt;span class="org-rust-ampersand"&gt;&amp;amp;&lt;/span&gt;&lt;span class="org-type"&gt;Rhs&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;bool&lt;/span&gt;;
-
-    &lt;span class="org-doc"&gt;/// This method tests for `!=`. The default implementation is almost always&lt;/span&gt;
-    &lt;span class="org-doc"&gt;/// sufficient, and should not be overridden without very good reason.&lt;/span&gt;
-    &lt;span class="org-keyword"&gt;fn&lt;/span&gt; &lt;span class="org-function-name"&gt;ne&lt;/span&gt;(&lt;span class="org-rust-ampersand"&gt;&amp;amp;&lt;/span&gt;&lt;span class="org-keyword"&gt;self&lt;/span&gt;, &lt;span class="org-variable-name"&gt;other&lt;/span&gt;: &lt;span class="org-rust-ampersand"&gt;&amp;amp;&lt;/span&gt;&lt;span class="org-type"&gt;Rhs&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; {
-        !&lt;span class="org-keyword"&gt;self&lt;/span&gt;.eq(other)
-    }
-}
-&lt;/pre&gt;
-&lt;/div&gt;
-From &lt;a href="https://doc.rust-lang.org/src/core/cmp.rs.html#219"&gt;https://doc.rust-lang.org/src/core/cmp.rs.html#219&lt;/a&gt;
-
-In Rust this is built into the language, and operators like == are automatically rewritten into &lt;code&gt;eq&lt;/code&gt; and &lt;code&gt;ne&lt;/code&gt;. At least that's my understanding. We're not going to get that in C++, ever. With both Rust and Concept Maps, though, we do get new named operations that can be used unqualified in generic code and the compiler will be directed to the correct implementation.
-
-Giving up on that is key to a way forward in C++.
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org9dd42da" class="outline-2"&gt;
-&lt;h3 id="org9dd42da"&gt;A trait object&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org9dd42da"&gt;
-
- The technique I'm considering and describing here is modeled loosly after the implementation of Haskell typeclasses in GHC. For a particular instance of a typeclass, a record holding the operations based on the actual type in use is created and made available, and the named operations are lifted into scope and the functions in the record called when used. It is as if a virtual function table was implemented with name lookup rather than index.
-
-In C++, particularly in current post-C++20 C++, we can look up an object via a template variable. The implementations of different specializations of a template variable do not need to be connected in any way. We have to provide a definition, since to make it look like a declaration it's necessary to provide some type such as false_type. Alternatively, we could declare it as an int, but mark it as &lt;code&gt;extern&lt;/code&gt; and not define it. I'm still researching alternatives.
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;someTrait&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::false_type{};
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;extern&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;otherTrait&lt;/span&gt;;
-&lt;/pre&gt;
-&lt;/div&gt;
-These are useful if there is no good generic definition of the trait.
-
-If there is a good generic definition of a trait, the trait variable is straightforward:
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;struct&lt;/span&gt; {
-    &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;eq&lt;/span&gt;(&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;lhs&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; {&lt;span class="org-keyword"&gt;return&lt;/span&gt; rhs == lhs;}
-    &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;ne&lt;/span&gt;(&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;lhs&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; {&lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-negation-char"&gt;!&lt;/span&gt;eq(lhs, rhs);}
-} &lt;span class="org-variable-name"&gt;partial_eq_default&lt;/span&gt;;
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;partial_eq&lt;/span&gt; = partial_eq_default;
-&lt;/pre&gt;
-&lt;/div&gt;
-In this case, though, there probably ought to be an opt in so that the trait can be checked by concept.
-
-An opt in mechanism is a bit verbose, but not necessarily complicated:
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;partial_eq_type&lt;/span&gt; = &lt;span class="org-constant"&gt;false&lt;/span&gt;;
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-type"&gt;partial_eq_type&lt;/span&gt;&lt;span class="org-variable-name"&gt;&amp;lt;int&amp;gt;&lt;/span&gt; = &lt;span class="org-constant"&gt;true&lt;/span&gt;;
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-type"&gt;partial_eq_type&lt;/span&gt;&lt;span class="org-variable-name"&gt;&amp;lt;double&amp;gt;&lt;/span&gt; = &lt;span class="org-constant"&gt;true&lt;/span&gt;;
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;concept&lt;/span&gt; &lt;span class="org-type"&gt;is_partial_eq&lt;/span&gt; =
-  &lt;span class="org-type"&gt;partial_eq_type&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt; &amp;amp;&amp;amp;
-    &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-variable-name"&gt;lhs&lt;/span&gt;, &lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;) {
-    &lt;span class="org-type"&gt;partial_eq&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;.eq(lhs, rhs);
-    &lt;span class="org-type"&gt;partial_eq&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;.ne(lhs, rhs);
-};
-
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-function-name"&gt;h&lt;/span&gt;(&lt;span class="org-type"&gt;is_partial_eq&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;lhs&lt;/span&gt;, &lt;span class="org-type"&gt;is_partial_eq&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;) {
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-type"&gt;partial_eq&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(lhs)&amp;gt;.eq(lhs, rhs);
-}
-&lt;/pre&gt;
-&lt;/div&gt;
-I have not done a good job at allocating names to the various bits and pieces. Please excuse this.
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgf6b19fc" class="outline-2"&gt;
-&lt;h3 id="orgf6b19fc"&gt;What have I missed?&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgf6b19fc"&gt;
-
- We've been making variable templates more capable in many ways, and the concept checks to ensure correctness are new, but has anyone else explored this and found insurmountable problems?
-
-&lt;/div&gt;
-&lt;/div&gt;</content>
-  </entry>
-  <entry>
-    <title>Special Blocks and Emacs Org-mode Export</title>
-    <id>https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/</id>
-    <updated>2021-12-03T00:00:00-05:00</updated>
-    <published>2021-12-03T00:00:00-05:00</published>
-    <author>
-      <name>Steve Downey</name>
-    </author>
-    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/"/>
-    <summary type="html">&lt;div&gt;&lt;nav id="table-of-contents" role="doc-toc"&gt;
-&lt;h3&gt;Table of Contents&lt;/h3&gt;
-&lt;div id="text-table-of-contents" role="doc-toc"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/#orgf2bc23f"&gt;1. Delete blocks and text&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/#org76721e5"&gt;2. Insert blocks and text&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/#org3c7f3fc"&gt;3. Comparison Table&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/nav&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Document number:&lt;/li&gt;
-&lt;li&gt;Date:  2021-12-03&lt;/li&gt;
-&lt;li&gt;Author: Steve Downey &amp;lt;sdowney2@bloomberg.net&amp;gt;, &amp;lt;sdowney@gmail.com&amp;gt;&lt;/li&gt;
-&lt;li&gt;Audience: WG21 Emacs Authors&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class="ABSTRACT" id="org257c800"&gt;
-&lt;p&gt; Abstract: Making emacs org-mode more usable for writing WG21 papers. &lt;/p&gt;
-
-&lt;/div&gt;
-
-&lt;p&gt;&lt;a href="https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/"&gt;Read more…&lt;/a&gt; (1 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
-    <content type="html">&lt;nav id="table-of-contents" role="doc-toc"&gt;
-&lt;h3&gt;Table of Contents&lt;/h3&gt;
-&lt;div id="text-table-of-contents" role="doc-toc"&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;a href="https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/#orgf2bc23f"&gt;1. Delete blocks and text&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/#org76721e5"&gt;2. Insert blocks and text&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href="https://sdowney.org/posts/special-blocks-and-emacs-org-mode-export/#org3c7f3fc"&gt;3. Comparison Table&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/nav&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Document number:&lt;/li&gt;
-&lt;li&gt;Date:  2021-12-03&lt;/li&gt;
-&lt;li&gt;Author: Steve Downey &amp;lt;sdowney2@bloomberg.net&amp;gt;, &amp;lt;sdowney@gmail.com&amp;gt;&lt;/li&gt;
-&lt;li&gt;Audience: WG21 Emacs Authors&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class="ABSTRACT" id="org257c800"&gt;
-&lt;p&gt; Abstract: Making emacs org-mode more usable for writing WG21 papers. &lt;/p&gt;
-
-&lt;/div&gt;
-
-&lt;!-- TEASER_END --&gt;
-
-
-
-
-&lt;div id="outline-container-orgf2bc23f" class="outline-2"&gt;
-&lt;h3 id="orgf2bc23f"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Delete blocks and text&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-1"&gt;
-{\color{red}\bfseries
-&lt;p&gt; Remove this terrible old stuff. &lt;/p&gt;
-
-}
-&lt;p&gt; And the bad &lt;del style="color: red;"&gt;word&lt;/del&gt; from this sentence. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-org76721e5" class="outline-2"&gt;
-&lt;h3 id="org76721e5"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Insert blocks and text&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-2"&gt;
-&lt;ins style="color: green;"&gt;
-&lt;p&gt; Add this wonderful new text &lt;/p&gt;
-
-&lt;/ins&gt;
-&lt;p&gt; And put this cool &lt;ins style="color: green;"&gt;word&lt;/ins&gt; in. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-
-&lt;div id="outline-container-org3c7f3fc" class="outline-2"&gt;
-&lt;h3 id="org3c7f3fc"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Comparison Table&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-3"&gt;
-&lt;table&gt;&lt;thead&gt;&lt;tr class="header"&gt;&lt;th&gt;&lt;div style="text-align:center"&gt;&lt;strong&gt;Old Busted&lt;/strong&gt;&lt;/div&gt;&lt;/th&gt;&lt;th&gt;&lt;div style="text-align:center"&gt;&lt;strong&gt;New Hotness&lt;/strong&gt;&lt;/div&gt;&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;&lt;tr class="odd"&gt;
-&lt;td&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;a&lt;/span&gt; = 3 + 2 + 1;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/td&gt;
-&lt;td&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;a&lt;/span&gt; = cool_sum({1, 2, 3});
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;/td&gt;
-
-&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;
-&lt;/div&gt;
-&lt;/div&gt;</content>
-  </entry>
-  <entry>
-    <title>A local CMake workflow with Docker</title>
-    <id>https://sdowney.org/posts/index.php/2021/10/03/a-local-cmake-workflow-with-docker/</id>
-    <updated>2021-10-03T00:00:00-04:00</updated>
-    <published>2021-10-03T00:00:00-04:00</published>
-    <author>
-      <name>Steve Downey</name>
-    </author>
-    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/index.php/2021/10/03/a-local-cmake-workflow-with-docker/"/>
-    <summary type="html">&lt;div&gt;&lt;p&gt; l#+BLOG: sdowney &lt;/p&gt;
-
-&lt;p&gt; An outline of a template that provides an automated workflow driving a CMake project in a docker container. &lt;/p&gt;
-
-&lt;p&gt; This post must be read in concert with &lt;a href="https://github.com/steve-downey/scratch"&gt;https://github.com/steve-downey/scratch&lt;/a&gt; of which it is part. &lt;/p&gt;
-
-&lt;div id="outline-container-orge73d9dc" class="outline-2"&gt;
-&lt;h3 id="orge73d9dc"&gt;Routine process should be automated&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orge73d9dc"&gt;
-&lt;p&gt; Building a project that uses cmake runs through a predictable lifecycle that you should be able to pick up where you left off without remembering, and for which you should be able to state your goal, not the step you are on. &lt;code&gt;make&lt;/code&gt; is designed for this, and can drive the processs. &lt;/p&gt;
-&lt;/div&gt;
-
-&lt;p&gt;&lt;a href="https://sdowney.org/posts/index.php/2021/10/03/a-local-cmake-workflow-with-docker/"&gt;Read more…&lt;/a&gt; (4 min remaining to read)&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;</summary>
-    <content type="html">&lt;p&gt; l#+BLOG: sdowney &lt;/p&gt;
-
-&lt;p&gt; An outline of a template that provides an automated workflow driving a CMake project in a docker container. &lt;/p&gt;
-
-&lt;p&gt; This post must be read in concert with &lt;a href="https://github.com/steve-downey/scratch"&gt;https://github.com/steve-downey/scratch&lt;/a&gt; of which it is part. &lt;/p&gt;
-
-&lt;div id="outline-container-orge73d9dc" class="outline-2"&gt;
-&lt;h3 id="orge73d9dc"&gt;Routine process should be automated&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orge73d9dc"&gt;
-&lt;p&gt; Building a project that uses cmake runs through a predictable lifecycle that you should be able to pick up where you left off without remembering, and for which you should be able to state your goal, not the step you are on. &lt;code&gt;make&lt;/code&gt; is designed for this, and can drive the processs. &lt;/p&gt;
-&lt;/div&gt;
-
-&lt;!-- TEASER_END --&gt;
-
-&lt;div id="outline-container-org7268417" class="outline-3"&gt;
-&lt;h4 id="org7268417"&gt;The workflow&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org7268417"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Update any submodules&lt;/li&gt;
-&lt;li&gt;Create a build area specific to the toolchain&lt;/li&gt;
-&lt;li&gt;Run cmake with that toolchain in the build area&lt;/li&gt;
-&lt;li&gt;Run the build in the build area&lt;/li&gt;
-&lt;li&gt;Run tests, either dependent or independent of rebuild&lt;/li&gt;
-&lt;li&gt;Run the intall&lt;/li&gt;
-&lt;li&gt;(optionally) Clean the build&lt;/li&gt;
-&lt;li&gt;(optionally) Clean the configuration&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt; All of the steps have recognizable filesystem artifacts, need to be run in order, and if there are any failures, the process should stop. &lt;/p&gt;
-
-&lt;p&gt; So we want a &lt;code&gt;make&lt;/code&gt; system on top of our meta-make build system. &lt;/p&gt;
-
-&lt;p&gt; The one thing this system does, that plain cmake doesn't automate, is making sure that any changes are incorporated into a build before tests are run. CMake splits these, in order to provide the option of running tests without a recompile. I think that is a mistake to automate, but I do provide a target that just runs ctest. &lt;/p&gt;
-
-&lt;p&gt; My normal target is &lt;code&gt;test&lt;/code&gt; &lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-bash" id="nil"&gt;make test
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt; This will run through all of the steps, but only those, necessary to compile and run tests. The core commands for the build driver are &lt;/p&gt;
-
-&lt;dl class="org-dl"&gt;
-&lt;dt&gt;compile&lt;/dt&gt;&lt;dd&gt;Compile all out of date source&lt;/dd&gt;
-&lt;dt&gt;install&lt;/dt&gt;&lt;dd&gt;Install into the INSTALL_PREFIX&lt;/dd&gt;
-&lt;dt&gt;ctest&lt;/dt&gt;&lt;dd&gt;Run the currently build test suite&lt;/dd&gt;
-&lt;dt&gt;test&lt;/dt&gt;&lt;dd&gt;Build and run the test suite&lt;/dd&gt;
-&lt;dt&gt;cmake&lt;/dt&gt;&lt;dd&gt;run cmake again in the build area&lt;/dd&gt;
-&lt;dt&gt;clean&lt;/dt&gt;&lt;dd&gt;Clean the build area&lt;/dd&gt;
-&lt;dt&gt;realclean&lt;/dt&gt;&lt;dd&gt;Delete the build area&lt;/dd&gt;
-&lt;/dl&gt;
-
-&lt;p&gt; There are several makefile variables controlling the details of what toolchain is used and where things are located. By default the build and install are completely out of the source tree, in ../cmake.bld and ../install respectively, with the build directory further refined by the project name, which defaults to the current directory name, and the toolchain if that is overridden. &lt;/p&gt;
-
-&lt;p&gt; The build is a Ninja Multi-config build, supporting RelWithDebInfo, Debug, Tsan, and Asan, with the particular flavor being selectable by the CONFIG variable. See &lt;code&gt;targets.mk&lt;/code&gt; for the variables and details, such as they are. &lt;/p&gt;
-
-&lt;p&gt; Because other tools, unfortunately, rely on a &lt;code&gt;compile_commands.json&lt;/code&gt; this system symlinks one from the build area when reconfiguration is done. &lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-makefile" id="nil"&gt;&lt;span style="color: #f78fe7;"&gt;default&lt;/span&gt;: compile
-
-&lt;span style="color: #f78fe7;"&gt;$(&lt;/span&gt;&lt;span style="color: #f78fe7;"&gt;_build_path&lt;/span&gt;&lt;span style="color: #f78fe7;"&gt;)&lt;/span&gt;:
-    mkdir -p $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)
-
-&lt;span style="color: #f78fe7;"&gt;$(&lt;/span&gt;&lt;span style="color: #f78fe7;"&gt;_build_path&lt;/span&gt;&lt;span style="color: #f78fe7;"&gt;)/CMakeCache.txt&lt;/span&gt;: | $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;) .gitmodules
-    cd $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;) &amp;amp;&amp;amp; $(&lt;span style="color: #79a8ff;"&gt;run_cmake&lt;/span&gt;)
-    &lt;span style="color: #b6a0ff; font-weight: bold;"&gt;-&lt;/span&gt;rm compile_commands.json
-    ln -s $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)/compile_commands.json
-
-&lt;span style="color: #f78fe7;"&gt;compile&lt;/span&gt;: $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)/CMakeCache.txt &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Compile the project&lt;/span&gt;
-    cmake --build $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)  --config $(&lt;span style="color: #79a8ff;"&gt;CONFIG&lt;/span&gt;) --target all -- -k 0
-
-&lt;span style="color: #f78fe7;"&gt;install&lt;/span&gt;: $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)/CMakeCache.txt &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Install the project&lt;/span&gt;
-    &lt;span style="color: #79a8ff;"&gt;DESTDIR&lt;/span&gt;=$(&lt;span style="color: #79a8ff;"&gt;abspath&lt;/span&gt; $(&lt;span style="color: #79a8ff;"&gt;DEST&lt;/span&gt;)) ninja -C $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;) -k 0  install
-
-&lt;span style="color: #f78fe7;"&gt;ctest&lt;/span&gt;: $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)/CMakeCache.txt &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Run CTest on current build&lt;/span&gt;
-    cd $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;) &amp;amp;&amp;amp; ctest
-
-&lt;span style="color: #f78fe7;"&gt;ctest_&lt;/span&gt; : compile
-    cd $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;) &amp;amp;&amp;amp; ctest
-
-&lt;span style="color: #f78fe7;"&gt;test&lt;/span&gt;: ctest_ &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Rebuild and run tests&lt;/span&gt;
-
-&lt;span style="color: #f78fe7;"&gt;cmake&lt;/span&gt;: |  $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)
-    cd $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;) &amp;amp;&amp;amp; ${&lt;span style="color: #79a8ff;"&gt;run_cmake&lt;/span&gt;}
-
-&lt;span style="color: #f78fe7;"&gt;clean&lt;/span&gt;: $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)/CMakeCache.txt &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Clean the build artifacts&lt;/span&gt;
-    cmake --build $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)  --config $(&lt;span style="color: #79a8ff;"&gt;CONFIG&lt;/span&gt;) --target clean
-
-&lt;span style="color: #f78fe7;"&gt;realclean&lt;/span&gt;: &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Delete the build directory&lt;/span&gt;
-    rm -rf $(&lt;span style="color: #79a8ff;"&gt;_build_path&lt;/span&gt;)
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-orgd013026" class="outline-2"&gt;
-&lt;h3 id="orgd013026"&gt;To Docker or Not to Docker&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgd013026"&gt;
-&lt;p&gt; The reason for the separate &lt;code&gt;targets.mk&lt;/code&gt; file is to simplify running the build purely locally in the host, or in a docker containter. The structure of the build is the same either way. In fact, before I dockerized this template project, there was a single makefile which was mostly the current contents of targets.mk. However, splitting does make the template easier, as project specific targets can naturally be placed in &lt;code&gt;targets&lt;/code&gt;. &lt;/p&gt;
-
-&lt;p&gt; Tha outer &lt;code&gt;Makefile&lt;/code&gt; is responsible for checking if Docker has been requested and for making sure the container is ready. The makefile has a handful of targets of its own, but otherwide defers everything to &lt;code&gt;targets.mk&lt;/code&gt;. &lt;/p&gt;
-
-&lt;dl class="org-dl"&gt;
-&lt;dt&gt;use-docker&lt;/dt&gt;&lt;dd&gt;set a flag file, USE_DOCKER_FILE, indicating to forward to docker&lt;/dd&gt;
-&lt;dt&gt;remove-docker&lt;/dt&gt;&lt;dd&gt;remove the flag file&lt;/dd&gt;
-&lt;dt&gt;docker-rebuild&lt;/dt&gt;&lt;dd&gt;rebuild the docker image&lt;/dd&gt;
-&lt;dt&gt;docker-clean&lt;/dt&gt;&lt;dd&gt;Clean volumes and rebuild image&lt;/dd&gt;
-&lt;dt&gt;docker-shell&lt;/dt&gt;&lt;dd&gt;Shell in the docker container&lt;/dd&gt;
-&lt;/dl&gt;
-
-&lt;p&gt; The docker container is build via &lt;code&gt;docker-compose&lt;/code&gt; with the configuration &lt;code&gt;docker-compose.yml&lt;/code&gt;. It uses the &lt;code&gt;Dockerfile&lt;/code&gt; which uses &lt;code&gt;steve-downey/cxx-dev:latest&lt;/code&gt; as the base image, and mounts the current source directory as a bind mount and a volume for ../cmake.bld. &lt;/p&gt;
-
-&lt;p&gt; I don't publish steve-downey/cxx-dev:latest and you should build your own BASE. I do provide the recipe for the base image as a subprojct in &lt;code&gt;docker-inf/docker-cxx-dev&lt;/code&gt;. &lt;/p&gt;
-
-&lt;p&gt; You running unknown things as root scares me. &lt;/p&gt;
-
-&lt;p&gt; The image is assumed to provide current version of gcc and clang as c++ or gcc, or clang++ respectively. &lt;/p&gt;
-
-&lt;p&gt; The intent of the image is to provide compilation services and operate as an lsp server using clangd. Mine doesn't provide X, editors, IDEs, etc. The intent isn't a VM, it's a controlled compiler installation. &lt;/p&gt;
-
-&lt;p&gt; Compiler installations bleed in to each other. Mutliple compilers installed onto the same base system can't be assumed to behave the same way as a compier installed as the only compiler. The ABI libraries vary, as do the standard libaries. Deployment just makes this all an even worse problem. As a Rule I use for production Red Hat's DTS compilers and only deploy on later OSs than I've built on, with strict controls on OS deployments and statically linking everything I possibly can. &lt;/p&gt;
-
-&lt;p&gt; The base image I am using here, steve-downey/cxx-dev, works for me, and is avaiable at &lt;a href="https://github.com/steve-downey/docker-cxx-dev"&gt;https://github.com/steve-downey/docker-cxx-dev&lt;/a&gt; as a definition as well. &lt;/p&gt;
-
-&lt;p&gt; It is based on current Ubuntu (jammy), installs gcc-12 from the ubuntu repositories, adds the LLVM repos and installs clang-14 from them based on how &lt;a href="https://apt.llvm.org/llvm.sh"&gt;https://apt.llvm.org/llvm.sh&lt;/a&gt; does. &lt;/p&gt;
-
-&lt;p&gt; It then installs the current release of cmake from &lt;a href="https://apt.kitware.com/ubuntu/"&gt;https://apt.kitware.com/ubuntu/&lt;/a&gt; because using out of date build tools is a bad idea all around. &lt;/p&gt;
-
-&lt;p&gt; I also configure it to run as USER 1000, because running everything as root is strictly worse, and 1000 is a 99.99 percent solution/ &lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-makefile" id="nil"&gt;&lt;span style="color: #f78fe7;"&gt;.update-submodules&lt;/span&gt;:
-    git submodule update --init --recursive
-    touch .update-submodules
-
-&lt;span style="color: #f78fe7;"&gt;.gitmodules&lt;/span&gt;: .update-submodules
-
-&lt;span style="color: #f78fe7;"&gt;.PHONY&lt;/span&gt;: use-docker
-&lt;span style="color: #f78fe7;"&gt;use-docker&lt;/span&gt;: &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Create docker switch file so that subsequent `make` commands run inside docker container.&lt;/span&gt;
-    touch $(&lt;span style="color: #79a8ff;"&gt;USE_DOCKER_FILE&lt;/span&gt;)
-
-&lt;span style="color: #f78fe7;"&gt;.PHONY&lt;/span&gt;: remove-docker
-&lt;span style="color: #f78fe7;"&gt;remove-docker&lt;/span&gt;: &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Remove docker switch file so that subsequent `make` commands run locally.&lt;/span&gt;
-    $(&lt;span style="color: #79a8ff;"&gt;RM&lt;/span&gt;) $(&lt;span style="color: #79a8ff;"&gt;USE_DOCKER_FILE&lt;/span&gt;)
-
-&lt;span style="color: #f78fe7;"&gt;.PHONY&lt;/span&gt;: docker-rebuild
-&lt;span style="color: #f78fe7;"&gt;docker-rebuild&lt;/span&gt;: &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Rebuilds the docker file using the latest base image.&lt;/span&gt;
-    docker-compose build
-
-&lt;span style="color: #f78fe7;"&gt;.PHONY&lt;/span&gt;: docker-clean
-&lt;span style="color: #f78fe7;"&gt;docker-clean&lt;/span&gt;: &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Clean up the docker volumes and rebuilds the image from scratch.&lt;/span&gt;
-    docker-compose down -v
-    docker-compose build
-
-&lt;span style="color: #f78fe7;"&gt;.PHONY&lt;/span&gt;: docker-shell
-&lt;span style="color: #f78fe7;"&gt;docker-shell&lt;/span&gt;: &lt;span style="color: #a8a8a8; font-style: italic;"&gt;## &lt;/span&gt;&lt;span style="color: #a8a8a8; font-style: italic;"&gt;Shell in container&lt;/span&gt;
-    docker-compose run --rm dev
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-
-&lt;div id="outline-container-orgcca1c34" class="outline-2"&gt;
-&lt;h3 id="orgcca1c34"&gt;Work In Progress&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgcca1c34"&gt;
-&lt;p&gt; I expect I will make many changes to all of this. I'm providing no facilities for you to pick them up. Sorry. &lt;/p&gt;
-
-&lt;p&gt; Please consider this as an exhibition of techniques rather than as a solution. &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;</content>
   </entry>

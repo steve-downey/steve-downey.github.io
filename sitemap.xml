@@ -7,7 +7,7 @@
                         http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
  <url>
   <loc>https://sdowney.org/</loc>
-  <lastmod>2026-03-07T18:27:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/2004/</loc>
@@ -87,11 +87,11 @@
  </url>
  <url>
   <loc>https://sdowney.org/archive.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/categories/</loc>
-  <lastmod>2026-03-07T15:28:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/categories/c%2B%2B/</loc>
@@ -106,44 +106,64 @@
   <lastmod>2026-02-28T17:28:00Z</lastmod>
  </url>
  <url>
+  <loc>https://sdowney.org/categories/modus-themes/</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://sdowney.org/categories/nikola/</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://sdowney.org/categories/org-mode/</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
+ </url>
+ <url>
   <loc>https://sdowney.org/categories/org2blog/</loc>
   <lastmod>2026-02-28T17:28:00Z</lastmod>
  </url>
  <url>
+  <loc>https://sdowney.org/categories/tailwind/</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
+ </url>
+ <url>
   <loc>https://sdowney.org/index-1.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://sdowney.org/index-10.html</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-2.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-3.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-4.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-5.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-6.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-7.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-8.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index-9.html</loc>
-  <lastmod>2026-03-07T16:59:00Z</lastmod>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/index.php/2004/09/08/test-mail-post/</loc>
@@ -570,6 +590,10 @@
   <lastmod>2026-02-28T17:28:00Z</lastmod>
  </url>
  <url>
+  <loc>https://sdowney.org/pages/about-me/</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
+ </url>
+ <url>
   <loc>https://sdowney.org/pages/index.php/2017/01/08/twentytwelve/</loc>
   <lastmod>2026-02-28T17:28:00Z</lastmod>
  </url>
@@ -640,6 +664,10 @@
  <url>
   <loc>https://sdowney.org/pages/quote-file/</loc>
   <lastmod>2026-03-07T16:07:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://sdowney.org/pages/work/</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/posts/104/</loc>
@@ -1022,6 +1050,10 @@
   <lastmod>2026-02-28T17:28:00Z</lastmod>
  </url>
  <url>
+  <loc>https://sdowney.org/posts/moving-forward-with-legacy-encodings/</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
+ </url>
+ <url>
   <loc>https://sdowney.org/posts/nikola-blog-infrastructure/</loc>
   <lastmod>2026-02-28T17:28:00Z</lastmod>
  </url>
@@ -1032,6 +1064,14 @@
  <url>
   <loc>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</loc>
   <lastmod>2026-02-28T17:28:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://sdowney.org/posts/surround-with-uuid/</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
+ </url>
+ <url>
+  <loc>https://sdowney.org/posts/tailwind-theme-workflow/</loc>
+  <lastmod>2026-06-27T17:06:00Z</lastmod>
  </url>
  <url>
   <loc>https://sdowney.org/posts/the-sender-sub-language/</loc>

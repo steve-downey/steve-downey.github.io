@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html prefix="        og: http://ogp.me/ns# article: http://ogp.me/ns/article#     " vocab="http://ogp.me/ns" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="description" content="Conference talks, WG21 papers, and other C++ work.">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Work | What Comes to Mind</title>
+<script>
+    (function () {
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+    })();
+    </script><link rel="stylesheet" href="../../assets/css/tailwind.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&amp;family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&amp;family=Source+Sans+3:ital,wght@0,200..900;1,200..900&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+<link href="../../assets/css/baguetteBox.min.css" rel="stylesheet" type="text/css">
+<link id="modus-light" rel="stylesheet" href="../../assets/css/modus-vivendi-tinted.css" media="(prefers-color-scheme: light)">
+<link id="modus-dark" rel="stylesheet" href="../../assets/css/modus-operandi-tinted.css" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="../../assets/css/tailwind-base.css">
+<style>
+    :root {
+        --code-bg: #1d2235;
+        --code-fg: #ffffff;
+        --code-label-color: #989898;
+        --copy-btn-color: #8b8fa3;
+        --copy-btn-border: #3a3d52;
+        --copy-btn-hover-color: #d0d4e8;
+        --copy-btn-hover-border: #6b7094;
+    }
+
+    .dark {
+        --code-bg: #efe9dd;
+        --code-fg: #1a1a2e;
+        --code-label-color: #595959;
+        --copy-btn-color: #6b7280;
+        --copy-btn-border: #d1d5db;
+        --copy-btn-hover-color: #374151;
+        --copy-btn-hover-border: #9ca3af;
+    }
+    </style>
+<link href="../../assets/css/custom.css" rel="stylesheet" type="text/css">
+<script src="../../assets/js/theme-toggle.js" defer></script><meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="../../feed.atom">
+<link rel="canonical" href="https://sdowney.org/pages/work/">
+<meta name="description" content="Conference talks, WG21 papers, and other C++ work.">
+<meta name="author" content="Steve Downey">
+<meta property="og:site_name" content="What Comes to Mind">
+<meta property="og:title" content="Work">
+<meta property="og:url" content="https://sdowney.org/pages/work/">
+<meta property="og:description" content="Conference talks, WG21 papers, and other C++ work.">
+<meta property="og:type" content="article">
+<meta property="article:published_time" content="2024-01-01T00:00:00-05:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:site" content="@sdowney.org">
+<meta name="twitter:creator" content="@sdowney">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+</head>
+<body class="bg-white text-gray-900 font-sans dark:bg-gray-900 dark:text-gray-100">
+    <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-white focus:px-4 focus:py-2 focus:z-50">Skip to main content</a>
+    
+    
+
+    
+<nav class="bg-gray-800"><div class="max-w-5xl mx-auto px-4">
+        <div class="flex items-center justify-between h-14">
+            <a href="https://sdowney.org/" title="What Comes to Mind" rel="home" class="text-white text-lg font-semibold hover:text-gray-300 transition-colors">What Comes to Mind</a>
+            <button id="nav-toggle" class="md:hidden text-gray-300 hover:text-white focus:outline-none" aria-label="Toggle navigation">
+                <svg class="size-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+            <ul class="hidden md:flex items-center space-x-4 text-sm">
+<li><a href="../../archive.html" class="text-gray-300 hover:text-white transition-colors">Archives</a></li>
+                    
+                    <li><a href="../../categories/index.html" class="text-gray-300 hover:text-white transition-colors">Tags</a></li>
+                    
+                    <li><a href="mailto:sdowney@sdowney.dev" class="text-gray-300 hover:text-white transition-colors">Email <i class="fa fa-envelope"></i></a></li>
+                    
+                    <li><a href="https://github.com/steve-downey" class="text-gray-300 hover:text-white transition-colors">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                    
+                    <li><a href="https://mastodon.social/@Sdowney" class="text-gray-300 hover:text-white transition-colors">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                    
+                    <li><a href="https://bsky.app/profile/sdowney.org" class="text-gray-300 hover:text-white transition-colors">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
+                    
+                    <li><a href="../../feed.atom" class="text-gray-300 hover:text-white transition-colors">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                    
+                    <li><a href="../../rss.xml" class="text-gray-300 hover:text-white transition-colors">RSS <i class="fa-solid fa-rss"></i></a></li>
+            
+            
+            </ul>
+</div>
+        <ul id="nav-mobile" class="hidden md:hidden flex-col space-y-2 pb-4 text-sm">
+<li><a href="../../archive.html" class="text-gray-300 hover:text-white transition-colors">Archives</a></li>
+                
+                <li><a href="../../categories/index.html" class="text-gray-300 hover:text-white transition-colors">Tags</a></li>
+                
+                <li><a href="mailto:sdowney@sdowney.dev" class="text-gray-300 hover:text-white transition-colors">Email <i class="fa fa-envelope"></i></a></li>
+                
+                <li><a href="https://github.com/steve-downey" class="text-gray-300 hover:text-white transition-colors">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                
+                <li><a href="https://mastodon.social/@Sdowney" class="text-gray-300 hover:text-white transition-colors">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                
+                <li><a href="https://bsky.app/profile/sdowney.org" class="text-gray-300 hover:text-white transition-colors">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
+                
+                <li><a href="../../feed.atom" class="text-gray-300 hover:text-white transition-colors">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                
+                <li><a href="../../rss.xml" class="text-gray-300 hover:text-white transition-colors">RSS <i class="fa-solid fa-rss"></i></a></li>
+        </ul>
+</div>
+</nav><script>
+document.getElementById('nav-toggle').addEventListener('click', function() {
+    var menu = document.getElementById('nav-mobile');
+    menu.classList.toggle('hidden');
+    menu.classList.toggle('flex');
+});
+</script><div class="relative text-white py-10 text-center bg-cover bg-center" style="background-image: url('../../assets/images/cropped-blog-header.jpg');">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10">
+        
+    <h1 class="text-4xl font-bold">Work</h1>
+    <p class="mt-2 text-indigo-200">
+        <time class="published dt-published" datetime="2024-01-01T00:00:00-05:00">2024-01-01 00:00</time><span class="mx-2 opacity-50">·</span>
+            <span>2 min read</span>
+    </p>
+
+        </div>
+    </div>
+    <main id="content" class="max-w-6xl mx-auto px-4 py-8"><div class="lg:flex lg:gap-10">
+            <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
+            
+<article class="post-text storypage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Work</a></h1>
+
+        
+
+    </header><div class="e-content entry-content" itemprop="articleBody text">
+    <p>
+Programming and C++ standardization work: conference presentations, WG21 papers, and related projects.
+</p>
+<div id="ox-nikola-outline-container-orgdffc9be" class="ox-nikola-outline-2">
+<h2 id="orgdffc9be">Conference Talks</h2>
+<div class="outline-text-2" id="text-orgdffc9be">
+</div>
+<div id="ox-nikola-outline-container-orgc523239" class="ox-nikola-outline-3">
+<h3 id="orgc523239">C++Now</h3>
+<div class="outline-text-3" id="text-orgc523239">
+<ul class="org-ul">
+<li>
+<p>
+<a href="https://cppnow.org/2023-program/">2023</a> — <i>Async Control Flow</i>: sender/receiver, the continuation monad, and how <code>std::execution</code> structures asynchronous work.
+</p>
+
+<p>
+<a href="https://sdowney.org/posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/">Slides (on this blog)</a>
+</p>
+</li>
+</ul>
+</div>
+</div>
+<div id="ox-nikola-outline-container-org2ac5f40" class="ox-nikola-outline-3">
+<h3 id="org2ac5f40">CppCon</h3>
+<div class="outline-text-3" id="text-org2ac5f40">
+<!-- Add CppCon talk links here as they accumulate -->
+</div>
+</div>
+</div>
+<div id="ox-nikola-outline-container-org4653298" class="ox-nikola-outline-2">
+<h2 id="org4653298">WG21 Papers</h2>
+<div class="outline-text-2" id="text-org4653298">
+<p>
+Selected papers where I was primary author or a significant contributor.
+All links resolve to the current head revision at <a href="https://wg21.link/">wg21.link</a>.
+</p>
+</div>
+<div id="ox-nikola-outline-container-orgc7650d4" class="ox-nikola-outline-3">
+<h3 id="orgc7650d4">Active and Accepted</h3>
+<div class="outline-text-3" id="text-orgc7650d4">
+<ul class="org-ul">
+<li>
+<a href="https://wg21.link/P2988">P2988</a> — <i>std::optional&lt;T&amp;&gt;</i> (with Peter Sommerlad).
+Gives <code>optional</code> reference semantics that rebind on assignment, closing a long-standing gap in the vocabulary type.
+Currently in flight for C++26.</li>
+
+<li>
+<a href="https://wg21.link/P1255">P1255</a> — <i>views::nullable and a concept to constrain maybes</i>.
+A view adaptor for types that are 0-or-1 elements: <code>optional</code>, pointers, and anything satisfying the <code>maybe</code> concept.</li>
+
+<li>
+<a href="https://wg21.link/P3913">P3913</a> — <i>Optimize for std::optional in range adaptors</i> (with Tomasz Kamiński).</li>
+
+<li>
+<a href="https://wg21.link/P3836">P3836</a> — <i>Make optional&lt;T&amp;&gt; trivially copyable</i> (with Jan Schultke and Nevin Liber).</li>
+
+<li>
+<a href="https://wg21.link/P3574">P3574</a> — <i>Constexpr Callables</i>.</li>
+
+<li>
+<a href="https://wg21.link/P3473">P3473</a> — <i>Splicing Should Respect Access Control</i>.</li>
+
+<li>
+<a href="https://wg21.link/P3717">P3717</a> — <i>Update Annex E onto Unicode 16</i>.</li>
+</ul>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orgf57e56e" class="ox-nikola-outline-3">
+<h3 id="orgf57e56e">Accepted and Shipped</h3>
+<div class="outline-text-3" id="text-orgf57e56e">
+<ul class="org-ul">
+<li>
+<a href="https://wg21.link/P1949">P1949</a> — <i>C++ Identifier Syntax using Unicode Standard Annex 31</i> (with Zach Laine, Tom Honermann, Peter Bindels, Jens Maurer).
+Adopted for C++23.  Restricts identifiers to UAX #31 profiles, removing a long tail of confusable characters.</li>
+
+<li>
+<a href="https://wg21.link/P2558">P2558</a> — <i>Add @, $, and ` to the basic character set</i>.
+Adopted for C++26.</li>
+
+<li>
+<a href="https://wg21.link/P2071">P2071</a> — <i>Named universal character escapes</i> (with Tom Honermann, Peter Bindels, Corentin Jabot, R. Martinho Fernandes).
+Adopted for C++23.  <code>\N{SNOWMAN}</code> is now valid in string literals.</li>
+
+<li>
+<a href="https://wg21.link/P2301">P2301</a> — <i>Add a pmr alias for std::stacktrace</i>.
+Adopted for C++23.</li>
+
+<li>
+<a href="https://wg21.link/P2540">P2540</a> — <i>Empty Product for certain Views</i>.</li>
+
+<li>
+<a href="https://wg21.link/P2787">P2787</a> — <i>pmr::generator — Promise Types are not Values</i>.</li>
+
+<li>
+<a href="https://wg21.link/P1025">P1025</a> — <i>Update The Reference To The Unicode Standard</i> (with JeanHeyd Meneide, Martinho Fernandes).
+Adopted for C++20.</li>
+</ul>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orge8f28f3" class="ox-nikola-outline-3">
+<h3 id="orge8f28f3">Direction and Analysis</h3>
+<div class="outline-text-3" id="text-orge8f28f3">
+<ul class="org-ul">
+<li>
+<a href="https://wg21.link/P1988">P1988</a> — <i>Allow Templates in Local Classes</i>.</li>
+
+<li>
+<a href="https://wg21.link/P2653">P2653</a> — <i>Update Annex E based on Unicode 15.0 UAX 31</i>.</li>
+
+<li>
+<a href="https://wg21.link/P3199">P3199</a> — <i>Choices for make<sub>optional</sub> and value()</i>.</li>
+
+<li>
+<a href="https://wg21.link/P3276">P3276</a> — <i>P2900 Is Superior to a Contracts TS</i> (with Joshua Berne, Jake Fevold, Mungo Gill, Rostislav Khlebnikov, John Lakos, Alisdair Meredith).</li>
+
+<li>
+<a href="https://wg21.link/P1439">P1439</a> — <i>Charset Transcoding, Transformation, and Transliteration</i>.</li>
+
+<li>
+<a href="https://wg21.link/P1253">P1253</a> — <i>Guidelines for when a WG21 proposal should be reviewed by SG16</i>.</li>
+
+<li>
+<a href="https://wg21.link/P1254">P1254</a> — <i>Notes on C++ Package Management</i>.</li>
+
+<li>
+<a href="https://wg21.link/P1859">P1859</a> — <i>Standard terminology for execution character set encodings</i>.</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orgc32197e" class="ox-nikola-outline-2">
+<h2 id="orgc32197e">Projects</h2>
+<div class="outline-text-2" id="text-orgc32197e">
+<ul class="org-ul">
+<li>
+<a href="https://github.com/steve-downey/trees">trees</a> — Functional data structures in C++: finger trees, fixpoint trees, typeclass objects.</li>
+
+<li>
+<a href="https://github.com/steve-downey/wg21org">wg21org</a> — Emacs org-mode tooling for writing WG21 papers.</li>
+
+<li>
+<a href="https://github.com/steve-downey/optional_ref">optional<sub>ref</sub></a> — Reference implementation for P2988 <code>std::optional&lt;T&amp;&gt;</code>.</li>
+</ul>
+</div>
+</div>
+    </div>
+    
+
+</article>
+</div>
+            
+<aside class="not-prose mt-10 lg:mt-0 lg:w-64 lg:shrink-0 lg:sticky lg:top-6 lg:self-start space-y-8"><section><button id="theme-toggle" class="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+            <span>Toggle theme</span>
+        </button>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Recent Posts</h2>
+        <ul class="space-y-3">
+<li>
+                <a href="../../posts/moving-forward-with-legacy-encodings/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Moving Forward With Legacy Encodings</a>
+                <time class="text-xs text-gray-400" datetime="2026-05-24T13:11:21-04:00">2026-05-24 13:11</time>
+</li>
+            <li>
+                <a href="../../posts/tailwind-theme-workflow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Tailwind, Modus Themes, and the Blog Theming Workflow</a>
+                <time class="text-xs text-gray-400" datetime="2026-05-10T18:00:00-04:00">2026-05-10 18:00</time>
+</li>
+            <li>
+                <a href="../../posts/surround-with-uuid/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Surround With UUID</a>
+                <time class="text-xs text-gray-400" datetime="2026-04-09T17:41:26-04:00">2026-04-09 17:41</time>
+</li>
+            <li>
+                <a href="../../posts/why-standard-organizations/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Why Standard Organizations</a>
+                <time class="text-xs text-gray-400" datetime="2026-03-07T10:21:36-05:00">2026-03-07 10:21</time>
+</li>
+            <li>
+                <a href="../../posts/the-sender-sub-language/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">The Sender Sub-Language</a>
+                <time class="text-xs text-gray-400" datetime="2026-02-28T18:40:21-05:00">2026-02-28 18:40</time>
+</li>
+            <li>
+                <a href="../../posts/building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
+                <time class="text-xs text-gray-400" datetime="2025-12-27T12:03:15-05:00">2025-12-27 12:03</time>
+</li>
+            <li>
+                <a href="../../posts/substitution-is-sometimes-a-failure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Substitution is Sometimes a Failure</a>
+                <time class="text-xs text-gray-400" datetime="2025-11-28T12:06:58-05:00">2025-11-28 12:06</time>
+</li>
+            <li>
+                <a href="../../posts/nikola-blog-infrastructure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Nikola Blog Infrastructure</a>
+                <time class="text-xs text-gray-400" datetime="2024-12-23T13:15:27-05:00">2024-12-23 13:15</time>
+</li>
+            <li>
+                <a href="../../posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Concept Maps using C++23 Library Tech</a>
+                <time class="text-xs text-gray-400" datetime="2024-05-19T11:51:00-04:00">2024-05-19 11:51</time>
+</li>
+            <li>
+                <a href="../../posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Slides from C++Now 2023 Async Control Flow</a>
+                <time class="text-xs text-gray-400" datetime="2024-05-18T18:27:00-04:00">2024-05-18 18:27</time>
+</li>
+        </ul></section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Archives</h2>
+        <a href="../../archive.html" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">All posts →</a>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Tags</h2>
+        <a href="../../categories/" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">Browse tags →</a>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Feeds</h2>
+        <ul class="space-y-1">
+<li><a href="../../feed.atom" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">Atom</a></li>
+            <li><a href="../../rss.xml" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">RSS</a></li>
+        </ul></section></aside>
+</div>
+    </main><hr class="max-w-6xl mx-auto border-gray-200">
+<div class="max-w-6xl mx-auto px-4 py-6">
+        
+        <footer id="footer" class="text-center text-sm text-gray-500"><p>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+ <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></p>
+            
+        </footer>
+</div>
+    
+            <script src="../../assets/js/baguetteBox.min.js"></script><script src="../../assets/js/luxon.min.js"></script><script src="../../assets/js/fancydates.min.js"></script><!-- fancy dates --><script>
+    luxon.Settings.defaultLocale = "en";
+    fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
+    </script><!-- end fancy dates --><script>
+    baguetteBox.run('main#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><script>
+    (function() {
+        var langNames = {
+            'cpp': 'C++', 'c++': 'C++', 'C++': 'C++', 'C+': 'C++',
+            'haskell': 'Haskell', 'Haskell': 'Haskell',
+            'python': 'Python', 'rust': 'Rust', 'cmake': 'CMake',
+            'bash': 'Bash', 'sh': 'Shell', 'shell': 'Shell', 'zsh': 'Zsh',
+            'makefile': 'Makefile', 'latex': 'LaTeX', 'asm': 'Assembly',
+            'nil': '', 'emacs-lisp': 'Emacs Lisp', 'elisp': 'Emacs Lisp',
+            'javascript': 'JavaScript', 'js': 'JavaScript',
+            'typescript': 'TypeScript', 'ts': 'TypeScript',
+            'html': 'HTML', 'css': 'CSS', 'json': 'JSON', 'yaml': 'YAML',
+            'sql': 'SQL', 'ruby': 'Ruby', 'perl': 'Perl',
+            'java': 'Java', 'go': 'Go', 'swift': 'Swift',
+            'org': 'Org', 'xml': 'XML', 'toml': 'TOML'
+        };
+        function getLang(pre) {
+            var classes = pre.className.split(/\s+/);
+            for (var i = 0; i < classes.length; i++) {
+                if (classes[i].indexOf('src-') === 0) return classes[i].substring(4);
+            }
+            return '';
+        }
+        function addControls(container, pre, lang) {
+            var displayName = langNames[lang] || lang;
+            if (displayName) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = displayName;
+                container.appendChild(label);
+            }
+            var btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.textContent = 'Copy';
+            btn.setAttribute('aria-label', 'Copy code to clipboard');
+            btn.addEventListener('click', function() {
+                var code = pre.querySelector('code');
+                var text = (code || pre).textContent;
+                navigator.clipboard.writeText(text).then(function() {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                });
+            });
+            container.appendChild(btn);
+        }
+        document.querySelectorAll('.org-src-container').forEach(function(container) {
+            var pre = container.querySelector('pre.src');
+            if (pre) addControls(container, pre, getLang(pre));
+        });
+        document.querySelectorAll('pre.example').forEach(function(pre) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'example-container';
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+            addControls(wrapper, pre, '');
+        });
+    })();
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-VGV27RDN3E');
+</script>
+</body>
+</html>

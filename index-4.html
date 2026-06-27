@@ -1,104 +1,163 @@
 <!DOCTYPE html>
-<html prefix="og: http://ogp.me/ns# article: http://ogp.me/ns/article# " vocab="http://ogp.me/ns" lang="en">
+<html prefix="        og: http://ogp.me/ns# article: http://ogp.me/ns/article#     " vocab="http://ogp.me/ns" lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="description" content="Stuff, and more stuff">
-<meta name="viewport" content="width=device-width">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What Comes to Mind (old posts, page 4) | What Comes to Mind</title>
+<script>
+    (function () {
+        var s = localStorage.getItem('theme');
+        var dark = s === 'dark' || (!s && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
+    })();
+    </script><link rel="stylesheet" href="assets/css/tailwind.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&amp;family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&amp;family=Source+Sans+3:ital,wght@0,200..900;1,200..900&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer">
-<link rel="stylesheet" href="assets/css/rst.min.css">
-<link rel="stylesheet" href="assets/css/foundation.min.css">
-<link rel="stylesheet" href="assets/css/app.css">
-<link rel="stylesheet" href="assets/css/modus-vivendi-tinted.css">
+<link href="assets/css/baguetteBox.min.css" rel="stylesheet" type="text/css">
+<link id="modus-light" rel="stylesheet" href="assets/css/modus-vivendi-tinted.css" media="(prefers-color-scheme: light)">
+<link id="modus-dark" rel="stylesheet" href="assets/css/modus-operandi-tinted.css" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="assets/css/tailwind-base.css">
+<style>
+    :root {
+        --code-bg: #1d2235;
+        --code-fg: #ffffff;
+        --code-label-color: #989898;
+        --copy-btn-color: #8b8fa3;
+        --copy-btn-border: #3a3d52;
+        --copy-btn-hover-color: #d0d4e8;
+        --copy-btn-hover-border: #6b7094;
+    }
+
+    .dark {
+        --code-bg: #efe9dd;
+        --code-fg: #1a1a2e;
+        --code-label-color: #595959;
+        --copy-btn-color: #6b7280;
+        --copy-btn-border: #d1d5db;
+        --copy-btn-hover-color: #374151;
+        --copy-btn-hover-border: #9ca3af;
+    }
+    </style>
 <link href="assets/css/custom.css" rel="stylesheet" type="text/css">
-<meta content="#5670d4" name="theme-color">
-<link rel="alternate" type="application/rss+xml" title="RSS" href="rss.xml">
-<link rel="alternate" type="application/atom+xml" title="Atom" href="feed.atom">
+<script src="assets/js/theme-toggle.js" defer></script><meta name="theme-color" content="#5670d4">
+<meta name="generator" content="Nikola (getnikola.com)">
+<link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="feed.atom">
 <link rel="canonical" href="https://sdowney.org/index-4.html">
 <link rel="prev" href="index-5.html" type="text/html">
 <link rel="next" href="index-3.html" type="text/html">
-<!--[if lt IE 9]><script src="assets/js/html5.js"></script><![endif]-->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
 </head>
-<body>
+<body class="bg-white text-gray-900 font-sans dark:bg-gray-900 dark:text-gray-100">
+    <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-white focus:px-4 focus:py-2 focus:z-50">Skip to main content</a>
+    
+    
 
     
-
-    
-<div class="top-bar">
-<div class="top-bar-left">
-<ul class="menu">
-<li class="menu-text"><a href="https://sdowney.org/" title="What Comes to Mind" rel="home">What Comes to Mind</a></li>
-                <li><a href="archive.html">Archives</a></li>
-                <li><a href="categories/index.html">Tags</a></li>
-                <li><a href="mailto:sdowney@sdowney.dev">Email <i class="fa fa-envelope"></i></a></li>
-                <li><a href="https://github.com/steve-downey">GitHub <i class="fa-brands fa-github"></i></a></li>
-                <li><a href="https://mastodon.social/@Sdowney">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
-                <li><a href="https://bsky.app/profile/sdowney.org">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
-                <li><a href="feed.atom">ATOM <i class="fa-solid fa-atom"></i></a></li>
-                <li><a href="rss.xml">RSS <i class="fa-solid fa-rss"></i></a></li>
-    
-    
-    </ul>
+<nav class="bg-gray-800"><div class="max-w-5xl mx-auto px-4">
+        <div class="flex items-center justify-between h-14">
+            <a href="https://sdowney.org/" title="What Comes to Mind" rel="home" class="text-white text-lg font-semibold hover:text-gray-300 transition-colors">What Comes to Mind</a>
+            <button id="nav-toggle" class="md:hidden text-gray-300 hover:text-white focus:outline-none" aria-label="Toggle navigation">
+                <svg class="size-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+            <ul class="hidden md:flex items-center space-x-4 text-sm">
+<li><a href="archive.html" class="text-gray-300 hover:text-white transition-colors">Archives</a></li>
+                    
+                    <li><a href="categories/index.html" class="text-gray-300 hover:text-white transition-colors">Tags</a></li>
+                    
+                    <li><a href="mailto:sdowney@sdowney.dev" class="text-gray-300 hover:text-white transition-colors">Email <i class="fa fa-envelope"></i></a></li>
+                    
+                    <li><a href="https://github.com/steve-downey" class="text-gray-300 hover:text-white transition-colors">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                    
+                    <li><a href="https://mastodon.social/@Sdowney" class="text-gray-300 hover:text-white transition-colors">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                    
+                    <li><a href="https://bsky.app/profile/sdowney.org" class="text-gray-300 hover:text-white transition-colors">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
+                    
+                    <li><a href="feed.atom" class="text-gray-300 hover:text-white transition-colors">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                    
+                    <li><a href="rss.xml" class="text-gray-300 hover:text-white transition-colors">RSS <i class="fa-solid fa-rss"></i></a></li>
+            
+            
+            </ul>
 </div>
+        <ul id="nav-mobile" class="hidden md:hidden flex-col space-y-2 pb-4 text-sm">
+<li><a href="archive.html" class="text-gray-300 hover:text-white transition-colors">Archives</a></li>
+                
+                <li><a href="categories/index.html" class="text-gray-300 hover:text-white transition-colors">Tags</a></li>
+                
+                <li><a href="mailto:sdowney@sdowney.dev" class="text-gray-300 hover:text-white transition-colors">Email <i class="fa fa-envelope"></i></a></li>
+                
+                <li><a href="https://github.com/steve-downey" class="text-gray-300 hover:text-white transition-colors">GitHub <i class="fa-brands fa-square-github"></i></a></li>
+                
+                <li><a href="https://mastodon.social/@Sdowney" class="text-gray-300 hover:text-white transition-colors">Mastodon <i class="fa-brands fa-mastodon"></i></a></li>
+                
+                <li><a href="https://bsky.app/profile/sdowney.org" class="text-gray-300 hover:text-white transition-colors">Bluesky <i class="fa-brands fa-bluesky"></i></a></li>
+                
+                <li><a href="feed.atom" class="text-gray-300 hover:text-white transition-colors">ATOM <i class="fa-solid fa-atom"></i></a></li>
+                
+                <li><a href="rss.xml" class="text-gray-300 hover:text-white transition-colors">RSS <i class="fa-solid fa-rss"></i></a></li>
+        </ul>
 </div>
+</nav><script>
+document.getElementById('nav-toggle').addEventListener('click', function() {
+    var menu = document.getElementById('nav-mobile');
+    menu.classList.toggle('hidden');
+    menu.classList.toggle('flex');
+});
+</script><div class="relative text-white py-10 text-center bg-cover bg-center" style="background-image: url('assets/images/cropped-blog-header.jpg');">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10">
+        
+            <h1 class="text-4xl font-bold text-balance">What Comes to Mind</h1>
+            <p class="mt-2 text-lg text-gray-100">Stuff, and more stuff</p>
+        
+        </div>
+    </div>
+    <main id="content" class="max-w-6xl mx-auto px-4 py-8"><div class="lg:flex lg:gap-10">
+            <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
+            
 
     
-
-<div class="callout large primary">
-<div class="row column text-center">
-
-<h1>What Comes to Mind</h1>
-<h2 class="subheader">Stuff, and more stuff</h2>
-
-</div>
-</div>
-
-<div class="row medium-8 large-7 columns">
-
-
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/10/27/can-you-pass-8th-grade-math/">Can you pass 8th Grade Math?</a><br><small>2005-10-27 16:24</small>
-</h3>
-    <div>
-
-        <table width="350" align="center" border="0" cellspacing="0" cellpadding="2">
+<div class="space-y-10">
+    <article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/10/27/can-you-pass-8th-grade-math/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Can you pass 8th Grade Math?</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-10-27T16:24:00-04:00" title="2005-10-27 16:24">2005-10-27 16:24</time></p>
+        <div class="mt-3">
+            <table width="350" align="center" border="0" cellspacing="0" cellpadding="2">
 <tr><td bgcolor="#CDDEFF" align="center"><b>You Passed 8th Grade Math</b></td></tr>
 <tr><td bgcolor="#EBF2FF">
 <center><img src="http://images.blogthings.com/couldyoupasseighthgrademathquiz/passed.jpg" height="100" width="100"></center>
 <br>Congratulations, you got 10/10 correct!</td></tr>
 </table>
 <div align="center"><a href="http://www.blogthings.com/couldyoupasseighthgrademathquiz/">Could You Pass 8th Grade Math?</a></div>
-    </div>
-
-    </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/10/10/oktale-novemberfest-2/">OktAle / Novemberfest</a><br><small>2005-10-10 22:33</small>
-</h3>
-    <div>
-
-        <p>So the beer has been brewed, and, as of this morning is bubbling away happily in the primary fermenter. It's not as heavy as I had planned, coming out at 1.042 Original Gravity, partly due to brewing 5 1/2 gallons, rather than 5, and also to poor mash efficiency. I think I let the mash cool off too much during sparging, and didn't rinse the sugars out as effectively as possible. <br><br>I pitched a 1 liter starter of the White Labs Duseldorf Alt yeast, and fermentation was active several hours later, and well going by the morning. I'll move it to the basement tonight, to keep it a bit cool.</p>
-    </div>
-
-    </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/10/06/oktale-recipe/">OktAle Recipe</a><br><small>2005-10-06 11:57</small>
-</h3>
-    <div>
-
-        <p>Here's the plan for today's brew. An Alt, brewed with an Maerzen grain bill and hopping, so it should be similar in style to a O'fest. I'm planning a single decoction mash, so I'll be pretty busy.<br><br>Oktober Ale<br>Recipe        oktober ale        Style        Oktoberfest/Marzen<br>Brewer        Steve Downey        Batch        5.00 gal<br><br>Recipe Characteristics<br>Recipe Gravity        1.054 OG        Estimated FG        1.013 FG<br>Recipe Bitterness        24 IBU        Alcohol by Volume        5.4%<br>Recipe Color        13° SRM        Alcohol by Weight        4.2%<br><br>Ingredients<br><br>Quantity        Grain                Use<br>7.00 lb        Vienna Malt             mashed<br>1.00 lb        German Munich     mashed<br>1.00 lb        White Wheat         mashed<br>1.00 lb        CaraVienne        mashed<br>0.25 lb        Belgian Special "B"        mashed<br><br>Quantity        Hop        Form        Time<br>1.00 oz        Hallertauer        pellet        45 minutes<br>0.75 oz        Hallertauer        pellet        30 minutes<br>1.00 oz        Liberty        pellet        15 minutes</p>
-    </div>
-
-    </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/10/03/new-brew-planning/">New Brew Planning</a><br><small>2005-10-03 19:43</small>
-</h3>
-    <div>
-
-        <p>Yippe! I'm brewing this weekend (weather, wife, and kids permitting)<br><br></p>
+        </div>
+    </article><article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/10/10/oktale-novemberfest-2/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">OktAle / Novemberfest</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-10-10T22:33:00-04:00" title="2005-10-10 22:33">2005-10-10 22:33</time></p>
+        <div class="mt-3">
+            <p>So the beer has been brewed, and, as of this morning is bubbling away happily in the primary fermenter. It's not as heavy as I had planned, coming out at 1.042 Original Gravity, partly due to brewing 5 1/2 gallons, rather than 5, and also to poor mash efficiency. I think I let the mash cool off too much during sparging, and didn't rinse the sugars out as effectively as possible. <br><br>I pitched a 1 liter starter of the White Labs Duseldorf Alt yeast, and fermentation was active several hours later, and well going by the morning. I'll move it to the basement tonight, to keep it a bit cool.</p>
+        </div>
+    </article><article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/10/06/oktale-recipe/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">OktAle Recipe</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-10-06T11:57:00-04:00" title="2005-10-06 11:57">2005-10-06 11:57</time></p>
+        <div class="mt-3">
+            <p>Here's the plan for today's brew. An Alt, brewed with an Maerzen grain bill and hopping, so it should be similar in style to a O'fest. I'm planning a single decoction mash, so I'll be pretty busy.<br><br>Oktober Ale<br>Recipe        oktober ale        Style        Oktoberfest/Marzen<br>Brewer        Steve Downey        Batch        5.00 gal<br><br>Recipe Characteristics<br>Recipe Gravity        1.054 OG        Estimated FG        1.013 FG<br>Recipe Bitterness        24 IBU        Alcohol by Volume        5.4%<br>Recipe Color        13° SRM        Alcohol by Weight        4.2%<br><br>Ingredients<br><br>Quantity        Grain                Use<br>7.00 lb        Vienna Malt             mashed<br>1.00 lb        German Munich     mashed<br>1.00 lb        White Wheat         mashed<br>1.00 lb        CaraVienne        mashed<br>0.25 lb        Belgian Special "B"        mashed<br><br>Quantity        Hop        Form        Time<br>1.00 oz        Hallertauer        pellet        45 minutes<br>0.75 oz        Hallertauer        pellet        30 minutes<br>1.00 oz        Liberty        pellet        15 minutes</p>
+        </div>
+    </article><article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/10/03/new-brew-planning/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">New Brew Planning</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-10-03T19:43:00-04:00" title="2005-10-03 19:43">2005-10-03 19:43</time></p>
+        <div class="mt-3">
+            <p>Yippe! I'm brewing this weekend (weather, wife, and kids permitting)<br><br></p>
 <table border="1" cellpadding="0" cellspacing="0"><tbody>
 <tr>
 <td valign="top" width="84">   <p>GR410 </p>
@@ -193,110 +252,220 @@
 <p></p>   </td>  </tr>
 </tbody></table>
 <br>Just saw on <a href="http://www.morebeer.com/">http://www.morebeer.com/</a> that my order has shipped. The grain bill and hops is for an Oktoberfest style beer, but the yeast is an Alt. I don't have the facilities to lager an O'fest, so this is a compromise. With any luck I won't be too far out of style, though.<br><br>I plan to go easy on the Special B, as it's rather dark, probably about 1/4#, and about 1./2# of the Caravienne.  The wheat is out of style, but it helps with head retention, and at 10% of the grain bill, shouldn't change the flavor profile appreciably.<br><br>I'm planning a single decoction mash, to get that malty O'fest flavor.<br><br>I'll probably start with the Liberty at 45 minutes, and the Hallertau at 30 and 15. Exact amounts depend on the %Alpha Acid on the hops, as I don't want this to be very bitter. Just enough to give it some backbone.
-    </div>
-
-    </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/06/16/downloads-at-opensolaris-org/">Downloads at OpenSolaris.org</a><br><small>2005-06-16 02:52</small>
-</h3>
-    <div>
-
-        <a href="http://www.opensolaris.org/os/downloads/">Downloads at OpenSolaris.org</a><br><br>This is where it starts with OpenSolaris. I've got a spare Dell Optiplex gx110 that I try out new Linux distros on. Now it's going to be a test bed for OpenSolaris.<br><br>First step is downloading everything. Well, almost first step. Real first step was going out and buying a new sleeve of CD-R's , because I don't know where the last one went. Then,<blockquote>Before you begin, you will need to read the <a href="http://www.opensolaris.org/os/downloads/releasenotes-20050612.txt">Release Notes</a>. Really. The whole thing.</blockquote>
+        </div>
+    </article><article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/06/16/downloads-at-opensolaris-org/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Downloads at OpenSolaris.org</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-06-16T02:52:00-04:00" title="2005-06-16 02:52">2005-06-16 02:52</time></p>
+        <div class="mt-3">
+            <a href="http://www.opensolaris.org/os/downloads/">Downloads at OpenSolaris.org</a><br><br>This is where it starts with OpenSolaris. I've got a spare Dell Optiplex gx110 that I try out new Linux distros on. Now it's going to be a test bed for OpenSolaris.<br><br>First step is downloading everything. Well, almost first step. Real first step was going out and buying a new sleeve of CD-R's , because I don't know where the last one went. Then,<blockquote>Before you begin, you will need to read the <a href="http://www.opensolaris.org/os/downloads/releasenotes-20050612.txt">Release Notes</a>. Really. The whole thing.</blockquote>
 <br><br>So, I did that, too.<br><br>Now, I'm waiting for isos to come down, as well as Sun Studio 10.  Overall, looks like about an hour and a half. Then burn and start install.<br><br>I'll probably get to the actual OpenSolaris parts tomorrow.<br><br>Technorati Tag: <a href="http://technorati.com/tag/OpenSolaris" rel="tag">OpenSolaris</a>
-    </div>
-
-    </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/06/14/sun-studio-downloads-at-opensolaris-org/">Sun Studio Downloads at OpenSolaris.org</a><br><small>2005-06-14 15:32</small>
-</h3>
-    <div>
-
-        <a href="http://opensolaris.org/os/community/tools/sun_studio_tools/">Sun Studio Downloads at OpenSolaris.org</a>
+        </div>
+    </article><article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/06/14/sun-studio-downloads-at-opensolaris-org/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Sun Studio Downloads at OpenSolaris.org</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-06-14T15:32:00-04:00" title="2005-06-14 15:32">2005-06-14 15:32</time></p>
+        <div class="mt-3">
+            <a href="http://opensolaris.org/os/community/tools/sun_studio_tools/">Sun Studio Downloads at OpenSolaris.org</a>
 <br>So, a free-as-in-beer license for Sun Studio 10, to go with the new free-as-in-speech <a href="http://www.opensolaris.org/">OpenSolaris. </a>
 <br><br>Time to dust off one of the Netra T-1's in the basement, and see what this puppy can do.
 <br><br>
 </div>
-
-    </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/05/07/another-nerd-test/">Another Nerd Test</a><br><small>2005-05-07 19:23</small>
-</h3>
-    <div>
-
-        <a href="http://www.nerdtests.com/ft_cg.php?im"><br><img src="http://www.nerdtests.com/images/ft/cg.php?val=7836" alt="My computer geek score is greater than 97% of all people in the world! How do you compare? Click here to find out!"></a>
-    </div>
-
-    </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/03/13/a-brief-history-of-construction/">A brief history of construction:</a><br><small>2005-03-13 23:59</small>
-</h3>
-    <div>
-
-        <img src="http://www.sdowney.org/small_house_ani.gif"><br><br>This starts in the first week of January, and runs through last week. <br><br>Living in a house that's under construction has been, ..., interesting. But we're starting to see the light at the end of the tunnel. <br><br>Putting together the animated GIF was pretty easy, too. I've been taking pictures from the same spot across the street from our house. I loaded each image into <a href="http://www.gimp.org/">the Gimp</a> as a separate layer. Then increased the transparency of that layer, so that I could line up the roof lines. I used the roof peak that's over the dining room, in the front of the house, as the key, since the main roof line changes during construction. Then, because they weren't all framed the same,I cropped it to the intersection of all of the frames. When you save a multi-layer image as a GIF file in the Gimp, it asks whether to save as an animated GIF, or to flatten the image. <br><br>Pretty easy, once I learned what the tools could do.
-    </div>
-
-    </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/02/20/thinking-about-exception-safety-in-c/">Thinking about Exception Safety in C++</a><br><small>2005-02-20 23:26</small>
-</h3>
-    <div>
-
-        <p>Thanks to David Abrahams, we have a framework to discuss the relative <a href="http://www.boost.org/more/generic_exception_safety.html">exception safety</a> of C++ components. Quick reiteration:<br># The basic guarantee: that the invariants of the component are preserved, and no resources are leaked.<br># The strong guarantee: that the operation has either completed successfully or thrown an exception, leaving the program state exactly as it was before the operation started.<br># The no-throw guarantee: that the operation will not throw an exception.<br><br>A corner case, that came up recently in discussion about shared_ptr, is how to describe the situation where the invariants of the component are preserved, the state of the component is what it was before, but the state of the <span>program</span> is not exactly as it was before the operation started.<br><br>shared_ptr potentially can throw an exception during construction. If it does, the pointer that it is constructed on is deleted (or the deleter called). This is important, as it prevents any resource leak. But it does mean that there is a change in the state of the program. Whatever the pointer is pointing to is gone. Does this mean that shared_ptr only provides the basic guarantee?<br><br>That would be unsatsifying.<br><br>The only way out of it that I see is that any attempt to observe the changed state would involve undefined behavior. And it would be the same undefined behavior, at that point in the code, if the operation did succeed.<br><br>Concrete, simple, case:<br><br>Widget * w = new Widget; // 1<br>// ... some more code<br>shared_ptr sp_w = shared_ptr<widget>(w); // 2 <br>// ... yet more code.<br>w-&gt;widgetOp(); // 3<br><br><br>How could we arrive at 3 if an exception was thrown at 2? Only if 2 was inside a try block of some kind, which implies at least one block scope level difference between //1 and //2. <br><br>Which means that when that scope was exited, sp_w would have gone out of scope and been deleted, so that any reference to w at //3 would be invalid.<br><br>It seems to me that the program state in the strong guarantee must be one that is marked as being the beginning of a transaction by opening a try block. That this is necessary, although not sufficient for transactional behavior. Of course to accomplish this, each component must revert its state to the initial conditions, no component can know enough to revert the state of the entire program.</widget></p>
-    </div>
-
-    </div>
-    <div class="blog-post">
-    <h3>
-<a href="posts/index.php/2005/02/05/more-house-construction/">More house construction</a><br><small>2005-02-05 19:47</small>
-</h3>
-    <div>
-
-        <p>This the outside, now
+    </article><article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/05/07/another-nerd-test/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Another Nerd Test</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-05-07T19:23:00-04:00" title="2005-05-07 19:23">2005-05-07 19:23</time></p>
+        <div class="mt-3">
+            <a href="http://www.nerdtests.com/ft_cg.php?im"><br><img src="http://www.nerdtests.com/images/ft/cg.php?val=7836" alt="My computer geek score is greater than 97% of all people in the world! How do you compare? Click here to find out!"></a>
+        </div>
+    </article><article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/03/13/a-brief-history-of-construction/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">A brief history of construction:</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-03-13T23:59:00-05:00" title="2005-03-13 23:59">2005-03-13 23:59</time></p>
+        <div class="mt-3">
+            <img src="http://www.sdowney.org/small_house_ani.gif"><br><br>This starts in the first week of January, and runs through last week. <br><br>Living in a house that's under construction has been, ..., interesting. But we're starting to see the light at the end of the tunnel. <br><br>Putting together the animated GIF was pretty easy, too. I've been taking pictures from the same spot across the street from our house. I loaded each image into <a href="http://www.gimp.org/">the Gimp</a> as a separate layer. Then increased the transparency of that layer, so that I could line up the roof lines. I used the roof peak that's over the dining room, in the front of the house, as the key, since the main roof line changes during construction. Then, because they weren't all framed the same,I cropped it to the intersection of all of the frames. When you save a multi-layer image as a GIF file in the Gimp, it asks whether to save as an animated GIF, or to flatten the image. <br><br>Pretty easy, once I learned what the tools could do.
+        </div>
+    </article><article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/02/20/thinking-about-exception-safety-in-c/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Thinking about Exception Safety in C++</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-02-20T23:26:00-05:00" title="2005-02-20 23:26">2005-02-20 23:26</time></p>
+        <div class="mt-3">
+            <p>Thanks to David Abrahams, we have a framework to discuss the relative <a href="http://www.boost.org/more/generic_exception_safety.html">exception safety</a> of C++ components. Quick reiteration:<br># The basic guarantee: that the invariants of the component are preserved, and no resources are leaked.<br># The strong guarantee: that the operation has either completed successfully or thrown an exception, leaving the program state exactly as it was before the operation started.<br># The no-throw guarantee: that the operation will not throw an exception.<br><br>A corner case, that came up recently in discussion about shared_ptr, is how to describe the situation where the invariants of the component are preserved, the state of the component is what it was before, but the state of the <span>program</span> is not exactly as it was before the operation started.<br><br>shared_ptr potentially can throw an exception during construction. If it does, the pointer that it is constructed on is deleted (or the deleter called). This is important, as it prevents any resource leak. But it does mean that there is a change in the state of the program. Whatever the pointer is pointing to is gone. Does this mean that shared_ptr only provides the basic guarantee?<br><br>That would be unsatsifying.<br><br>The only way out of it that I see is that any attempt to observe the changed state would involve undefined behavior. And it would be the same undefined behavior, at that point in the code, if the operation did succeed.<br><br>Concrete, simple, case:<br><br>Widget * w = new Widget; // 1<br>// ... some more code<br>shared_ptr sp_w = shared_ptr<widget>(w); // 2 <br>// ... yet more code.<br>w-&gt;widgetOp(); // 3<br><br><br>How could we arrive at 3 if an exception was thrown at 2? Only if 2 was inside a try block of some kind, which implies at least one block scope level difference between //1 and //2. <br><br>Which means that when that scope was exited, sp_w would have gone out of scope and been deleted, so that any reference to w at //3 would be invalid.<br><br>It seems to me that the program state in the strong guarantee must be one that is marked as being the beginning of a transaction by opening a try block. That this is necessary, although not sufficient for transactional behavior. Of course to accomplish this, each component must revert its state to the initial conditions, no component can know enough to revert the state of the entire program.</widget></p>
+        </div>
+    </article><article class="blog-post"><h3 class="not-prose text-2xl font-semibold">
+            <a href="posts/index.php/2005/02/05/more-house-construction/" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">More house construction</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="2005-02-05T19:47:00-05:00" title="2005-02-05 19:47">2005-02-05 19:47</time></p>
+        <div class="mt-3">
+            <p>This the outside, now
 <br><br><img src="http://www.sdowney.org/small-IMG_0088.JPG"><br><br>This is our new walk-in closet and bathroom
 <br><br><img src="http://www.sdowney.org/small-IMG_0083.JPG"><br><br>This is a panoramic picture of the bedroom
 <br><br><img src="http://www.sdowney.org/PANORAMA1.JPG"></p>
-    </div>
-
-    </div>
-
-
-        <div class="column row">
-            <ul class="pagination" role="navigation" aria-label="Pagination">
-<li>
-                    <a href="index-5.html" rel="prev">« <span class="show-for-sr">Newer posts</span></a>
-                </li>
-                <li>
-                    <a href="index-3.html" rel="next">» <span class="show-for-sr">Older posts</span></a>
-                </li>
-            </ul>
+        </div>
+    </article>
 </div>
 
+        <nav class="not-prose mt-10 flex justify-between items-center" aria-label="Pagination"><a href="index-5.html" rel="prev" class="text-indigo-600 hover:underline">
+                « Newer posts
+            </a>
+            <a href="index-3.html" rel="next" class="text-indigo-600 hover:underline">
+                Older posts »
+            </a>
+        </nav><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
+                renderMathInElement(document.body,
+                    {
+                        
+delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "\\[", right: "\\]", display: true},
+    {left: "\\begin{equation*}", right: "\\end{equation*}", display: true},
+    {left: "$latex ", right: "$", display: false},
+    {left: "$", right: "$", display: false},
+    {left: "\\(", right: "\\)", display: false}
+]
 
-    
-
-
-
-
-
-<hr>
-<footer id="footer"><p><small>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
+                    }
+                );
+            </script>
+</div>
+            
+<aside class="not-prose mt-10 lg:mt-0 lg:w-64 lg:shrink-0 lg:sticky lg:top-6 lg:self-start space-y-8"><section><button id="theme-toggle" class="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors" aria-label="Toggle dark mode">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+            <span>Toggle theme</span>
+        </button>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Recent Posts</h2>
+        <ul class="space-y-3">
+<li>
+                <a href="posts/moving-forward-with-legacy-encodings/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Moving Forward With Legacy Encodings</a>
+                <time class="text-xs text-gray-400" datetime="2026-05-24T13:11:21-04:00">2026-05-24 13:11</time>
+</li>
+            <li>
+                <a href="posts/tailwind-theme-workflow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Tailwind, Modus Themes, and the Blog Theming Workflow</a>
+                <time class="text-xs text-gray-400" datetime="2026-05-10T18:00:00-04:00">2026-05-10 18:00</time>
+</li>
+            <li>
+                <a href="posts/surround-with-uuid/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Surround With UUID</a>
+                <time class="text-xs text-gray-400" datetime="2026-04-09T17:41:26-04:00">2026-04-09 17:41</time>
+</li>
+            <li>
+                <a href="posts/why-standard-organizations/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Why Standard Organizations</a>
+                <time class="text-xs text-gray-400" datetime="2026-03-07T10:21:36-05:00">2026-03-07 10:21</time>
+</li>
+            <li>
+                <a href="posts/the-sender-sub-language/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">The Sender Sub-Language</a>
+                <time class="text-xs text-gray-400" datetime="2026-02-28T18:40:21-05:00">2026-02-28 18:40</time>
+</li>
+            <li>
+                <a href="posts/building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
+                <time class="text-xs text-gray-400" datetime="2025-12-27T12:03:15-05:00">2025-12-27 12:03</time>
+</li>
+            <li>
+                <a href="posts/substitution-is-sometimes-a-failure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Substitution is Sometimes a Failure</a>
+                <time class="text-xs text-gray-400" datetime="2025-11-28T12:06:58-05:00">2025-11-28 12:06</time>
+</li>
+            <li>
+                <a href="posts/nikola-blog-infrastructure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Nikola Blog Infrastructure</a>
+                <time class="text-xs text-gray-400" datetime="2024-12-23T13:15:27-05:00">2024-12-23 13:15</time>
+</li>
+            <li>
+                <a href="posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Concept Maps using C++23 Library Tech</a>
+                <time class="text-xs text-gray-400" datetime="2024-05-19T11:51:00-04:00">2024-05-19 11:51</time>
+</li>
+            <li>
+                <a href="posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Slides from C++Now 2023 Async Control Flow</a>
+                <time class="text-xs text-gray-400" datetime="2024-05-18T18:27:00-04:00">2024-05-18 18:27</time>
+</li>
+        </ul></section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Archives</h2>
+        <a href="archive.html" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">All posts →</a>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Tags</h2>
+        <a href="categories/" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">Browse tags →</a>
+    </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Feeds</h2>
+        <ul class="space-y-1">
+<li><a href="feed.atom" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">Atom</a></li>
+            <li><a href="rss.xml" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">RSS</a></li>
+        </ul></section></aside>
+</div>
+    </main><hr class="max-w-6xl mx-auto border-gray-200">
+<div class="max-w-6xl mx-auto px-4 py-6">
+        
+        <footer id="footer" class="text-center text-sm text-gray-500"><p>Contents © 2026         <a href="mailto:sdowney@sdowney.dev">Steve Downey</a> - Powered by         <a href="https://getnikola.com" rel="nofollow">Nikola</a> - 
  <a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">
- <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></small></p>
+ <img alt="Creative Commons License BY-NC-SA" style="border-width:0; margin-bottom:12px;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"></a></p>
             
         </footer>
 </div>
-
     
-
-
-
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
+            <script src="assets/js/baguetteBox.min.js"></script><script src="assets/js/luxon.min.js"></script><script src="assets/js/fancydates.min.js"></script><!-- fancy dates --><script>
+    luxon.Settings.defaultLocale = "en";
+    fancydates(2, {"preset": false, "format": "yyyy-MM-dd HH:mm"});
+    </script><!-- end fancy dates --><script>
+    baguetteBox.run('main#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script><script>
+    (function() {
+        var langNames = {
+            'cpp': 'C++', 'c++': 'C++', 'C++': 'C++', 'C+': 'C++',
+            'haskell': 'Haskell', 'Haskell': 'Haskell',
+            'python': 'Python', 'rust': 'Rust', 'cmake': 'CMake',
+            'bash': 'Bash', 'sh': 'Shell', 'shell': 'Shell', 'zsh': 'Zsh',
+            'makefile': 'Makefile', 'latex': 'LaTeX', 'asm': 'Assembly',
+            'nil': '', 'emacs-lisp': 'Emacs Lisp', 'elisp': 'Emacs Lisp',
+            'javascript': 'JavaScript', 'js': 'JavaScript',
+            'typescript': 'TypeScript', 'ts': 'TypeScript',
+            'html': 'HTML', 'css': 'CSS', 'json': 'JSON', 'yaml': 'YAML',
+            'sql': 'SQL', 'ruby': 'Ruby', 'perl': 'Perl',
+            'java': 'Java', 'go': 'Go', 'swift': 'Swift',
+            'org': 'Org', 'xml': 'XML', 'toml': 'TOML'
+        };
+        function getLang(pre) {
+            var classes = pre.className.split(/\s+/);
+            for (var i = 0; i < classes.length; i++) {
+                if (classes[i].indexOf('src-') === 0) return classes[i].substring(4);
+            }
+            return '';
+        }
+        function addControls(container, pre, lang) {
+            var displayName = langNames[lang] || lang;
+            if (displayName) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = displayName;
+                container.appendChild(label);
+            }
+            var btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.textContent = 'Copy';
+            btn.setAttribute('aria-label', 'Copy code to clipboard');
+            btn.addEventListener('click', function() {
+                var code = pre.querySelector('code');
+                var text = (code || pre).textContent;
+                navigator.clipboard.writeText(text).then(function() {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                });
+            });
+            container.appendChild(btn);
+        }
+        document.querySelectorAll('.org-src-container').forEach(function(container) {
+            var pre = container.querySelector('pre.src');
+            if (pre) addControls(container, pre, getLang(pre));
+        });
+        document.querySelectorAll('pre.example').forEach(function(pre) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'example-container';
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+            addControls(wrapper, pre, '');
+        });
+    })();
+    </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-VGV27RDN3E"></script><script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
