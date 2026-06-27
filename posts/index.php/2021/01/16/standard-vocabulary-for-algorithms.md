@@ -116,12 +116,12 @@ Right fold is not generally tail recursive, although for finite sequences in C++
 To make the diagrams below pretty, we assume that foldl over a sequence of T takes a single value of type Z and an op of Z -&gt; T -&gt; Z, while foldr over a sequence of T takes an op of type T -&gt; Z -&gt; Z and a value of type Z. For a left fold, the value is given to the op that takes the first element in the sequence, while for a right fold, it is given to the op that takes the last element in the sequence.
 <div id="org00eb67f" class="figure">
 
-<img src="http://sdowney.org/wp-content/uploads/2021/01/list.png" alt="list.png">
+<img src="/images/list.png" alt="list.png">
 
 </div>
 <div id="org5f93c72" class="figure">
 
-<img src="http://sdowney.org/wp-content/uploads/2021/01/left-fold.png" alt="left-fold.png">
+<img src="/images/left-fold.png" alt="left-fold.png">
 
 </div>
 <div class="org-src-container">
@@ -131,7 +131,7 @@ To make the diagrams below pretty, we assume that foldl over a sequence of T tak
 </div>
 <div id="orge028fbf" class="figure">
 
-<img src="http://sdowney.org/wp-content/uploads/2021/01/right-fold.png" alt="right-fold.png">
+<img src="/images/right-fold.png" alt="right-fold.png">
 
 </div>
 <div class="org-src-container">

@@ -1,0 +1,9 @@
+/* tailwind-blog.css
+ *
+ * Blog-specific component styling for nikola-tailwind-blog.
+ * Accent colors and blog layout patterns that go beyond the base framework.
+ *
+ * The default accent is indigo (via Tailwind utility classes in templates).
+ * To change the accent, override templates in a child theme or extend the
+ * Tailwind config.
+ */

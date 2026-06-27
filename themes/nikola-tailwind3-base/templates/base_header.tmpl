@@ -1,0 +1,93 @@
+## -*- coding: utf-8 -*-
+<%namespace name="base" file="base_helper.tmpl" import="*"/>
+
+<%def name="html_header()">
+    ${html_translation_header()}
+    ${html_navigation_links()}
+    ${template_hooks['page_header']()}
+</%def>
+
+<%def name="html_site_title()">
+    <h1 id="brand"><a href="${abs_link(_link("root", None, lang))}" title="${blog_title|h}" rel="home">
+    %if logo_url:
+        <img src="${logo_url}" alt="${blog_title|h}" id="logo">
+    %endif
+    % if show_blog_title:
+        <span id="blog-title">${blog_title|h}</span>
+    % endif
+    </a></h1>
+</%def>
+
+<%def name="html_navigation_links()">
+<nav class="bg-gray-800">
+    <div class="max-w-5xl mx-auto px-4">
+        <div class="flex items-center justify-between h-14">
+            <a href="${abs_link(_link("root", None, lang))}" title="${blog_title|h}" rel="home"
+               class="text-white text-lg font-semibold hover:text-gray-300 transition-colors">${blog_title|h}</a>
+            <button id="nav-toggle" class="md:hidden text-gray-300 hover:text-white focus:outline-none" aria-label="Toggle navigation">
+                <svg class="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <ul class="hidden md:flex items-center space-x-4 text-sm">
+            %for url, text in navigation_links[lang]:
+                % if isinstance(url, tuple):
+                    <li class="relative group">
+                        <span class="text-gray-300 cursor-pointer hover:text-white transition-colors">${text}</span>
+                        <ul class="absolute hidden group-hover:block bg-gray-700 rounded shadow-lg mt-1 py-1 min-w-max z-50">
+                        %for suburl, subtext in url:
+                            <li><a href="${suburl}" class="block px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-600 transition-colors">${subtext}</a></li>
+                        %endfor
+                        </ul>
+                    </li>
+                % else:
+                    <%
+                        is_active = rel_link(permalink, url) == "#"
+                        link_class = "text-white font-semibold border-b-2 border-white" if is_active else "text-gray-300 hover:text-white transition-colors"
+                    %>
+                    <li><a href="${url}" class="${link_class}"${' aria-current="page"' if is_active else ''}>${text}</a></li>
+                % endif
+            %endfor
+            ${template_hooks['menu']()}
+            ${template_hooks['menu_alt']()}
+            </ul>
+        </div>
+        ## Mobile menu — icon links get short text labels for usability
+        <ul id="nav-mobile" class="hidden md:hidden flex-col space-y-2 pb-4 text-sm">
+        %for url, text in navigation_links[lang]:
+            % if isinstance(url, tuple):
+                <li class="text-gray-400">${text}
+                    <ul class="ml-4 mt-1 space-y-1">
+                    %for suburl, subtext in url:
+                        <li><a href="${suburl}" class="text-gray-300 hover:text-white transition-colors">${subtext}</a></li>
+                    %endfor
+                    </ul>
+                </li>
+            % else:
+                <%
+                    is_active = rel_link(permalink, url) == "#"
+                    mobile_class = "text-white font-semibold" if is_active else "text-gray-300 hover:text-white transition-colors"
+                %>
+                <li><a href="${url}" class="${mobile_class}">${text}</a></li>
+            % endif
+        %endfor
+        </ul>
+    </div>
+</nav>
+<script>
+document.getElementById('nav-toggle').addEventListener('click', function() {
+    var menu = document.getElementById('nav-mobile');
+    menu.classList.toggle('hidden');
+    menu.classList.toggle('flex');
+});
+</script>
+</%def>
+
+<%def name="html_translation_header()">
+    %if len(translations) > 1:
+        <div class="bg-gray-900 text-gray-400 text-sm py-1 px-4 text-center">
+            <span>${messages("Languages:")}</span>
+            ${base.html_translations()}
+        </div>
+    %endif
+</%def>

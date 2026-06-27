@@ -1,0 +1,12 @@
+[Core]
+Name = sidebar_context
+Module = sidebar_context
+
+[Nikola]
+MinVersion = 8.0.0
+PluginCategory = SignalHandler
+
+[Documentation]
+Author = Steve Downey
+Version = 1.0
+Description = Adds all_posts to the global template context for sidebar use.

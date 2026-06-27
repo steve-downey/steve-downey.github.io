@@ -1,0 +1,4 @@
+/* Intentionally empty.
+ * Overrides Nikola base theme's nikola_rst.css which uses bare div/pre selectors
+ * and !important rules that conflict with Tailwind. This blog uses org-mode, not rST.
+ */

@@ -1,0 +1,32 @@
+* nikola-tailwind3-blog
+
+Derived blog-oriented theme built on top of [[../nikola-tailwind3-base/README.org][nikola-tailwind3-base]].
+
+** Parent theme
+
+This theme derives from =nikola-tailwind3-base=.
+
+Read [[../nikola-tailwind3-base/README.org][the parent theme README]] first for the shared theory of operation.
+
+** What this theme should own
+
+This theme should own blog presentation and layout decisions.
+
+Examples:
+
+- blog index layout
+- post layout
+- archive and tag page presentation
+- header and footer composition that is specific to the blog theme
+
+** What this theme should not own
+
+This theme should not become the place where prose behavior or source block structure is redefined.
+
+In particular:
+
+- =.prose= ownership stays with Tailwind Typography and the base theme
+- source block structure stays in the parent theme's =assets/css/tailwind-base.css=
+- dark-mode mechanics should stay aligned with the parent theme's class-based model
+
+If a blog-specific prose problem appears, first ask whether the issue really belongs in the parent theme.

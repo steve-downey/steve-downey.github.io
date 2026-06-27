@@ -1,1 +1,0 @@
-<html><body><p>{"version": 2, "isGlobalStylesUserThemeJSON": true }</p></body></html>
