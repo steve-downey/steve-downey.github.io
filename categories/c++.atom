@@ -3,7 +3,7 @@
 <feed xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
   <title>What Comes to Mind (Posts about C++)</title>
   <id>https://sdowney.org/categories/c%2B%2B.atom</id>
-  <updated>2026-03-07T16:59:38Z</updated>
+  <updated>2026-06-29T12:50:41Z</updated>
   <author>
     <name>Steve Downey</name>
   </author>
@@ -19,7 +19,7 @@
       <name>Steve Downey</name>
     </author>
     <link rel="alternate" type="text/html" href="https://sdowney.org/posts/why-standard-organizations/"/>
-    <summary type="html">&lt;div&gt;&lt;div class="abstract" id="org8b16085"&gt;
+    <summary type="html">&lt;div&gt;&lt;div class="abstract" id="org4eaac25"&gt;
 &lt;p&gt;
 The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
 &lt;/p&gt;
@@ -31,7 +31,7 @@ It's a radically oversimplified too long elevator pitch.
 &lt;/div&gt;
 
 &lt;p&gt;&lt;a href="https://sdowney.org/posts/why-standard-organizations/"&gt;Read more…&lt;/a&gt; (3 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
-    <content type="html">&lt;div class="abstract" id="org8b16085"&gt;
+    <content type="html">&lt;div class="abstract" id="org4eaac25"&gt;
 &lt;p&gt;
 The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
 &lt;/p&gt;

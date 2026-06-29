@@ -3,7 +3,7 @@
 <feed xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
   <title>What Comes to Mind (Posts about emacs)</title>
   <id>https://sdowney.org/categories/emacs.atom</id>
-  <updated>2026-06-27T17:06:47Z</updated>
+  <updated>2026-06-29T12:50:40Z</updated>
   <author>
     <name>Steve Downey</name>
   </author>
@@ -47,14 +47,14 @@ configuration choices are.
 &lt;/p&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="ox-nikola-outline-container-org3a88deb" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org3a88deb"&gt;The Theme Stack&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org3a88deb"&gt;
+&lt;div id="ox-nikola-outline-container-org99d35f8" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org99d35f8"&gt;The Theme Stack&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org99d35f8"&gt;
 &lt;p&gt;
 The blog uses three Nikola themes stacked via the parent chain:
 &lt;/p&gt;
 
-&lt;pre class="example" id="org60bc8b9"&gt;
+&lt;pre class="example" id="org7f89ea4"&gt;
 sdowney-tailwind → nikola-tailwind-blog → nikola-tailwind-base → base
 &lt;/pre&gt;
 
@@ -82,9 +82,9 @@ templates by walking the chain, so I only override what I actually change.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org52b8b85" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org52b8b85"&gt;How Tailwind Is Loaded&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org52b8b85"&gt;
+&lt;div id="ox-nikola-outline-container-org700aeb0" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org700aeb0"&gt;How Tailwind Is Loaded&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org700aeb0"&gt;
 &lt;p&gt;
 The Tailwind Play CDN is a &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; tag that processes utility classes at
 runtime:
@@ -138,9 +138,9 @@ Font stacks are defined once.  The &lt;code&gt;heading&lt;/code&gt; array is reu
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgee8adc9" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgee8adc9"&gt;Source Block Rendering&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-orgee8adc9"&gt;
+&lt;div id="ox-nikola-outline-container-orga7e8c22" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orga7e8c22"&gt;Source Block Rendering&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orga7e8c22"&gt;
 &lt;p&gt;
 Org-mode's HTML exporter produces this structure:
 &lt;/p&gt;
@@ -169,9 +169,9 @@ label and button.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org5578a91" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org5578a91"&gt;Syntax Highlighting: The Modus Connection&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org5578a91"&gt;
+&lt;div id="ox-nikola-outline-container-org54cbb7b" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org54cbb7b"&gt;Syntax Highlighting: The Modus Connection&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org54cbb7b"&gt;
 &lt;p&gt;
 Org-mode's HTML exporter uses &lt;code&gt;htmlize&lt;/code&gt; to apply face colors as CSS classes.
 When &lt;code&gt;org-html-htmlize-output-type&lt;/code&gt; is &lt;code&gt;'css&lt;/code&gt;, it produces &lt;code&gt;&amp;lt;span
@@ -237,13 +237,13 @@ Change the modus variant, regenerate, and code block backgrounds follow.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org8558353" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org8558353"&gt;Current Configuration&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org8558353"&gt;
+&lt;div id="ox-nikola-outline-container-orgc8052c7" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgc8052c7"&gt;Current Configuration&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orgc8052c7"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org2b6e842" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org2b6e842"&gt;What's using the Play CDN&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org2b6e842"&gt;
+&lt;div id="ox-nikola-outline-container-org4363645" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org4363645"&gt;What's using the Play CDN&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org4363645"&gt;
 &lt;p&gt;
 The Tailwind Play CDN generates CSS client-side.  There is no &lt;code&gt;node_modules&lt;/code&gt;,
 no &lt;code&gt;package.json&lt;/code&gt;, no build step.  Page load includes a brief delay while
@@ -258,9 +258,9 @@ tailwind.css&lt;/code&gt;, replace the &lt;code&gt;&amp;lt;script&amp;gt;&lt;/co
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org5872b01" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org5872b01"&gt;Typography plugin via prose&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org5872b01"&gt;
+&lt;div id="ox-nikola-outline-container-org0ea1d2a" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org0ea1d2a"&gt;Typography plugin via prose&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org0ea1d2a"&gt;
 &lt;p&gt;
 The &lt;code&gt;prose prose-lg prose-indigo&lt;/code&gt; classes on the content &lt;code&gt;&amp;lt;div&amp;gt;&lt;/code&gt; provide:
 &lt;/p&gt;
@@ -277,9 +277,9 @@ lives outside the &lt;code&gt;prose&lt;/code&gt; wrapper.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orga983851" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="orga983851"&gt;Fonts&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-orga983851"&gt;
+&lt;div id="ox-nikola-outline-container-org5564959" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org5564959"&gt;Fonts&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org5564959"&gt;
 &lt;ul class="org-ul"&gt;
 &lt;li&gt;Body: Source Sans 3 (with Open Sans fallback)&lt;/li&gt;
 &lt;li&gt;Headings: Open Sans&lt;/li&gt;
@@ -292,9 +292,9 @@ reference these through the config.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org1617cdf" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org1617cdf"&gt;Accent color: indigo&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org1617cdf"&gt;
+&lt;div id="ox-nikola-outline-container-org0687fab" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org0687fab"&gt;Accent color: indigo&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org0687fab"&gt;
 &lt;p&gt;
 Tailwind's &lt;code&gt;indigo&lt;/code&gt; palette provides the accent: &lt;code&gt;bg-indigo-700&lt;/code&gt; for the
 header banner, &lt;code&gt;text-indigo-600&lt;/code&gt; for links, &lt;code&gt;bg-indigo-100 text-indigo-700&lt;/code&gt;
@@ -303,9 +303,9 @@ across the blog tier templates.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org16a2edf" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org16a2edf"&gt;Icons: Font Awesome 7.0.1&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org16a2edf"&gt;
+&lt;div id="ox-nikola-outline-container-orga55db06" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orga55db06"&gt;Icons: Font Awesome 7.0.1&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orga55db06"&gt;
 &lt;p&gt;
 Loaded via CDN in the personal tier.  Navigation links in &lt;code&gt;conf.py&lt;/code&gt; include
 Font Awesome &lt;code&gt;&amp;lt;i&amp;gt;&lt;/code&gt; tags directly in the link text.
@@ -313,13 +313,13 @@ Font Awesome &lt;code&gt;&amp;lt;i&amp;gt;&lt;/code&gt; tags directly in the lin
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orga740c92" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orga740c92"&gt;What I Might Tweak Later&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-orga740c92"&gt;
+&lt;div id="ox-nikola-outline-container-org7b1cb39" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org7b1cb39"&gt;What I Might Tweak Later&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org7b1cb39"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orga4685f3" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="orga4685f3"&gt;Dark mode&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-orga4685f3"&gt;
+&lt;div id="ox-nikola-outline-container-org41ff33b" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org41ff33b"&gt;Dark mode&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org41ff33b"&gt;
 &lt;p&gt;
 The syntax highlighting is already dark (modus-vivendi).  The page chrome is
 light.  A proper dark mode would add &lt;code&gt;dark:&lt;/code&gt; variants to the templates and
@@ -328,9 +328,9 @@ this straightforward with &lt;code&gt;darkMode: 'media'&lt;/code&gt; in the conf
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org851ab98" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org851ab98"&gt;Production Tailwind&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org851ab98"&gt;
+&lt;div id="ox-nikola-outline-container-org7720294" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org7720294"&gt;Production Tailwind&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org7720294"&gt;
 &lt;p&gt;
 If page load times bother me, switching to a pre-built CSS file removes the
 Play CDN runtime cost.  The config is already defined inline; moving it to
@@ -338,9 +338,9 @@ Play CDN runtime cost.  The config is already defined inline; moving it to
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org1cf420c" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org1cf420c"&gt;Palette-aware CSS generation&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org1cf420c"&gt;
+&lt;div id="ox-nikola-outline-container-org41c6ffd" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org41c6ffd"&gt;Palette-aware CSS generation&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org41c6ffd"&gt;
 &lt;p&gt;
 &lt;code&gt;secretaire-css&lt;/code&gt; currently falls back to htmlize for the actual face scanning
 when the modus palette API isn't available.  The full palette-aware path (emitting
@@ -349,9 +349,9 @@ See &lt;code&gt;docs/secretaire-css-design.org&lt;/code&gt; for what the ideal o
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgbecd46a" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="orgbecd46a"&gt;Fonts&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-orgbecd46a"&gt;
+&lt;div id="ox-nikola-outline-container-orge490c0a" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orge490c0a"&gt;Fonts&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orge490c0a"&gt;
 &lt;p&gt;
 I'm eyeing &lt;a href="https://www.brailleinstitute.org/freefont/"&gt;Atkinson Hyperlegible Next&lt;/a&gt; for body text.  Changing fonts is a
 two-place edit: the Google Fonts &lt;code&gt;&amp;lt;link&amp;gt;&lt;/code&gt; tag and the Tailwind config in

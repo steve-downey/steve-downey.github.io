@@ -134,8 +134,8 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
             <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
             
 <article class="blog-post h-entry"><div class="e-content entry-content">
-        <div id="ox-nikola-outline-container-org9a8da94" class="ox-nikola-outline-2">
-<h2 id="org9a8da94">
+        <div id="ox-nikola-outline-container-org094ca86" class="ox-nikola-outline-2">
+<h2 id="org094ca86">
 <span class="section-number-2">1.</span> Abstract</h2>
 <div class="outline-text-2" id="text-1">
 <p>
@@ -152,13 +152,13 @@ What follows is the story of attempting to find a way out, and why the math forc
 <!-- TEASER_END -->
 </div>
 </div>
-<div id="ox-nikola-outline-container-org2020253" class="ox-nikola-outline-2">
-<h2 id="org2020253">
+<div id="ox-nikola-outline-container-org3408eff" class="ox-nikola-outline-2">
+<h2 id="org3408eff">
 <span class="section-number-2">2.</span> The Story of Failing to Find a Way Out</h2>
 <div class="outline-text-2" id="text-2">
 </div>
-<div id="ox-nikola-outline-container-org8e4c67f" class="ox-nikola-outline-3">
-<h3 id="org8e4c67f">
+<div id="ox-nikola-outline-container-org9ac8563" class="ox-nikola-outline-3">
+<h3 id="org9ac8563">
 <span class="section-number-3">2.1.</span> Act I: The Overlapping Abyss</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
@@ -169,15 +169,15 @@ If you are dropped into the middle of an arbitrary point in a string using a WHA
 This happens because legacy encodings lack <i>self-synchronization</i>. Let \(L\) be the set of valid lead bytes and \(T\) be the set of valid trail bytes. In UTF-8, these sets are strictly disjoint (\(L \cap T = \emptyset\)). In legacy encodings, the sets intersect aggressively. In Shift_JIS, the byte <code>0x81</code> is valid as <i>both</i> a lead byte and a trail byte.
 </p>
 </div>
-<div id="ox-nikola-outline-container-org463740b" class="ox-nikola-outline-4">
-<h4 id="org463740b">
+<div id="ox-nikola-outline-container-org589fd68" class="ox-nikola-outline-4">
+<h4 id="org589fd68">
 <span class="section-number-4">2.1.1.</span> The Specific Example</h4>
 <div class="outline-text-4" id="text-2-1-1">
 <p>
 Imagine you are handed a data buffer and dropped at index 3:
 </p>
 
-<pre class="example" id="orgb5e5ec5">
+<pre class="example" id="orgdfc3366">
 Buffer: [0x81, 0x81, 0x81, 0x81, 0x81]
 Index:    0     1     2     3     4
 </pre>
@@ -198,8 +198,8 @@ Every single byte relies entirely on the even/odd parity established by the byte
 </div>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org8ac1aa3" class="ox-nikola-outline-3">
-<h3 id="org8ac1aa3">
+<div id="ox-nikola-outline-container-org86485f3" class="ox-nikola-outline-3">
+<h3 id="org86485f3">
 <span class="section-number-3">2.2.</span> Act II: The Illusion of the Anchor</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
@@ -210,15 +210,15 @@ Suppose your position is not random. You just parsed forward from the beginning 
 You still cannot reliably step backward. Knowing the <i>end</i> of the previous character does not tell you its <i>length</i>.
 </p>
 </div>
-<div id="ox-nikola-outline-container-org6438b92" class="ox-nikola-outline-4">
-<h4 id="org6438b92">
+<div id="ox-nikola-outline-container-org12988a4" class="ox-nikola-outline-4">
+<h4 id="org12988a4">
 <span class="section-number-4">2.2.1.</span> The Specific Example</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <p>
 Imagine looking backward from your known, forward-parsed cursor and seeing this sequence in Shift_JIS:
 </p>
 
-<pre class="example" id="org809ce2b">
+<pre class="example" id="orge5ebb59">
 ... 0x81 0x81 0x81 0x40 | &lt;CURSOR&gt;
 </pre>
 
@@ -240,8 +240,8 @@ Even though you are sitting at a known boundary, you are forced into the exact s
 </div>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orgf9e8fcb" class="ox-nikola-outline-3">
-<h3 id="orgf9e8fcb">
+<div id="ox-nikola-outline-container-org9466f2a" class="ox-nikola-outline-3">
+<h3 id="org9466f2a">
 <span class="section-number-3">2.3.</span> Act III: State Machine Amnesia</h3>
 <div class="outline-text-3" id="text-2-3">
 <p>
@@ -252,8 +252,8 @@ Finally, you might think to capture the exact WHATWG parser state at your cursor
 This is the final dead end. Having the parser state provides absolutely zero historical context because the WHATWG state machine suffers from "amnesia" at character boundaries. Decoders operate as forward-looking Mealy machines. When you reach a valid character boundary, the decoder finishes emitting the Unicode scalar value and immediately resets its internal state to the <i>Default</i> state (waiting for a new ASCII character or a new multibyte lead byte).
 </p>
 </div>
-<div id="ox-nikola-outline-container-org0bbd99b" class="ox-nikola-outline-4">
-<h4 id="org0bbd99b">
+<div id="ox-nikola-outline-container-org1081165" class="ox-nikola-outline-4">
+<h4 id="org1081165">
 <span class="section-number-4">2.3.1.</span> The Specific Example</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <p>
@@ -290,13 +290,13 @@ In both traces, you are left at the exact same byte position, looking at the exa
 </div>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orgd078686" class="ox-nikola-outline-2">
-<h2 id="orgd078686">
+<div id="ox-nikola-outline-container-org7feda23" class="ox-nikola-outline-2">
+<h2 id="org7feda23">
 <span class="section-number-2">3.</span> Formal Definitions</h2>
 <div class="outline-text-2" id="text-3">
 </div>
-<div id="ox-nikola-outline-container-org7496194" class="ox-nikola-outline-3">
-<h3 id="org7496194">
+<div id="ox-nikola-outline-container-org1fd066b" class="ox-nikola-outline-3">
+<h3 id="org1fd066b">
 <span class="section-number-3">3.1.</span> Self-Synchronizing Code</h3>
 <div class="outline-text-3" id="text-3-1">
 <p>
@@ -304,8 +304,8 @@ A code is self-synchronizing if, given an arbitrary point in a bit stream, the d
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orgca3c1ad" class="ox-nikola-outline-3">
-<h3 id="orgca3c1ad">
+<div id="ox-nikola-outline-container-org8c5cb33" class="ox-nikola-outline-3">
+<h3 id="org8c5cb33">
 <span class="section-number-3">3.2.</span> Decoder State Amnesia</h3>
 <div class="outline-text-3" id="text-3-2">
 <p>
@@ -314,8 +314,8 @@ The property of WHATWG decoders where the internal state matrix transitions to t
 </div>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org86a5cb6" class="ox-nikola-outline-2">
-<h2 id="org86a5cb6">
+<div id="ox-nikola-outline-container-orgc72c8f8" class="ox-nikola-outline-2">
+<h2 id="orgc72c8f8">
 <span class="section-number-2">4.</span> Tables and Proofs (For the Unbelieving)</h2>
 <div class="outline-text-2" id="text-4">
 <p>
@@ -389,8 +389,8 @@ If we compute the intersection (\(Lead \cap Trail\)), we find that the <i>entire
 </table>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org4f55677" class="ox-nikola-outline-2">
-<h2 id="org4f55677">
+<div id="ox-nikola-outline-container-orgbae6495" class="ox-nikola-outline-2">
+<h2 id="orgbae6495">
 <span class="section-number-2">5.</span> References</h2>
 <div class="outline-text-2" id="text-5">
 <ul class="org-ul">

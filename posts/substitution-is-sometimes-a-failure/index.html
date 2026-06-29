@@ -144,7 +144,7 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
             <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
             
 <article class="blog-post h-entry"><div class="e-content entry-content">
-        <div class="abstract" id="org97d5a3c">
+        <div class="abstract" id="orgb7ba95c">
 <p>
 Why are optional::transform and optional::and_then not constrained by <code>invocable</code>?
 </p>
@@ -152,8 +152,8 @@ Why are optional::transform and optional::and_then not constrained by <code>invo
 </div>
 
 <!-- TEASER_END -->
-<div id="outline-container-orgddf97f8" class="outline-2">
-<h2 id="orgddf97f8">
+<div id="ox-nikola-outline-container-org3ecfbcf" class="ox-nikola-outline-2">
+<h2 id="org3ecfbcf">
 <span class="section-number-2">1.</span> Optional "Monadic" Interface</h2>
 <div class="outline-text-2" id="text-1">
 <p>
@@ -188,8 +188,8 @@ They don't work if you don't give them invocables, and rely on <code>invoke_resu
 </p>
 </div>
 </div>
-<div id="outline-container-org5046b45" class="outline-2">
-<h2 id="org5046b45">
+<div id="ox-nikola-outline-container-org2afa4cf" class="ox-nikola-outline-2">
+<h2 id="org2afa4cf">
 <span class="section-number-2">2.</span> SFINAE is shallow</h2>
 <div class="outline-text-2" id="text-2">
 <p>
@@ -231,7 +231,7 @@ We can rewrite it, to make things possibly more obvious:
 and to slightly spoil things, the problem code is effectively:
 </p>
 <div class="org-src-container">
-<pre class="src src-c++"><code><span class="org-keyword">static_assert</span>(<span class="org-constant">std</span>::<span class="org-type">invocable</span>&lt;Func, <span class="org-type">int</span> <span class="org-keyword">const</span>&amp;&gt;);
+<pre class="src src-c++"><code>static_assert(<span class="org-constant">std</span>::<span class="org-type">invocable</span>&lt;Func, <span class="org-type">int</span> <span class="org-keyword">const</span>&amp;&gt;);
 </code></pre>
 </div>
 
@@ -305,8 +305,8 @@ If we constrain <code>transform</code> we get the same errors as above. <a href=
 </p>
 </div>
 </div>
-<div id="outline-container-orgec8cd8f" class="outline-2">
-<h2 id="orgec8cd8f">
+<div id="ox-nikola-outline-container-orgd1788a7" class="ox-nikola-outline-2">
+<h2 id="orgd1788a7">
 <span class="section-number-2">3.</span> Constraints, what are they good for</h2>
 <div class="outline-text-2" id="text-3">
 <p>
@@ -362,8 +362,8 @@ Constraints that let you control the choice of alternatives are wonderful, and r
 </p>
 </div>
 </div>
-<div id="outline-container-org44f8b17" class="outline-2">
-<h2 id="org44f8b17">
+<div id="ox-nikola-outline-container-org2cac57a" class="ox-nikola-outline-2">
+<h2 id="org2cac57a">
 <span class="section-number-2">4.</span> Can we do better?</h2>
 <div class="outline-text-2" id="text-4">
 <p>
@@ -393,10 +393,10 @@ With the tools we have today, it looks possible, but still slightly messy. I man
     <span class="org-keyword">using</span> <span class="org-type">U</span> = <span class="org-constant">std</span>::<span class="org-type">invoke_result_t</span>&lt;<span class="org-type">F</span>,
                                    <span class="org-keyword">decltype</span>(<span class="org-constant">std</span>::forward_like&lt;<span class="org-type">Self</span>&gt;(
                                        <span class="org-constant">std</span>::declval&lt;T&gt;()))&gt;;
-    <span class="org-keyword">static_assert</span>(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_array_v</span>&lt;<span class="org-type">U</span>&gt;);
-    <span class="org-keyword">static_assert</span>(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">in_place_t</span>&gt;);
-    <span class="org-keyword">static_assert</span>(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">nullopt_t</span>&gt;);
-    <span class="org-keyword">static_assert</span>(<span class="org-constant">std</span>::<span class="org-type">is_object_v</span>&lt;<span class="org-type">U</span>&gt; || <span class="org-constant">std</span>::<span class="org-type">is_reference_v</span>&lt;<span class="org-type">U</span>&gt;);
+    static_assert(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_array_v</span>&lt;<span class="org-type">U</span>&gt;);
+    static_assert(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">in_place_t</span>&gt;);
+    static_assert(<span class="org-negation-char">!</span><span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">U</span>, <span class="org-type">nullopt_t</span>&gt;);
+    static_assert(<span class="org-constant">std</span>::<span class="org-type">is_object_v</span>&lt;<span class="org-type">U</span>&gt; || <span class="org-constant">std</span>::<span class="org-type">is_reference_v</span>&lt;<span class="org-type">U</span>&gt;);
     <span class="org-keyword">if</span> (self.has_value()) {
         <span class="org-keyword">return</span> <span class="org-type">optional</span>&lt;<span class="org-type">U</span>&gt;{<span class="org-constant">detail</span>::from_function,
                            <span class="org-constant">std</span>::forward&lt;<span class="org-type">F</span>&gt;(f),
