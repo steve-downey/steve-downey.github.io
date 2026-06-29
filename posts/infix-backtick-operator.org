@@ -301,7 +301,7 @@ Compiler Explorer deployment strengthen the story but do not block it.
 
 If you have a binary operation that has always read worse as =f(x, y)= than it
 would as =x `f` y= — a domain predicate, a metric, a combinator — that is the
-use case, and I would like to hear about it. The design log, the per-compiler
-implementation plans, and the running record of where reality corrected the
-design all live alongside this post; comments, objections, and motivating
-examples are all welcome before this goes in front of the committee.
+use case, and I would like to hear about it. The two compiler forks linked above
+are public if you want to build the branch and try it; comments, objections, and
+motivating examples are all welcome — reach me at [[mailto:sdowney@gmail.com][sdowney@gmail.com]] — before this
+goes in front of the committee.
