@@ -3,13 +3,729 @@
 <feed xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
   <title>What Comes to Mind</title>
   <id>https://sdowney.org/feed.atom</id>
-  <updated>2026-06-27T17:06:47Z</updated>
+  <updated>2026-06-29T12:11:47Z</updated>
   <author>
     <name>Steve Downey</name>
   </author>
   <link rel="self" type="application/atom+xml" href="https://sdowney.org/feed.atom"/>
   <link rel="alternate" type="text/html" href="https://sdowney.org/"/>
   <generator uri="https://getnikola.com/">Nikola</generator>
+  <entry>
+    <title>An Infix Backtick Operator for C++</title>
+    <id>https://sdowney.org/posts/infix-backtick-operator/</id>
+    <updated>2026-06-29T08:00:00-04:00</updated>
+    <published>2026-06-29T08:00:00-04:00</published>
+    <author>
+      <name>Steve Downey</name>
+    </author>
+    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/infix-backtick-operator/"/>
+    <summary type="html">&lt;div&gt;&lt;div class="abstract" id="org7f838bd"&gt;
+&lt;p&gt;
+I am working on a proposal to let any callable be written between two backticks
+as an infix binary operator: &lt;code&gt;x `f` y&lt;/code&gt; means exactly &lt;code&gt;f(x, y)&lt;/code&gt;. It is borrowed
+from Haskell, it desugars to an ordinary call, and I have it working in both
+Clang and GCC. This post is the announcement and the design tour.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;&lt;a href="https://sdowney.org/posts/infix-backtick-operator/"&gt;Read more…&lt;/a&gt; (8 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
+    <content type="html">&lt;div class="abstract" id="org7f838bd"&gt;
+&lt;p&gt;
+I am working on a proposal to let any callable be written between two backticks
+as an infix binary operator: &lt;code&gt;x `f` y&lt;/code&gt; means exactly &lt;code&gt;f(x, y)&lt;/code&gt;. It is borrowed
+from Haskell, it desugars to an ordinary call, and I have it working in both
+Clang and GCC. This post is the announcement and the design tour.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;!-- TEASER_END --&gt;
+&lt;div id="ox-nikola-outline-container-org0904bd6" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org0904bd6"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; The pitch in one line&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+C++ lets you spell a handful of binary operations infix — &lt;code&gt;a + b&lt;/code&gt;, &lt;code&gt;a &amp;lt; b&lt;/code&gt;,
+&lt;code&gt;a | b&lt;/code&gt; — and lets you overload them. Everything else is a call: &lt;code&gt;min(a, b)&lt;/code&gt;,
+&lt;code&gt;dot(u, v)&lt;/code&gt;, &lt;code&gt;gcd(m, n)&lt;/code&gt;, &lt;code&gt;approx_equal(x, y)&lt;/code&gt;. The proposal is to erase that
+distinction at the call site. Put a callable between backticks and it becomes a
+binary operator:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;a `plus` b              &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;plus(a, b)
+&lt;/span&gt;a `&lt;span class="org-constant"&gt;std&lt;/span&gt;::min` b          &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;std::min(a, b)
+&lt;/span&gt;m `at` k                &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;at(m, k)
+&lt;/span&gt;u `dot` v               &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;dot(u, v)
+&lt;/span&gt;x `approx_equal` y      &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;approx_equal(x, y)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The text between the backticks is not a name the language knows about. It is an
+arbitrary call-eligible expression, and the whole thing is &lt;b&gt;defined&lt;/b&gt; to be the
+call you would have written anyway. There is no new overloadable
+&lt;code&gt;operator`&lt;/code&gt; , no operator table to register, no fixity declarations. &lt;code&gt;x `f` y&lt;/code&gt;
+is &lt;code&gt;f(x, y)&lt;/code&gt;, and that is the entire semantic.
+&lt;/p&gt;
+
+&lt;p&gt;
+Haskell programmers will recognise this immediately: &lt;code&gt;`div`&lt;/code&gt;, &lt;code&gt;`mod`&lt;/code&gt;, &lt;code&gt;`elem`&lt;/code&gt;
+are exactly this construction. The backtick is available in C++ because today it
+has no meaning outside string, character, and raw-string literals, all of which
+are lexed before the punctuator stage and are therefore untouched.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgfb8b737" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgfb8b737"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; It desugars to a call, and that is the whole point&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;p&gt;
+The single most important design decision is that the operator lowers to a
+&lt;b&gt;call expression&lt;/b&gt; in the front end, before overload resolution runs. It is not a
+macro, not a syntactic rewrite with its own rules, not a new AST category with
+its own type rules. It builds the same call node the compiler would build for
+&lt;code&gt;f(x, y)&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+That one choice means the feature inherits, for free and correctly:
+&lt;/p&gt;
+
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;overload resolution and ADL,&lt;/li&gt;
+&lt;li&gt;templates and SFINAE,&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;constexpr&lt;/code&gt; evaluation,&lt;/li&gt;
+&lt;li&gt;conversions, value categories, and lifetime,&lt;/li&gt;
+&lt;li&gt;code generation.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+None of it is re-implemented. If &lt;code&gt;f(x, y)&lt;/code&gt; compiles and does a thing, then
+&lt;code&gt;x `f` y&lt;/code&gt; compiles and does the same thing. If &lt;code&gt;f(x, y)&lt;/code&gt; is ambiguous or
+ill-formed, so is the backtick form, with the same diagnostic. The feature has
+essentially no semantics of its own to get wrong, which is exactly what you want
+from sugar.
+&lt;/p&gt;
+
+&lt;p&gt;
+A few consequences fall straight out of "it is just the call":
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;x `T` y                 &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;== T(x, y) : functional-style construction; CTAD applies
+&lt;/span&gt;a `&lt;span class="org-constant"&gt;std&lt;/span&gt;::pair` b         &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;== std::pair(a, b)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+A type name is callable, so a type in the slot constructs. Evaluation order is
+the call's evaluation order: operand order is unspecified, and since C++17 the
+callee — here, the thing between the backticks — is sequenced before both
+operands, even though it is written between them. Nothing new to learn; if you
+know how a call behaves, you know how this behaves.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgd04333f" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgd04333f"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; How it parses&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-3"&gt;
+&lt;p&gt;
+Two questions decide how an infix operator feels: how tightly it binds, and how
+a chain groups.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;b&gt;Precedence.&lt;/b&gt; Backtick is the highest-precedence &lt;b&gt;binary&lt;/b&gt; operator — tighter
+than &lt;code&gt;*&lt;/code&gt;, looser than the unary/prefix operators. Both operands are
+cast-expressions, so prefix operators attach symmetrically:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;-a `f` -b               &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;f(-a, -b)     symmetric, like every other binary op
+&lt;/span&gt;a * b `f` c             &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;a * f(b, c)   binds tighter than *&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+I considered making it bind tighter than unary minus so that &lt;code&gt;-x `f` y&lt;/code&gt; would
+mean &lt;code&gt;-f(x, y)&lt;/code&gt;. That was rejected: it would make backtick the only operator in
+the language where a leading &lt;code&gt;-&lt;/code&gt; floats &lt;b&gt;out&lt;/b&gt; of its operand, so &lt;code&gt;-a `f` -b&lt;/code&gt;
+would mean &lt;code&gt;-f(a, -b)&lt;/code&gt; — asymmetric and hard to teach. Matching every other
+binary operator won.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;b&gt;Associativity.&lt;/b&gt; Left, like reading order:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;a `f` b `g` c           &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;g(f(a, b), c)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+&lt;b&gt;The slot.&lt;/b&gt; The thing between the backticks is parsed as an
+assignment-expression — anything you could write as the callee of a call,
+excluding a top-level comma. Qualified names, member-access expressions, even a
+lambda, are all fine.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org44d358e" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org44d358e"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; The one genuinely tricky part&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-4"&gt;
+&lt;p&gt;
+The open and close delimiter are the same token. A naive parser, having read
+&lt;code&gt;x `f&lt;/code&gt;, would see the closing backtick and think a &lt;b&gt;second&lt;/b&gt; backtick operator
+was starting. C++ already has exactly this problem with &lt;code&gt;&amp;gt;&lt;/code&gt; inside template
+argument lists — &lt;code&gt;vector&amp;lt;vector&amp;lt;int&amp;gt;&amp;gt;&lt;/code&gt; — and solves it with a parser flag that
+says "right now, &lt;code&gt;&amp;gt;&lt;/code&gt; is not an operator." I do the same thing: a
+&lt;code&gt;BacktickIsOperator&lt;/code&gt; flag in Clang (modelled on &lt;code&gt;GreaterThanIsOperator&lt;/code&gt;), a
+&lt;code&gt;backtick_is_operator_p&lt;/code&gt; in GCC (modelled on &lt;code&gt;greater_than_is_operator_p&lt;/code&gt;),
+false while parsing the slot and restored inside nested parentheses.
+&lt;/p&gt;
+
+&lt;p&gt;
+A side effect of the same-token delimiter is that there is no such thing as a
+bare nested backtick. The first interior backtick always closes the slot, so
+what looks like "nesting" is &lt;b&gt;token-identical&lt;/b&gt; to an ordinary left-associative
+chain — and a chain is exactly what it parses as. To actually nest, you
+parenthesise:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;x `f `g` h` y           &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;a chain:  h(f(x, g), y)
+&lt;/span&gt;x `(f `g` h)` y         &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;nested:   (g(f, h))(x, y)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+This is the same answer-changes-on-regrouping situation as &lt;code&gt;a - b - c&lt;/code&gt; versus
+&lt;code&gt;a - (b - c)&lt;/code&gt;, which no compiler diagnoses because subtraction is
+left-associative and the parentheses just override the grouping. Backtick is no
+different. The language defends against honest mistakes, not against someone who
+builds a type that is simultaneously callable, value-convertible, and
+asymmetric and then omits the parentheses on purpose.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org892bfa4" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org892bfa4"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; A second use for the same token: escaping keywords&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-5"&gt;
+&lt;p&gt;
+Because the proposal claims the backtick as a punctuator, it is worth asking
+what &lt;b&gt;else&lt;/b&gt; the token could do, and there is one obvious companion use: escaping
+a keyword so it can name an entity. This is the escape hatch that lets a
+&lt;b&gt;future&lt;/b&gt; keyword avoid breaking existing code that already used that word as an
+identifier — Swift's &lt;code&gt;`class`&lt;/code&gt;, Kotlin's backtick identifiers, F#'s
+double-backtick names, Rust's &lt;code&gt;r#&lt;/code&gt; raw identifiers all do a version of it.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-type"&gt;void&lt;/span&gt; `&lt;span class="org-keyword"&gt;new&lt;/span&gt;`();           &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;declares a function named "new"
+&lt;/span&gt;`&lt;span class="org-keyword"&gt;new&lt;/span&gt;`(a, b);            &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;calls it
+&lt;/span&gt;obj.`&lt;span class="org-keyword"&gt;delete&lt;/span&gt;`();         &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;member named "delete"&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The two uses never collide because they live in mutually exclusive grammatical
+positions. In operand, primary, or declarator position the grammar wants a name,
+so a backtick opens a keyword-escape. In post-operand position the grammar wants
+a binary operator, so a backtick is the infix operator. This is the same
+position-based disambiguation C++ already does for &lt;code&gt;*&lt;/code&gt;, &lt;code&gt;&amp;amp;&lt;/code&gt;, and &lt;code&gt;&amp;lt;&lt;/code&gt;. The escape
+yields an ordinary identifier, so lookup, mangling, linkage, and ABI are
+unchanged — &lt;code&gt;void `new`();&lt;/code&gt; links as a function named &lt;code&gt;new&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+The two uses share one lexical token and one committee, so I am proposing them
+together, in one paper, rather than letting two independent designs drift into
+contradiction.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org87492a3" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org87492a3"&gt;&lt;span class="section-number-2"&gt;6.&lt;/span&gt; What it is good for&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-6"&gt;
+&lt;p&gt;
+The shallow answer is readability for binary operations that read better infix:
+&lt;code&gt;lo `clamp` hi&lt;/code&gt;, &lt;code&gt;a `gcd` b&lt;/code&gt;, &lt;code&gt;p `implies` q&lt;/code&gt;, &lt;code&gt;lhs `approx_equal` rhs&lt;/code&gt;,
+&lt;code&gt;set_a `intersect` set_b&lt;/code&gt;. Named operations stop being visually second-class to
+the dozen built-in symbols.
+&lt;/p&gt;
+
+&lt;p&gt;
+The deeper answer is that the slot is an arbitrary callable and the operator
+chains, and those two facts reach further than they first appear. A one-line
+helper turns backtick into a left-to-right threading operator:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;pipe&lt;/span&gt; =
+    [](&lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;x&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) -&amp;gt; &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-keyword"&gt;auto&lt;/span&gt;)
+    { &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::invoke(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(f)&amp;gt;(f),
+                         &lt;span class="org-constant"&gt;std&lt;/span&gt;::forward&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(x)&amp;gt;(x)); };
+
+x `pipe` f `pipe` g `pipe` h        &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;h(g(f(x))) — data-flow order&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The decisive case is that this drives the &lt;b&gt;existing&lt;/b&gt; range adaptor closures
+unchanged. &lt;code&gt;views::filter(pred)&lt;/code&gt; and &lt;code&gt;views::transform(fn)&lt;/code&gt; are already unary
+callables — &lt;code&gt;c | a&lt;/code&gt; is defined as &lt;code&gt;a(c)&lt;/code&gt; — so &lt;code&gt;pipe&lt;/code&gt; feeds them directly, same
+result and same laziness as the &lt;code&gt;|&lt;/code&gt; pipe, with no bespoke &lt;code&gt;operator|&lt;/code&gt; overloads
+involved:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;r `pipe` &lt;span class="org-constant"&gt;views&lt;/span&gt;::filter(pred) `pipe` &lt;span class="org-constant"&gt;views&lt;/span&gt;::transform(fn)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+And it reopens something the language otherwise reserves to a fixed set of
+built-ins. You cannot get short-circuit evaluation back by overloading &lt;code&gt;&amp;amp;&amp;amp;&lt;/code&gt; or
+&lt;code&gt;||&lt;/code&gt; — an overloaded one evaluates both sides. But a helper whose right operand
+is a &lt;b&gt;callable&lt;/b&gt; controls whether and when that side runs:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;short-circuiting logical implication:  p ==&amp;gt; q  ≡  !p || q
+&lt;/span&gt;&lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;implies&lt;/span&gt; =
+    [](&lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-variable-name"&gt;p&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;q&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; { &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-negation-char"&gt;!&lt;/span&gt;p || q(); };
+
+p `implies` [&amp;amp;]{ &lt;span class="org-keyword"&gt;return&lt;/span&gt; expensive(); }   &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;q() runs only when p holds&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The monadic / fallible chain is just the zero-ceremony special case of this,
+where the stages are already functions:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;parse(s) `mbind` validate `mbind` store;   &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;stops at the first error&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+None of these helpers are part of the proposal — the paper is language-only, and
+each helper is a few lines of ordinary user code. They are here as &lt;b&gt;motivation&lt;/b&gt;,
+to show the operator's reach. Field experience can later decide which, if any,
+earn a place in a library.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org9870641" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org9870641"&gt;&lt;span class="section-number-2"&gt;7.&lt;/span&gt; It is not the pipeline operator, and does not want to be&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-7"&gt;
+&lt;p&gt;
+The obvious neighbour is Barry Revzin's &lt;code&gt;|&amp;gt;&lt;/code&gt; (P2011, the "pizza" operator). Both
+bottom out in a call and their two-argument cases coincide — &lt;code&gt;a `plus` b&lt;/code&gt;,
+&lt;code&gt;a |&amp;gt; plus(b)&lt;/code&gt;, and &lt;code&gt;plus(a, b)&lt;/code&gt; are the same call. But they are different
+shapes and they compose rather than compete:
+&lt;/p&gt;
+
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;Backtick is &lt;b&gt;symmetric binary infix&lt;/b&gt;: the callee sits between two operands,
+the result is an overload-resolved call, and the right-hand side is a single
+value. Beyond two operands it cannot thread.&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;|&amp;gt;&lt;/code&gt; is a &lt;b&gt;non-overloadable syntactic rewrite&lt;/b&gt;: &lt;code&gt;x |&amp;gt; f(a, b, c)&lt;/code&gt; prepends &lt;code&gt;x&lt;/code&gt;
+to an arbitrary-arity call. It binds low, threads through stages, and is the
+right tool for chains.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+So backtick supplies infix detail &lt;b&gt;inside&lt;/b&gt; a pipeline stage, &lt;code&gt;|&amp;gt;&lt;/code&gt; threads the
+value &lt;b&gt;between&lt;/b&gt; stages:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;r |&amp;gt; filter([](&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;e&lt;/span&gt;){ &lt;span class="org-keyword"&gt;return&lt;/span&gt; e `mod` 2 `eq` 0; }) |&amp;gt; sum()
+&lt;span class="org-comment-delimiter"&gt;//                              &lt;/span&gt;&lt;span class="org-comment"&gt;\____ eq(mod(e, 2), 0) ____/&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Backtick deliberately leaves the &lt;code&gt;|&amp;gt;&lt;/code&gt; spelling unspelled so the two can coexist
+in one program.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org1a3d032" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org1a3d032"&gt;&lt;span class="section-number-2"&gt;8.&lt;/span&gt; Implementation status&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-8"&gt;
+&lt;p&gt;
+This is not a paper design with a hand-wave at implementability. The operator
+and the keyword-escape are both prototyped, gated behind an opt-in &lt;code&gt;-fbacktick&lt;/code&gt;
+flag, in &lt;b&gt;two&lt;/b&gt; independent compilers. Both forks are public, on a &lt;code&gt;backtick&lt;/code&gt;
+branch:
+&lt;/p&gt;
+
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;&lt;b&gt;Clang&lt;/b&gt; (&lt;a href="https://github.com/steve-downey/llvm-project/tree/backtick"&gt;steve-downey/llvm-project @ backtick&lt;/a&gt;) — lexer token, precedence
+level, parser hook, Sema desugar to a &lt;code&gt;CallExpr&lt;/code&gt;, driver flag, a transparent
+AST wrapper so &lt;code&gt;-ast-print&lt;/code&gt; round-trips the surface syntax, and clang-format
+support for both uses. Full ADL. Tests live under
+&lt;a href="https://github.com/steve-downey/llvm-project/tree/backtick/clang/test"&gt;&lt;code&gt;clang/test/&lt;/code&gt;&lt;/a&gt; (the &lt;code&gt;backtick-*&lt;/code&gt; files in &lt;code&gt;Parser/&lt;/code&gt;, &lt;code&gt;Lexer/&lt;/code&gt;, and
+&lt;code&gt;SemaCXX/&lt;/code&gt;).&lt;/li&gt;
+&lt;li&gt;&lt;b&gt;GCC&lt;/b&gt; (&lt;a href="https://github.com/steve-downey/gcc/tree/backtick"&gt;steve-downey/gcc @ backtick&lt;/a&gt;) — &lt;code&gt;libcpp&lt;/code&gt; token, parser precedence
+and slot handling, desugar via &lt;code&gt;finish_call_expr&lt;/code&gt;, the same flag, and full ADL
+on the slot. Tests live under
+&lt;a href="https://github.com/steve-downey/gcc/tree/backtick/gcc/testsuite/g%2B%2B.dg/backtick"&gt;&lt;code&gt;gcc/testsuite/g++.dg/backtick/&lt;/code&gt;&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+Two independent implementations that agree is the strongest evidence of
+implementability I can bring to EWG/CWG. Every pipeline pattern above was
+compiled and run against the built &lt;code&gt;-fbacktick&lt;/code&gt; Clang, so the §"what it is good
+for" claims are implementation experience, not assertion.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org420599f" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org420599f"&gt;&lt;span class="section-number-2"&gt;9.&lt;/span&gt; What I am proposing, and what comes next&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-9"&gt;
+&lt;p&gt;
+A pure core-language feature, targeting C++29: the infix backtick operator plus
+the keyword-escape, in one paper, with no standard-library additions. The
+desugar-to-a-call MVP is the whole language change; the AST wrapper and a
+Compiler Explorer deployment strengthen the story but do not block it.
+&lt;/p&gt;
+
+&lt;p&gt;
+If you have a binary operation that has always read worse as &lt;code&gt;f(x, y)&lt;/code&gt; than it
+would as &lt;code&gt;x `f` y&lt;/code&gt; — a domain predicate, a metric, a combinator — that is the
+use case, and I would like to hear about it. The design log, the per-compiler
+implementation plans, and the running record of where reality corrected the
+design all live alongside this post; comments, objections, and motivating
+examples are all welcome before this goes in front of the committee.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;</content>
+  </entry>
+  <entry>
+    <title>Refreshing a Stale Git Subtree</title>
+    <id>https://sdowney.org/posts/migrating-wg21-subtree/</id>
+    <updated>2026-06-28T23:37:51-04:00</updated>
+    <published>2026-06-28T23:37:51-04:00</published>
+    <author>
+      <name>Steve Downey</name>
+    </author>
+    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/migrating-wg21-subtree/"/>
+    <summary type="html">&lt;div&gt;&lt;div class="abstract" id="orgcb4dfef"&gt;
+&lt;p&gt;
+I write my WG21 papers with &lt;a href="https://github.com/mpark/wg21"&gt;MPark/WG21&lt;/a&gt;, a Pandoc-based framework I vendor into the paper repo as a git subtree. The framework had a major overhaul–the build system split apart, and Pandoc jumped from 2.18 to 3.9–and my copy was 98 commits behind. Worse, the subtree had drifted in two directions at once: real local patches for a TLS-intercepting corporate network, and a pile of pointless autoformatter churn from my own pre-commit hooks. This is how I dragged it back to a verbatim copy of upstream, moved to the new &lt;code&gt;flat.mk&lt;/code&gt; include, and pushed every local change back &lt;i&gt;out&lt;/i&gt; of the subtree so the next update is a one-liner.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;&lt;a href="https://sdowney.org/posts/migrating-wg21-subtree/"&gt;Read more…&lt;/a&gt; (7 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
+    <content type="html">&lt;div class="abstract" id="orgcb4dfef"&gt;
+&lt;p&gt;
+I write my WG21 papers with &lt;a href="https://github.com/mpark/wg21"&gt;MPark/WG21&lt;/a&gt;, a Pandoc-based framework I vendor into the paper repo as a git subtree. The framework had a major overhaul–the build system split apart, and Pandoc jumped from 2.18 to 3.9–and my copy was 98 commits behind. Worse, the subtree had drifted in two directions at once: real local patches for a TLS-intercepting corporate network, and a pile of pointless autoformatter churn from my own pre-commit hooks. This is how I dragged it back to a verbatim copy of upstream, moved to the new &lt;code&gt;flat.mk&lt;/code&gt; include, and pushed every local change back &lt;i&gt;out&lt;/i&gt; of the subtree so the next update is a one-liner.
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;!-- TEASER_END --&gt;
+&lt;div id="ox-nikola-outline-container-org37ee909" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org37ee909"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; What the overhaul changed&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+A few things upstream matter to anyone who integrates MPark/WG21.
+&lt;/p&gt;
+
+&lt;p&gt;
+The Make machinery was split. The old monolithic &lt;code&gt;Makefile&lt;/code&gt;–the one you used via &lt;code&gt;include wg21/Makefile&lt;/code&gt;–became three fragments: &lt;code&gt;wg21.mk&lt;/code&gt; is the engine you never include directly, &lt;code&gt;flat.mk&lt;/code&gt; is for all-papers-in-one-directory, and &lt;code&gt;paper.mk&lt;/code&gt; is for one-directory-per-paper. The old &lt;code&gt;include wg21/Makefile&lt;/code&gt; still works through a backward-compat shim, but it nags you with a deprecation warning on every build and points you at &lt;code&gt;flat.mk&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+Pandoc went from 2.18 to 3.9.0.2. That brings MathJax to MathML, stricter raw-HTML handling, and changed citeproc behavior. Rendering can move under you, so this is the part to actually look at rather than assume.
+&lt;/p&gt;
+
+&lt;p&gt;
+And a few behaviors shifted. Bare &lt;code&gt;make&lt;/code&gt; now builds HTML, LaTeX, &lt;i&gt;and&lt;/i&gt; PDF; it used to build only PDF. &lt;code&gt;make clean&lt;/code&gt; now removes only the output directory, and wiping the downloaded toolchain is &lt;code&gt;make distclean&lt;/code&gt;. The generated stable-reference file was renamed &lt;code&gt;srefs.md&lt;/code&gt; to &lt;code&gt;srefs.defs&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org4cf8135" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org4cf8135"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Where I started, and why it was a mess&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;p&gt;
+The layout was an ordinary flat one.
+&lt;/p&gt;
+
+&lt;pre class="example" id="org8a8a97d"&gt;
+transcode/
+`-- papers/
+    |-- Makefile           # one line: include wg21/Makefile
+    |-- transcode-view.md  # the actual paper
+    |-- TEST.md
+    `-- wg21/              # the framework, as a git subtree
+&lt;/pre&gt;
+
+&lt;p&gt;
+The trouble was all hiding inside &lt;code&gt;papers/wg21/&lt;/code&gt;. A subtree vendors the framework's files directly into your tree, which is the whole point–and also the whole problem. Anything that edits files in your repo edits the framework too, and you won't necessarily notice.
+&lt;/p&gt;
+
+&lt;p&gt;
+So two things had happened. My &lt;code&gt;pre-commit&lt;/code&gt; config didn't exclude the subtree, so &lt;code&gt;ruff&lt;/code&gt; and friends had quietly reformatted &lt;code&gt;wg21.py&lt;/code&gt; (489 lines of pure churn), &lt;code&gt;refs.py&lt;/code&gt;, and others. None of it changed behavior. All of it was a future merge conflict. On top of that I had genuine local patches for a corporate MITM-TLS network: a CA-bundle export, &lt;code&gt;verify=False&lt;/code&gt; in &lt;code&gt;refs.py&lt;/code&gt; where it fetches &lt;code&gt;wg21.link&lt;/code&gt;, a switch from &lt;code&gt;pip&lt;/code&gt; to &lt;code&gt;uv&lt;/code&gt;, and a &lt;code&gt;truststore&lt;/code&gt; dependency.
+&lt;/p&gt;
+
+&lt;p&gt;
+One pile I wanted to throw away. The other I needed to keep. Neither belonged in the subtree, which is the lesson I'll keep repeating: the vendored copy should be a verbatim mirror of upstream and nothing else.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgf525e5f" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgf525e5f"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Branch, and a baseline to diff against&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-3"&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;&lt;code&gt;git switch -c chore/update-wg21-subtree
+
+&lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;Build the current (Pandoc 2.18) output, to diff against later.
+&lt;/span&gt;&lt;span class="org-builtin"&gt;cd&lt;/span&gt; papers &amp;amp;&amp;amp; make transcode-view.html
+cp generated/transcode-view.html /tmp/baseline.html
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Crossing a Pandoc major version, I want to &lt;i&gt;see&lt;/i&gt; what moved, not trust that nothing did. The baseline costs a couple of minutes and pays for itself.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org3ca724a" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org3ca724a"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Refreshing the subtree&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-4"&gt;
+&lt;p&gt;
+&lt;code&gt;git subtree pull&lt;/code&gt; refuses to run with a dirty tree, so stash anything unrelated first, then pull from upstream master, squashed, the same way the subtree was originally adopted.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;&lt;code&gt;git stash push -m park-unrelated -- some/unrelated/file
+git subtree pull --prefix=papers/wg21 &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+    https://github.com/mpark/wg21.git master --squash &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+    -m &lt;span class="org-string"&gt;"Update wg21 subtree to mpark/master (Pandoc 3.9, Make overhaul)"&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Because my subtree had diverged, this conflicted, exactly as it should. Six files collided on content, and two were modify/delete conflicts where upstream had deleted files I'd touched. My goal was simple, so the resolution was simple: the subtree should end up identical to upstream master. Take theirs, everywhere.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;&lt;code&gt;&lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;Take upstream ("theirs") for the content conflicts, then stage them.
+&lt;/span&gt;git checkout --theirs -- papers/wg21/Makefile &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+    papers/wg21/data/filters/citetitle.py &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+    papers/wg21/data/filters/wg21.py &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+    papers/wg21/data/templates/wg21.latex.patch &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+    papers/wg21/deps/install-pandoc.sh &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+    papers/wg21/deps/requirements.txt
+git add papers/wg21/...   &lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;the files above
+&lt;/span&gt;
+&lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;Upstream deleted these; accept the deletion.
+&lt;/span&gt;git rm -f papers/wg21/generated/TEST.html papers/wg21/tools/TEST-side-by-side.py
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org4c344eb" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org4c344eb"&gt;&lt;span class="section-number-3"&gt;4.1.&lt;/span&gt; The merge conflict you don't get&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-4-1"&gt;
+&lt;p&gt;
+Here is the part that a casual "resolve and commit" walks straight past. A three-way merge only raises a conflict when &lt;i&gt;both&lt;/i&gt; sides changed the same file. For a file I had churned but upstream hadn't touched since the squash base, Git auto-merges by silently keeping my version. No conflict. No prompt. The reformatted file just survives.
+&lt;/p&gt;
+
+&lt;p&gt;
+The conflict it doesn't raise is the one that bites.
+&lt;/p&gt;
+
+&lt;p&gt;
+So don't trust the conflict list. Diff the whole subtree against upstream and make sure it's byte-for-byte.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;&lt;code&gt;&lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;"mode sha path" for the staged subtree, prefix stripped:
+&lt;/span&gt;git ls-files -s papers/wg21 &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+  | awk &lt;span class="org-string"&gt;'{p=$4; sub(/^papers\/wg21\//,"",p); print $1, $2, p}'&lt;/span&gt; | sort &amp;gt; /tmp/staged.txt
+
+&lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;The same listing from a checkout of upstream master:
+&lt;/span&gt;git -C /path/to/mpark-wg21-checkout ls-tree -r master &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+  | awk &lt;span class="org-string"&gt;'{print $1, $3, $4}'&lt;/span&gt; | sort &amp;gt; /tmp/upstream.txt
+
+diff /tmp/staged.txt /tmp/upstream.txt &amp;amp;&amp;amp; &lt;span class="org-builtin"&gt;echo&lt;/span&gt; &lt;span class="org-string"&gt;"IDENTICAL TO UPSTREAM"&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+This caught two files--&lt;code&gt;refs.py&lt;/code&gt; and &lt;code&gt;toc-depth.py&lt;/code&gt;–still carrying their reformatted selves. I overwrote them with the upstream copies, re-ran the diff until it was empty, and only then committed the merge.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;&lt;code&gt;cp /path/to/mpark-wg21-checkout/data/refs.py      papers/wg21/data/refs.py
+cp /path/to/mpark-wg21-checkout/data/toc-depth.py papers/wg21/data/toc-depth.py
+git add papers/wg21/data/refs.py papers/wg21/data/toc-depth.py
+&lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;diff is empty -&amp;gt; commit the in-progress subtree merge
+&lt;/span&gt;git commit --no-verify
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The squashed merge keeps the subtree metadata intact, so the next refresh is just another &lt;code&gt;git subtree pull --squash&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org8d04736" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org8d04736"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; One line to &lt;code&gt;flat.mk&lt;/code&gt;&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-5"&gt;
+&lt;p&gt;
+The migration proper is a single line in &lt;i&gt;my&lt;/i&gt; Makefile, not the subtree's.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-makefile"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;include&lt;/span&gt; &lt;span class="org-variable-name"&gt;wg21/flat.mk&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+While I was in there I folded the environment handling into the same file, because &lt;code&gt;papers/Makefile&lt;/code&gt; is mine to edit and the subtree is not.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgf8588df" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgf8588df"&gt;&lt;span class="section-number-2"&gt;6.&lt;/span&gt; Keeping the subtree pristine&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-6"&gt;
+&lt;p&gt;
+This is the whole philosophy, so I'll say it plainly: never patch a file inside the subtree. Every line you change there is a line you re-fight on every pull. Both kinds of drift get pushed back out.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org5f3843d" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org5f3843d"&gt;&lt;span class="section-number-3"&gt;6.1.&lt;/span&gt; Environment patches go in my Makefile&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-6-1"&gt;
+&lt;p&gt;
+The framework fetches &lt;code&gt;wg21.link&lt;/code&gt; with Python &lt;code&gt;requests&lt;/code&gt; and builds a venv with &lt;code&gt;pip&lt;/code&gt;. On a TLS-intercepting network both have to trust the intercepting root CA. Instead of editing &lt;code&gt;refs.py&lt;/code&gt; to pass &lt;code&gt;verify=False&lt;/code&gt;, or swapping &lt;code&gt;uv&lt;/code&gt; into the install script, I point everything at the system CA bundle from &lt;code&gt;papers/Makefile&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-makefile"&gt;&lt;code&gt;&lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;papers/Makefile
+&lt;/span&gt;&lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;Point Python / requests / pip at the system CA bundle so the wg21.link fetch
+&lt;/span&gt;&lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;and the venv install validate certs, without touching the subtree.
+&lt;/span&gt;export &lt;span class="org-variable-name"&gt;SSL_CERT_FILE&lt;/span&gt;      := /etc/ssl/certs/ca-certificates.crt
+export &lt;span class="org-variable-name"&gt;REQUESTS_CA_BUNDLE&lt;/span&gt; := /etc/ssl/certs/ca-certificates.crt
+export &lt;span class="org-variable-name"&gt;PIP_CERT&lt;/span&gt;           := /etc/ssl/certs/ca-certificates.crt
+
+&lt;span class="org-keyword"&gt;include&lt;/span&gt; &lt;span class="org-variable-name"&gt;wg21/flat.mk&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The reward is that the stock upstream &lt;code&gt;refs.py&lt;/code&gt; now fetches &lt;code&gt;wg21.link&lt;/code&gt; with verification passing–no &lt;code&gt;verify=False&lt;/code&gt;, no &lt;code&gt;InsecureRequestWarning&lt;/code&gt;–and the venv builds with plain &lt;code&gt;pip&lt;/code&gt;. The &lt;code&gt;uv&lt;/code&gt; and &lt;code&gt;truststore&lt;/code&gt; patches turned out to be unnecessary once the certificates simply validated. &lt;code&gt;uv&lt;/code&gt; is genuinely nice for speed; I'll propose a clean &lt;code&gt;PIP&lt;/code&gt; override upstream rather than fork the install script to get it back.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgf87084d" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgf87084d"&gt;&lt;span class="section-number-3"&gt;6.2.&lt;/span&gt; Churn gets fenced out of pre-commit&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-6-2"&gt;
+&lt;p&gt;
+To stop my hooks reformatting the subtree forever, I excluded it.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-yaml"&gt;&lt;code&gt;# .pre-commit-config.yaml
+# papers/wg21/ is mpark/wg21 vendored as a git subtree; keep it pristine so
+# `git subtree pull` stays conflict-free.
+exclude: 'template/|copier/|infra/|port/|papers/wg21/'
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orga501007" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orga501007"&gt;&lt;span class="section-number-2"&gt;7.&lt;/span&gt; Verifying, because Pandoc moved a major version&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-7"&gt;
+&lt;p&gt;
+I built every format and compared against the baseline.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;&lt;code&gt;&lt;span class="org-builtin"&gt;cd&lt;/span&gt; papers
+make transcode-view.html
+make transcode-view.latex transcode-view.pdf
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The things I actually looked at: comparison tables (&lt;code&gt;::: cmptable&lt;/code&gt;) still render; math is MathML rather than MathJax; the &lt;code&gt;&amp;lt;!-- markdownlint --&amp;gt;&lt;/code&gt; line stays an invisible HTML comment instead of leaking as visible text; the title block and citations look right.
+&lt;/p&gt;
+
+&lt;p&gt;
+The build also surfaced three problems that were already there in the 2.18 baseline, so not the upgrade's fault, but worth knowing. Seven citations defined in my local &lt;code&gt;.bib&lt;/code&gt; files don't resolve, because the framework's bibliography configuration wins over the document's own &lt;code&gt;bibliography:&lt;/code&gt; key. A duplicate &lt;code&gt;email:&lt;/code&gt; key in the paper's YAML means Pandoc 3.x keeps only the last one. And emoji and superscript glyphs aren't in the default LaTeX font, so they quietly vanish from the PDF. Bugs for another day, but I'd rather know about them.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgc4e9019" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgc4e9019"&gt;&lt;span class="section-number-2"&gt;8.&lt;/span&gt; Living with it&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-8"&gt;
+&lt;p&gt;
+The flat layout is pleasant once it's in place. From &lt;code&gt;papers/&lt;/code&gt;:
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;&lt;code&gt;make transcode-view.html    &lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;-&amp;gt; generated/transcode-view.html
+&lt;/span&gt;make transcode-view.pdf     &lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;-&amp;gt; generated/transcode-view.pdf
+&lt;/span&gt;make transcode-view.latex   &lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;the intermediate LaTeX
+&lt;/span&gt;
+make                        &lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;ALL papers, ALL formats (html + latex + pdf)
+&lt;/span&gt;make html                   &lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;all papers, HTML only
+&lt;/span&gt;make clean                  &lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;remove generated/ (NOT the toolchain)
+&lt;/span&gt;make distclean              &lt;span class="org-comment-delimiter"&gt;# &lt;/span&gt;&lt;span class="org-comment"&gt;also remove the downloaded Pandoc + venv&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+Two things to remember. Bare &lt;code&gt;make&lt;/code&gt; now builds three formats, not one, so name the target if CI only wants HTML. And the downloaded Pandoc and the venv live under &lt;code&gt;papers/wg21/deps/&lt;/code&gt; and are git-ignored; the first build re-fetches them, and &lt;code&gt;make distclean&lt;/code&gt; gets the space back.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org722d4b8" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org722d4b8"&gt;&lt;span class="section-number-2"&gt;9.&lt;/span&gt; Refreshing, next time&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-9"&gt;
+&lt;p&gt;
+Because the subtree is pristine and fenced off from the hooks, the next update is the one-liner the tool always promised.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-shell"&gt;&lt;code&gt;git subtree pull --prefix=papers/wg21 &lt;span class="org-sh-escaped-newline"&gt;\&lt;/span&gt;
+    https://github.com/mpark/wg21.git master --squash
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+If it ever conflicts again, the recipe is the same: resolve toward upstream, then run the &lt;code&gt;ls-files&lt;/code&gt; versus &lt;code&gt;ls-tree&lt;/code&gt; diff to prove the subtree is byte-identical before committing.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org5255539" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org5255539"&gt;&lt;span class="section-number-2"&gt;10.&lt;/span&gt; What I'd tell myself&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-10"&gt;
+&lt;p&gt;
+Subtree versus submodule is a real choice, not a coin flip. A subtree vendors files into your tree, which means your repo-wide tooling will happily edit the vendored code. Decide that on purpose and fence it off.
+&lt;/p&gt;
+
+&lt;p&gt;
+Patches belong downstream. Anything you can say in your own Makefile or config–an environment variable, an include, an exclude–should live there, not inside the vendored copy.
+&lt;/p&gt;
+
+&lt;p&gt;
+And the merge that silently keeps your side is the dangerous one, not the noisy conflict you can see. After any subtree refresh, diff against upstream. Trust the diff, not the conflict list.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;</content>
+  </entry>
   <entry>
     <title>Moving Forward With Legacy Encodings</title>
     <id>https://sdowney.org/posts/moving-forward-with-legacy-encodings/</id>
@@ -1679,2081 +2395,6 @@ It does mean I don't have access to latex blocks like
 &lt;p&gt;
 Maybe I won't miss it.
 &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;</content>
-  </entry>
-  <entry>
-    <title>Concept Maps using C++23 Library Tech</title>
-    <id>https://sdowney.org/posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/</id>
-    <updated>2024-05-19T11:51:00-04:00</updated>
-    <published>2024-05-19T11:51:00-04:00</published>
-    <author>
-      <name>Steve Downey</name>
-    </author>
-    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/"/>
-    <summary type="html">&lt;div id="outline-container-orga2bfebe" class="outline-2"&gt;
-&lt;h3 id="orga2bfebe"&gt;Abstract&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orga2bfebe"&gt;
-&lt;p&gt; C++0x Concepts had a feature &lt;code&gt;Concept Maps&lt;/code&gt; that allowed a set of functions, types, and template definitions to be associated with a concept and the map to be specialized for types that meet the concept. &lt;/p&gt;
-
-&lt;p&gt; This allowed open extension of a concept. &lt;/p&gt;
-
-&lt;p&gt;&lt;a href="https://sdowney.org/posts/index.php/2024/05/19/concept-maps-using-c23-library-tech/"&gt;Read more…&lt;/a&gt; (6 min remaining to read)&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;</summary>
-    <content type="html">&lt;div id="outline-container-orga2bfebe" class="outline-2"&gt;
-&lt;h3 id="orga2bfebe"&gt;Abstract&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orga2bfebe"&gt;
-&lt;p&gt; C++0x Concepts had a feature &lt;code&gt;Concept Maps&lt;/code&gt; that allowed a set of functions, types, and template definitions to be associated with a concept and the map to be specialized for types that meet the concept. &lt;/p&gt;
-
-&lt;p&gt; This allowed open extension of a concept. &lt;/p&gt;
-
-&lt;!-- TEASER_END --&gt;
-
-&lt;p&gt; A definition could be provided that allows an algorithm to operate in terms of the API a concept presents and the map would define how those operations are implemented for a particular type. &lt;/p&gt;
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;This is similar to how Haskell's &lt;code&gt;typeclass&lt;/code&gt; works.&lt;/li&gt;
-&lt;/ul&gt;
-
-
-&lt;div class="notes" id="orgfd6f34c"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org55a2fab" class="outline-3"&gt;
-&lt;h4 id="org55a2fab"&gt;Lost with &lt;code&gt;Concepts-Lite&lt;/code&gt;&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org55a2fab"&gt;
-&lt;div class="notes" id="org7de7f73"&gt;
-&lt;p&gt; The feature was very general, and lost as part of the &lt;code&gt;Concepts-Lite&lt;/code&gt; proposal that was eventually adopted. &lt;/p&gt;
-
-&lt;p&gt; This loss of a level of indirection means that the APIs for a concept must be implemented by those names for a type, even when those names are not particularly good choices in the natural domain of a type rather than in the domain as a concept. &lt;/p&gt;
-
-&lt;p&gt; The proliferation of &lt;code&gt;transform&lt;/code&gt; functions for functorial &lt;code&gt;map&lt;/code&gt; is such a problem. &lt;/p&gt;
-
-&lt;p&gt; It is also a problem when adapting types that are closed for extension or do not permit member functions. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org1170181" class="outline-2"&gt;
-&lt;h3 id="org1170181"&gt;Why?&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org1170181"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;&lt;p&gt; Don't know if you should &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;Need to know if you could first&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class="notes" id="org00d3ad4"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgec4f485" class="outline-3"&gt;
-&lt;h4 id="orgec4f485"&gt;Alternatives&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgec4f485"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;&lt;p&gt; Virtual Interface &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt; Adapters &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;Collection of CPOs&lt;/li&gt;
-&lt;/ul&gt;
-&lt;div class="notes" id="org1416f27"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org63dbb2f" class="outline-3"&gt;
-&lt;h4 id="org63dbb2f"&gt;Hard to Support&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org63dbb2f"&gt;
-&lt;div class="notes" id="org0c07886"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orga340186" class="outline-2"&gt;
-&lt;h3 id="orga340186"&gt;Example from C++0x Concepts&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orga340186"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org28ca89a" class="outline-3"&gt;
-&lt;h4 id="org28ca89a"&gt;Student Record&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org28ca89a"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;student&lt;/span&gt; &lt;span class="org-type"&gt;record&lt;/span&gt; {
-&lt;span class="org-keyword"&gt;public&lt;/span&gt;:
-  &lt;span class="org-type"&gt;string&lt;/span&gt; &lt;span class="org-variable-name"&gt;id&lt;/span&gt;;
-  &lt;span class="org-type"&gt;string&lt;/span&gt; &lt;span class="org-variable-name"&gt;name&lt;/span&gt;;
-  &lt;span class="org-type"&gt;string&lt;/span&gt; &lt;span class="org-variable-name"&gt;address&lt;/span&gt;;
-  &lt;span class="org-type"&gt;bool&lt;/span&gt;   &lt;span class="org-function-name"&gt;id_equal&lt;/span&gt;(&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;student&lt;/span&gt; &lt;span class="org-type"&gt;record&lt;/span&gt;&amp;amp;);
-  &lt;span class="org-type"&gt;bool&lt;/span&gt;   &lt;span class="org-function-name"&gt;name_equal&lt;/span&gt;(&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;student&lt;/span&gt; &lt;span class="org-type"&gt;record&lt;/span&gt;&amp;amp;);
-  &lt;span class="org-type"&gt;bool&lt;/span&gt;   &lt;span class="org-function-name"&gt;address_equal&lt;/span&gt;(&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;student&lt;/span&gt; &lt;span class="org-type"&gt;record&lt;/span&gt;&amp;amp;);
-};
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="notes" id="org3e8c3d9"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgaaad96e" class="outline-3"&gt;
-&lt;h4 id="orgaaad96e"&gt;Equality Comparable&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgaaad96e"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-type"&gt;concept_map&lt;/span&gt; &lt;span class="org-type"&gt;EqualityComparable&lt;/span&gt;&lt;span class="org-variable-name"&gt;&amp;lt;student record&amp;gt;&lt;/span&gt;{
-    &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-keyword"&gt;operator&lt;/span&gt;&lt;span class="org-variable-name"&gt;==&lt;/span&gt;(&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;student&lt;/span&gt; &lt;span class="org-type"&gt;record&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;a&lt;/span&gt;,
-                    &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;student&lt;/span&gt; &lt;span class="org-type"&gt;record&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;b&lt;/span&gt;){
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; a.id_equal(b);
-}
-};
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="notes" id="orgc2f233f"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd6557c8" class="outline-3"&gt;
-&lt;h4 id="orgd6557c8"&gt;Allow associated types&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgd6557c8"&gt;
-&lt;p&gt; Very useful for pointers &lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-type"&gt;concept_map&lt;/span&gt; &lt;span class="org-type"&gt;BinaryFunction&lt;/span&gt;&lt;span class="org-variable-name"&gt;&amp;lt;int (*)(int, int), int, int&amp;gt;&lt;/span&gt;
-{
-    &lt;span class="org-keyword"&gt;typedef&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-type"&gt;result_type&lt;/span&gt;;
-};
-&lt;/pre&gt;
-&lt;/div&gt;
-
-
-&lt;div class="notes" id="orgac26af1"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org5b19f13" class="outline-3"&gt;
-&lt;h4 id="org5b19f13"&gt;Why Didn't We Get Them?&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org5b19f13"&gt;
-&lt;p&gt; Let's not go there right now. &lt;/p&gt;
-
-&lt;div class="notes" id="orgcd8e7be"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org5455e39" class="outline-2"&gt;
-&lt;h3 id="org5455e39"&gt;State of the Art&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org5455e39"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org2126bdf" class="outline-3"&gt;
-&lt;h4 id="org2126bdf"&gt;Rust Traits&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org2126bdf"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-rust" id="nil"&gt;&lt;span class="org-keyword"&gt;trait&lt;/span&gt; &lt;span class="org-type"&gt;PartialEq&lt;/span&gt; {
-    &lt;span class="org-keyword"&gt;fn&lt;/span&gt; &lt;span class="org-function-name"&gt;eq&lt;/span&gt;(&lt;span class="org-rust-ampersand"&gt;&amp;amp;&lt;/span&gt;&lt;span class="org-keyword"&gt;self&lt;/span&gt;, &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;: &lt;span class="org-rust-ampersand"&gt;&amp;amp;&lt;/span&gt;&lt;span class="org-type"&gt;Self&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;bool&lt;/span&gt;;
-
-    &lt;span class="org-keyword"&gt;fn&lt;/span&gt; &lt;span class="org-function-name"&gt;ne&lt;/span&gt;(&lt;span class="org-rust-ampersand"&gt;&amp;amp;&lt;/span&gt;&lt;span class="org-keyword"&gt;self&lt;/span&gt;, &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;: &lt;span class="org-rust-ampersand"&gt;&amp;amp;&lt;/span&gt;&lt;span class="org-type"&gt;Self&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; {
-        !&lt;span class="org-keyword"&gt;self&lt;/span&gt;.eq(rhs)
-    }
-}
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="notes" id="org84edbf7"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org0372946" class="outline-3"&gt;
-&lt;h4 id="org0372946"&gt;C++ CPOs&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org0372946"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org38d8aac" class="outline-4"&gt;
-&lt;h5 id="org38d8aac"&gt;Some Concepts and Types&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org38d8aac"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;namespace&lt;/span&gt; &lt;span class="org-constant"&gt;N&lt;/span&gt;::&lt;span class="org-constant"&gt;hidden&lt;/span&gt; {
-&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;concept&lt;/span&gt; &lt;span class="org-type"&gt;has_eq&lt;/span&gt; = &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;v&lt;/span&gt;) {
-  { eq(v, v) } -&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;same_as&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;bool&lt;/span&gt;&amp;gt;;
-};
-
-&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;eq_fn&lt;/span&gt; {
-  &lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-type"&gt;has_eq&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-  &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-keyword"&gt;operator&lt;/span&gt;&lt;span class="org-function-name"&gt;()&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;x&lt;/span&gt;,
-                            &lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;y&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; {
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; eq(x, y);
-  }
-};
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-type"&gt;has_eq&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-function-name"&gt;ne&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;x&lt;/span&gt;, &lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;y&lt;/span&gt;) {
-  &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-keyword"&gt;not&lt;/span&gt; eq(x, y);
-}
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;concept&lt;/span&gt; &lt;span class="org-type"&gt;has_ne&lt;/span&gt; = &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;v&lt;/span&gt;) {
-  { ne(v, v) } -&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;same_as&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;bool&lt;/span&gt;&amp;gt;;
-};
-
-&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;ne_fn&lt;/span&gt; {
-  &lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-type"&gt;has_ne&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-  &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-keyword"&gt;operator&lt;/span&gt;&lt;span class="org-function-name"&gt;()&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;x&lt;/span&gt;,
-                            &lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;y&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; {
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; ne(x, y);
-  }
-};
-} &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;namespace N::hidden&lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt; See &lt;u&gt;Why tag_invoke is not the solution I want&lt;/u&gt; by Barry Revzin &lt;a href="https://brevzin.github.io/c++/2020/12/01/tag-invoke/"&gt;https://brevzin.github.io/c++/2020/12/01/tag-invoke/&lt;/a&gt; &lt;/p&gt;
-
-&lt;div class="notes" id="org4ec3d03"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd9440f0" class="outline-4"&gt;
-&lt;h5 id="orgd9440f0"&gt;C++ partial_equality&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgd9440f0"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;namespace&lt;/span&gt; &lt;span class="org-constant"&gt;N&lt;/span&gt; {
-&lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;namespace&lt;/span&gt; &lt;span class="org-constant"&gt;function_objects&lt;/span&gt; {
-&lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-constant"&gt;hidden&lt;/span&gt;::&lt;span class="org-type"&gt;eq_fn&lt;/span&gt; &lt;span class="org-variable-name"&gt;eq&lt;/span&gt;{};
-&lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-constant"&gt;hidden&lt;/span&gt;::&lt;span class="org-type"&gt;ne_fn&lt;/span&gt; &lt;span class="org-variable-name"&gt;ne&lt;/span&gt;{};
-} &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;namespace function_objects&lt;/span&gt;
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;concept&lt;/span&gt; partial_equality
-  &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;remove_reference_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;t&lt;/span&gt;)
-{
-  eq(t, t);
-  ne(t, t);
-};
-} &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;namespace N&lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;p&gt; See &lt;u&gt;Why tag_invoke is not the solution I want&lt;/u&gt; by Barry Revzin &lt;a href="https://brevzin.github.io/c++/2020/12/01/tag-invoke/"&gt;https://brevzin.github.io/c++/2020/12/01/tag-invoke/&lt;/a&gt; &lt;/p&gt;
-
-&lt;div class="notes" id="orgdecd5c0"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org5396b8f" class="outline-2"&gt;
-&lt;h3 id="org5396b8f"&gt;Requirements for Solution&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org5396b8f"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;&lt;p&gt; Tied to the type system &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt; Automatable &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;"zero" overhead
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;&lt;p&gt; no virtual calls &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;no type erasure&lt;/li&gt;
-&lt;/ul&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class="notes" id="orgc4034ba"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgad4da33" class="outline-2"&gt;
-&lt;h3 id="orgad4da33"&gt;What does typeclass do?&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgad4da33"&gt;
-&lt;p&gt; Adds a record to the function that defines the operations for the type. &lt;/p&gt;
-
-&lt;p&gt; Can we do that? &lt;/p&gt;
-
-&lt;div class="notes" id="org585f6ee"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org3f6e803" class="outline-2"&gt;
-&lt;h3 id="org3f6e803"&gt;Type-based lookup&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org3f6e803"&gt;
-&lt;p&gt; Templates! &lt;/p&gt;
-
-&lt;div class="notes" id="org887d83a"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgcf837b9" class="outline-2"&gt;
-&lt;h3 id="orgcf837b9"&gt;Additional Requirements&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgcf837b9"&gt;
-&lt;p&gt; Avoid ADL &lt;/p&gt;
-
-&lt;p&gt; Object Lookup rather than Overload Lookup &lt;/p&gt;
-
-&lt;div class="notes" id="orgc8f05ae"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org43e91b6" class="outline-2"&gt;
-&lt;h3 id="org43e91b6"&gt;Variable templates&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org43e91b6"&gt;
-&lt;p&gt; Variable templates have become more powerful &lt;/p&gt;
-
-&lt;p&gt; We can have entirely distinct specializations &lt;/p&gt;
-
-&lt;div class="notes" id="org9184e90"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org9b64424" class="outline-3"&gt;
-&lt;h4 id="org9b64424"&gt;A Step Towards Implementation&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org9b64424"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;concept&lt;/span&gt; &lt;span class="org-type"&gt;partial_equality&lt;/span&gt; = &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;remove_reference_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;t&lt;/span&gt;) {
-  {
-    &lt;span class="org-type"&gt;partial_eq&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;.eq(t, t)
-  } -&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;same_as&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;bool&lt;/span&gt;&amp;gt;;
-  {
-    &lt;span class="org-type"&gt;partial_eq&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;.ne(t, t)
-  } -&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;same_as&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;bool&lt;/span&gt;&amp;gt;;
-};
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="notes" id="org679feb5"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgf24cbc4" class="outline-3"&gt;
-&lt;h4 id="orgf24cbc4"&gt;&lt;code&gt;partial_eq&amp;lt;T&amp;gt;&lt;/code&gt;&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgf24cbc4"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orga7f035c" class="outline-4"&gt;
-&lt;h5 id="orga7f035c"&gt;An inline variable object&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orga7f035c"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;partial_eq&lt;/span&gt; = &lt;span class="org-constant"&gt;hidden&lt;/span&gt;::partial_eq_default;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="notes" id="org7617290"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd69f366" class="outline-4"&gt;
-&lt;h5 id="orgd69f366"&gt;A default implementation&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgd69f366"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;partial_eq_default_t&lt;/span&gt; {
-  &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt;
-  &lt;span class="org-function-name"&gt;eq&lt;/span&gt;(&lt;span class="org-type"&gt;has_eq&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;,
-     &lt;span class="org-type"&gt;has_eq&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;lhs&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; {
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; (rhs == lhs);
-  }
-  &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt;
-  &lt;span class="org-function-name"&gt;ne&lt;/span&gt;(&lt;span class="org-type"&gt;has_eq&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;rhs&lt;/span&gt;,
-     &lt;span class="org-type"&gt;has_eq&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;lhs&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; {
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; (lhs != rhs);
-  }
-} &lt;span class="org-variable-name"&gt;partial_eq_default&lt;/span&gt;;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="notes" id="org73e4b81"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org07152f2" class="outline-4"&gt;
-&lt;h5 id="org07152f2"&gt;New &lt;code&gt;has_eq&lt;/code&gt;&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org07152f2"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;concept&lt;/span&gt; &lt;span class="org-type"&gt;has_eq&lt;/span&gt; = &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;v&lt;/span&gt;) {
-  { &lt;span class="org-keyword"&gt;operator&lt;/span&gt;==(v, v) } -&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;same_as&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;bool&lt;/span&gt;&amp;gt;;
-};
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="notes" id="org40519d3"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org33fa324" class="outline-3"&gt;
-&lt;h4 id="org33fa324"&gt;Will do better&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org33fa324"&gt;
-&lt;p&gt; In a bit &lt;/p&gt;
-
-&lt;div class="notes" id="orgd6431cd"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org8851fb9" class="outline-2"&gt;
-&lt;h3 id="org8851fb9"&gt;Monoid&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org8851fb9"&gt;
-&lt;p&gt; A little more than you think. &lt;/p&gt;
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;A type&lt;/li&gt;
-&lt;li&gt;With an associative binary operation&lt;/li&gt;
-&lt;li&gt;Which is closed&lt;/li&gt;
-&lt;li&gt;And has an identity element&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgb51a0c4" class="outline-3"&gt;
-&lt;h4 id="orgb51a0c4"&gt;Maybe not a lot more&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgb51a0c4"&gt;
-&lt;div class="notes" id="org0c44627"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org38e75f7" class="outline-3"&gt;
-&lt;h4 id="org38e75f7"&gt;Math&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org38e75f7"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;\(\oplus: M \times M \rightarrow M\)&lt;/li&gt;
-&lt;li&gt;\(x \oplus (y \oplus z) = (x \oplus y) \oplus z\)&lt;/li&gt;
-&lt;li&gt;\(1_M \in M\) such that \(\forall m \in M : (1_M \oplus m) = m = (m \oplus 1_M)\)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class="notes" id="org17705e7"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org38a2fc2" class="outline-3"&gt;
-&lt;h4 id="org38a2fc2"&gt;Function form&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org38a2fc2"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;\(f : M \times M \rightarrow M\)&lt;/li&gt;
-&lt;li&gt;\(f(x, f(y, z)) = f(f(x, y), z)\)&lt;/li&gt;
-&lt;li&gt;\(1_M \in M\) such that \(\forall m \in M : f(1_M, m) = m = f(m, 1_M)\)&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt; The similarity to left and right fold is &lt;b&gt;NOT&lt;/b&gt; an accident &lt;/p&gt;
-
-&lt;div class="notes" id="org87b2c28"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orge87a585" class="outline-3"&gt;
-&lt;h4 id="orge87a585"&gt;Core Functions&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orge87a585"&gt;
-&lt;dl class="org-dl"&gt;
-&lt;dt&gt;\(empty : m\)&lt;/dt&gt;&lt;dd&gt;\(empty = concat \, []\)&lt;/dd&gt;
-&lt;dt&gt;\(concat : [m] \rightarrow m\)&lt;/dt&gt;&lt;dd&gt;\(fold \, append \, empty\)&lt;/dd&gt;
-&lt;dt&gt;\(append : m \rightarrow m \rightarrow m\)&lt;/dt&gt;&lt;dd&gt;\(op\)&lt;/dd&gt;
-&lt;/dl&gt;
-
-
-&lt;p&gt; Note that it's self-referential &lt;/p&gt;
-
-&lt;p&gt; This is common &lt;/p&gt;
-
-&lt;div class="notes" id="orgbae6f76"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org8204644" class="outline-4"&gt;
-&lt;h5 id="org8204644"&gt;From Haskell Prelude&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org8204644"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-haskell" id="nil"&gt;&lt;span class="org-haskell-keyword"&gt;class&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Semigroup&lt;/span&gt; a &lt;span class="org-haskell-operator"&gt;=&amp;gt;&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Monoid&lt;/span&gt; a &lt;span class="org-haskell-keyword"&gt;where&lt;/span&gt;
-  mempty &lt;span class="org-haskell-operator"&gt;::&lt;/span&gt; a
-  mempty &lt;span class="org-haskell-operator"&gt;=&lt;/span&gt; mconcat &lt;span class="org-haskell-constructor"&gt;[]&lt;/span&gt;
-
-  mappend &lt;span class="org-haskell-operator"&gt;::&lt;/span&gt; a &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; a &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; a
-  mappend &lt;span class="org-haskell-operator"&gt;=&lt;/span&gt; (&lt;span class="org-haskell-operator"&gt;&amp;lt;&amp;gt;&lt;/span&gt;)
-
-  mconcat &lt;span class="org-haskell-operator"&gt;::&lt;/span&gt; [a] &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; a
-  mconcat &lt;span class="org-haskell-operator"&gt;=&lt;/span&gt; foldr mappend mempty
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="notes" id="org27faaae"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org58ba1f2" class="outline-3"&gt;
-&lt;h4 id="org58ba1f2"&gt;Minimum Set&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org58ba1f2"&gt;
-&lt;p&gt; \(empty \, | \, concat\) &lt;/p&gt;
-
-&lt;div class="notes" id="orgc143f8b"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org7fab3d4" class="outline-3"&gt;
-&lt;h4 id="org7fab3d4"&gt;In C++&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org7fab3d4"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;, &lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;M&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;concept&lt;/span&gt; &lt;span class="org-type"&gt;MonoidRequirements&lt;/span&gt; =
-    &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-variable-name"&gt;i&lt;/span&gt;) {
-      { i.identity() } -&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;same_as&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;M&lt;/span&gt;&amp;gt;;
-    }
-    ||
-    &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt; &lt;span class="org-variable-name"&gt;i&lt;/span&gt;, &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;ranges&lt;/span&gt;::&lt;span class="org-type"&gt;empty_view&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;M&lt;/span&gt;&amp;gt; &lt;span class="org-variable-name"&gt;r1&lt;/span&gt;) {
-      { i.concat(r1) } -&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;same_as&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;M&lt;/span&gt;&amp;gt;;
-    };
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="notes" id="org2c61343"&gt;
-&lt;p&gt; I am ignoring all sorts of const volatile reference issues here. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org55db03e" class="outline-2"&gt;
-&lt;h3 id="org55db03e"&gt;Implementing the other side&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org55db03e"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org94ca958" class="outline-3"&gt;
-&lt;h4 id="org94ca958"&gt;The Map for a Monoid&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org94ca958"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;Impl&lt;/span&gt;&amp;gt;
-  &lt;span class="org-keyword"&gt;requires&lt;/span&gt; &lt;span class="org-type"&gt;MonoidRequirements&lt;/span&gt;&amp;lt;
-      &lt;span class="org-type"&gt;Impl&lt;/span&gt;,
-      &lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-constant"&gt;Impl&lt;/span&gt;::&lt;span class="org-type"&gt;value_type&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;Monoid&lt;/span&gt; : &lt;span class="org-keyword"&gt;protected&lt;/span&gt; &lt;span class="org-type"&gt;Impl&lt;/span&gt; {
-  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;identity&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; self);
-
-  &lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;Range&lt;/span&gt;&amp;gt;
-  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;concat&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; self, &lt;span class="org-type"&gt;Range&lt;/span&gt; &lt;span class="org-variable-name"&gt;r&lt;/span&gt;);
-
-  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;op&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; self, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;a1&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;a2&lt;/span&gt;);
-};
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="notes" id="org2cb36b8"&gt;
-&lt;p&gt; empty is a terrible name, concat only a little better. empty becomes identity &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgf2e4e66" class="outline-4"&gt;
-&lt;h5 id="orgf2e4e66"&gt;&lt;code&gt;identity&lt;/code&gt;&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgf2e4e66"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;identity&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &amp;amp;&amp;amp; self) {
-        &lt;span class="org-constant"&gt;std&lt;/span&gt;::puts(&lt;span class="org-string"&gt;"Monoid::identity()"&lt;/span&gt;);
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; self.concat(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;ranges&lt;/span&gt;::&lt;span class="org-type"&gt;empty_view&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-constant"&gt;Impl&lt;/span&gt;::&lt;span class="org-type"&gt;value_type&lt;/span&gt;&amp;gt;{});
-    }
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org4544cc8" class="outline-4"&gt;
-&lt;h5 id="org4544cc8"&gt;&lt;code&gt;concat&lt;/code&gt;&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org4544cc8"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;   &lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;Range&lt;/span&gt;&amp;gt;
-   &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;concat&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; self, &lt;span class="org-type"&gt;Range&lt;/span&gt; &lt;span class="org-variable-name"&gt;r&lt;/span&gt;) {
-        &lt;span class="org-constant"&gt;std&lt;/span&gt;::puts(&lt;span class="org-string"&gt;"Monoid::concat()"&lt;/span&gt;);
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;ranges&lt;/span&gt;::fold_right(r,
-                    self.identity(),
-                    [&amp;amp;](&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;m1&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;m2&lt;/span&gt;){&lt;span class="org-keyword"&gt;return&lt;/span&gt; self.op(m1, m2);});
-    }
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org7fb7987" class="outline-4"&gt;
-&lt;h5 id="org7fb7987"&gt;&lt;code&gt;op&lt;/code&gt;&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org7fb7987"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;   &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;op&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; self, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;a1&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;a2&lt;/span&gt;) {
-        &lt;span class="org-constant"&gt;std&lt;/span&gt;::puts(&lt;span class="org-string"&gt;"Monoid::op"&lt;/span&gt;);
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; self.op(a1, a2);
-    }
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org433bfeb" class="outline-3"&gt;
-&lt;h4 id="org433bfeb"&gt;Deducing &lt;code&gt;this&lt;/code&gt; &lt;b&gt;and&lt;/b&gt; CRTP&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org433bfeb"&gt;
-&lt;p&gt; We'll see in a moment, but it's because we want to constraint the required implementation. &lt;/p&gt;
-
-&lt;p&gt; We want to use the derived version which has all of the operations. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd365e33" class="outline-3"&gt;
-&lt;h4 id="orgd365e33"&gt;&lt;code&gt;Plus&lt;/code&gt;&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgd365e33"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;M&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;Plus&lt;/span&gt; {
-&lt;span class="org-keyword"&gt;public&lt;/span&gt;:
-  &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;value_type&lt;/span&gt; = M;
-  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;identity&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; self) -&amp;gt; &lt;span class="org-type"&gt;M&lt;/span&gt; {
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::puts(&lt;span class="org-string"&gt;"Plus::identity()"&lt;/span&gt;);
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; M{0};
-  }
-
-  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;op&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; self, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;s1&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;s2&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;M&lt;/span&gt; {
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::puts(&lt;span class="org-string"&gt;"Plus::op()"&lt;/span&gt;);
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; s1 + s2;
-  }
-};
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org0a4f2c7" class="outline-3"&gt;
-&lt;h4 id="org0a4f2c7"&gt;&lt;code&gt;PlusMonoidMap&lt;/code&gt;&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org0a4f2c7"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;M&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;PlusMonoidMap&lt;/span&gt; : &lt;span class="org-keyword"&gt;public&lt;/span&gt; &lt;span class="org-type"&gt;Monoid&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;Plus&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;M&lt;/span&gt;&amp;gt;&amp;gt; {
-    &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-constant"&gt;Plus&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;M&lt;/span&gt;&amp;gt;::identity;
-    &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-constant"&gt;Plus&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;M&lt;/span&gt;&amp;gt;::op;
-};
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="notes" id="orga6a3f61"&gt;
-&lt;p&gt; Need to pull the operations from the Monoid instance into the Map, so we get the right ones being used by concat. &lt;/p&gt;
-
-&lt;p&gt; This might be simpler if we didn't allow choice of the basis operations, but that's also overly restrictive. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgc757316" class="outline-3"&gt;
-&lt;h4 id="orgc757316"&gt;The map instances&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgc757316"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;monoid_concept_map&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::false_type{};
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&amp;gt;
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-type"&gt;monoid_concept_map&lt;/span&gt;&lt;span class="org-variable-name"&gt;&amp;lt;int&amp;gt;&lt;/span&gt; = &lt;span class="org-type"&gt;PlusMonoidMap&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt;{};
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&amp;gt;
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-type"&gt;monoid_concept_map&lt;/span&gt;&lt;span class="org-variable-name"&gt;&amp;lt;long&amp;gt;&lt;/span&gt; = &lt;span class="org-type"&gt;PlusMonoidMap&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;long&lt;/span&gt;&amp;gt;{};
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&amp;gt;
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-type"&gt;monoid_concept_map&lt;/span&gt;&lt;span class="org-variable-name"&gt;&amp;lt;char&amp;gt;&lt;/span&gt; = &lt;span class="org-type"&gt;PlusMonoidMap&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;char&lt;/span&gt;&amp;gt;{};
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org4a87cf1" class="outline-3"&gt;
-&lt;h4 id="org4a87cf1"&gt;Can we &lt;code&gt;concat&lt;/code&gt; instead?&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org4a87cf1"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;StringMonoid&lt;/span&gt; {
-&lt;span class="org-keyword"&gt;public&lt;/span&gt;:
-  &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;value_type&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::string;
-
-  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;op&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;s1&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;s2&lt;/span&gt;) {
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::puts(&lt;span class="org-string"&gt;"StringMonoid::op()"&lt;/span&gt;);
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; s1 + s2;
-  }
-
-  &lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;Range&lt;/span&gt;&amp;gt;
-  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;concat&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp;&amp;amp; self, &lt;span class="org-type"&gt;Range&lt;/span&gt; &lt;span class="org-variable-name"&gt;r&lt;/span&gt;) {
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::puts(&lt;span class="org-string"&gt;"StringMonoid::concat()"&lt;/span&gt;);
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;ranges&lt;/span&gt;::fold_right(
-        r, &lt;span class="org-constant"&gt;std&lt;/span&gt;::string{}, [&amp;amp;](&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;m1&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;m2&lt;/span&gt;) {
-          &lt;span class="org-keyword"&gt;return&lt;/span&gt; self.op(m1, m2);
-        });
-  }
-};
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;div class="notes" id="org1421b14"&gt;
-&lt;p&gt; No, I'm not properly constraining Range here. No, I'm not actually recommending this as an implementation. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org3c488f3" class="outline-3"&gt;
-&lt;h4 id="org3c488f3"&gt;The Map and instance&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org3c488f3"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;StringMonoidMap&lt;/span&gt; : &lt;span class="org-keyword"&gt;public&lt;/span&gt; &lt;span class="org-type"&gt;Monoid&lt;/span&gt;&amp;lt;StringMonoid&amp;gt; {
-    &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-constant"&gt;StringMonoid&lt;/span&gt;::op;
-    &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-constant"&gt;StringMonoid&lt;/span&gt;::concat;
-};
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&amp;gt;
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-type"&gt;monoid_concept_map&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-variable-name"&gt;string&amp;gt;&lt;/span&gt; = StringMonoidMap{};
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org3a12eef" class="outline-2"&gt;
-&lt;h3 id="org3a12eef"&gt;Some simple use&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org3a12eef"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd1b5091" class="outline-3"&gt;
-&lt;h4 id="orgd1b5091"&gt;Exercise the functions&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgd1b5091"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;P&lt;/span&gt;&amp;gt;
-&lt;span class="org-type"&gt;void&lt;/span&gt; &lt;span class="org-function-name"&gt;testP&lt;/span&gt;()
-{
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;d1&lt;/span&gt; = &lt;span class="org-type"&gt;monoid_concept_map&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;P&lt;/span&gt;&amp;gt;;
-
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;x&lt;/span&gt; = d1.identity();
-    assert(P{} == x);
-
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;sum&lt;/span&gt; = d1.op(x, P{1});
-    assert(P{1} == sum);
-
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;vector&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;P&lt;/span&gt;&amp;gt; &lt;span class="org-variable-name"&gt;v&lt;/span&gt; = {1,2,3,4};
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt; = d1.concat(v);
-    assert(k == 10);
-}
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd13d04e" class="outline-3"&gt;
-&lt;h4 id="orgd13d04e"&gt;Some simple cases&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgd13d04e"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"\ntest int\n"&lt;/span&gt;;
-    testP&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt;();
-
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"\ntest long\n"&lt;/span&gt;;
-    testP&amp;lt;&lt;span class="org-type"&gt;long&lt;/span&gt;&amp;gt;();
-
-   &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"\ntest char\n"&lt;/span&gt;;
-    testP&amp;lt;&lt;span class="org-type"&gt;char&lt;/span&gt;&amp;gt;();
-
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orga5b5669" class="outline-3"&gt;
-&lt;h4 id="orga5b5669"&gt;On &lt;code&gt;std::string&lt;/code&gt;&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orga5b5669"&gt;
-&lt;p&gt; This will use the StringMonoid we defined a few moments ago. &lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;d2&lt;/span&gt; = &lt;span class="org-type"&gt;monoid_concept_map&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::string&amp;gt;;
-
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"\ntest string\n"&lt;/span&gt;;
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;x2&lt;/span&gt; = d2.identity();
-    assert(&lt;span class="org-constant"&gt;std&lt;/span&gt;::string{} == x2);
-
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;sum2&lt;/span&gt; = d2.op(x2, &lt;span class="org-string"&gt;"1"&lt;/span&gt;);
-    assert(&lt;span class="org-constant"&gt;std&lt;/span&gt;::string{&lt;span class="org-string"&gt;"1"&lt;/span&gt;} == sum2);
-
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;vector&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::string&amp;gt; &lt;span class="org-variable-name"&gt;vs&lt;/span&gt; = {&lt;span class="org-string"&gt;"1"&lt;/span&gt;,&lt;span class="org-string"&gt;"2"&lt;/span&gt;,&lt;span class="org-string"&gt;"3"&lt;/span&gt;,&lt;span class="org-string"&gt;"4"&lt;/span&gt;};
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;k2&lt;/span&gt; = d2.concat(vs);
-    assert(k2 == &lt;span class="org-constant"&gt;std&lt;/span&gt;::string{&lt;span class="org-string"&gt;"1234"&lt;/span&gt;});
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt; Note that the map type is mostly invisible. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgb719e3f" class="outline-3"&gt;
-&lt;h4 id="orgb719e3f"&gt;Results&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgb719e3f"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org24e555f" class="outline-4"&gt;
-&lt;h5 id="org24e555f"&gt;test int&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org24e555f"&gt;
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-Plus::identity()
-Plus::op()
-Monoid::concat()
-Plus::identity()
-Plus::op()
-Plus::op()
-Plus::op()
-Plus::op()
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orge66a8b5" class="outline-4"&gt;
-&lt;h5 id="orge66a8b5"&gt;test long&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orge66a8b5"&gt;
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-Plus::identity()
-Plus::op()
-Monoid::concat()
-Plus::identity()
-Plus::op()
-Plus::op()
-Plus::op()
-Plus::op()
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgf7ae047" class="outline-4"&gt;
-&lt;h5 id="orgf7ae047"&gt;test char&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgf7ae047"&gt;
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-Plus::identity()
-Plus::op()
-Monoid::concat()
-Plus::identity()
-Plus::op()
-Plus::op()
-Plus::op()
-Plus::op()
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org7390f2c" class="outline-4"&gt;
-&lt;h5 id="org7390f2c"&gt;test string&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org7390f2c"&gt;
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-Monoid::identity()
-StringMonoid::concat()
-StringMonoid::op()
-StringMonoid::concat()
-StringMonoid::op()
-StringMonoid::op()
-StringMonoid::op()
-StringMonoid::op()
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orga5cfe90" class="outline-2"&gt;
-&lt;h3 id="orga5cfe90"&gt;Monoid in Trees&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orga5cfe90"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org8d2fc90" class="outline-3"&gt;
-&lt;h4 id="org8d2fc90"&gt;Foldable generalizes&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org8d2fc90"&gt;
-&lt;p&gt; Folding is very much tied to Range like things. &lt;/p&gt;
-
-&lt;p&gt; It can, and has, been generalized to things that can be traversed. &lt;/p&gt;
-
-&lt;p&gt; &lt;code&gt;monoids&lt;/code&gt; are still critical for Traversables. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org5737e19" class="outline-3"&gt;
-&lt;h4 id="org5737e19"&gt;Summarizing Data in a tree&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org5737e19"&gt;
-&lt;p&gt; If the summary type is monoidal, nodes can hold summaries of all the data below them. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org20d51eb" class="outline-3"&gt;
-&lt;h4 id="org20d51eb"&gt;&lt;code&gt;fingertrees&lt;/code&gt;&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org20d51eb"&gt;
-&lt;p&gt; Much of the flexibility of &lt;code&gt;fingertrees&lt;/code&gt; comes from the monoidal tags. &lt;/p&gt;
-
-&lt;p&gt; They are also fairly complicated. &lt;/p&gt;
-
-&lt;p&gt; Technique can be applied to other, simpler trees. &lt;/p&gt;
-
-&lt;p&gt; P3200 (eventually) ((C++29)) &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgeea587e" class="outline-3"&gt;
-&lt;h4 id="orgeea587e"&gt;fringe-tree&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgeea587e"&gt;
-&lt;p&gt; Simplified tree with data at the edges &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgacbba9a" class="outline-3"&gt;
-&lt;h4 id="orgacbba9a"&gt;Code&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgacbba9a"&gt;
-&lt;p&gt; Show the monoid-map branch of &lt;/p&gt;
-
-&lt;p&gt; &lt;a href="https://github.com/steve-downey/fringetree"&gt;steve-downey/fringetree.git&lt;/a&gt; &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgab7d8a2" class="outline-2"&gt;
-&lt;h3 id="orgab7d8a2"&gt;Summary for Concept Maps&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orgab7d8a2"&gt;
-&lt;p&gt; Tell you what I told you &lt;/p&gt;
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Variable templates for map lookup&lt;/li&gt;
-&lt;li&gt;Named operations on the map object&lt;/li&gt;
-&lt;li&gt;Open for extension&lt;/li&gt;
-&lt;li&gt;Concept checkable implementations&lt;/li&gt;
-&lt;li&gt;Decoupled map use and implementation&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org8395959" class="outline-2"&gt;
-&lt;h3 id="org8395959"&gt;Questions?&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org8395959"&gt;
-&lt;p&gt; Or comments &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org3983c15" class="outline-2"&gt;
-&lt;h3 id="org3983c15"&gt;Thank You&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org3983c15"&gt;
-&lt;div class="notes" id="org4db291f"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;</content>
-  </entry>
-  <entry>
-    <title>Slides from C++Now 2023 Async Control Flow</title>
-    <id>https://sdowney.org/posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/</id>
-    <updated>2024-05-18T18:27:00-04:00</updated>
-    <published>2024-05-18T18:27:00-04:00</published>
-    <author>
-      <name>Steve Downey</name>
-    </author>
-    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/"/>
-    <summary type="html">&lt;div&gt;&lt;div id="outline-container-org8b3a3c0" class="outline-2"&gt;
-&lt;h3 id="org8b3a3c0"&gt;Using Sender/Receiver for Async Control Flow&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org8b3a3c0"&gt;
-&lt;p&gt; Steve Downey &lt;/p&gt;
-
-&lt;p&gt; These are the slides, slightly rerendered, from my presentation at C++Now 2023. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orga88bc52" class="outline-2"&gt;
-&lt;h3 id="orga88bc52"&gt;Abstract&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orga88bc52"&gt;
-&lt;p&gt; How can P2300 Senders be composed using sender adapters and sender factories to provide arbitrary program control flow? &lt;/p&gt;
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;How do I use these things?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Where can I steal from?&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;&lt;a href="https://sdowney.org/posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/"&gt;Read more…&lt;/a&gt; (10 min remaining to read)&lt;/p&gt;&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;</summary>
-    <content type="html">&lt;div id="outline-container-org8b3a3c0" class="outline-2"&gt;
-&lt;h3 id="org8b3a3c0"&gt;Using Sender/Receiver for Async Control Flow&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org8b3a3c0"&gt;
-&lt;p&gt; Steve Downey &lt;/p&gt;
-
-&lt;p&gt; These are the slides, slightly rerendered, from my presentation at C++Now 2023. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orga88bc52" class="outline-2"&gt;
-&lt;h3 id="orga88bc52"&gt;Abstract&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-orga88bc52"&gt;
-&lt;p&gt; How can P2300 Senders be composed using sender adapters and sender factories to provide arbitrary program control flow? &lt;/p&gt;
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;How do I use these things?&lt;/li&gt;
-&lt;/ul&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Where can I steal from?&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;!-- TEASER_END --&gt;
-
-&lt;div class="notes" id="org36cf365"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org236dff5" class="outline-2"&gt;
-&lt;h3 id="org236dff5"&gt;&lt;code&gt;std::execution&lt;/code&gt;&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org236dff5"&gt;
-&lt;p&gt; &lt;a href="https://wg21.link/P2300"&gt;P2300&lt;/a&gt; &lt;/p&gt;
-
-&lt;p&gt; Recent version at &lt;a href="https://isocpp.org/files/papers/P2300R7.html"&gt;https://isocpp.org/files/papers/P2300R7.html&lt;/a&gt; &lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt; A self-contained design for a Standard C++ framework for managing asynchronous execution on generic execution resources. &lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;div class="notes" id="org8339640"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgc5b1e38" class="outline-3"&gt;
-&lt;h4 id="orgc5b1e38"&gt;Three Key Abstractions&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgc5b1e38"&gt;
-&lt;ol class="org-ol"&gt;
-&lt;li&gt;&lt;p&gt; Schedulers &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt; Senders &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;Receivers&lt;/li&gt;
-&lt;/ol&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org6ffab16" class="outline-4"&gt;
-&lt;h5 id="org6ffab16"&gt;Schedulers&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org6ffab16"&gt;
-&lt;p&gt; Responsible for scheduling work on execution resources. &lt;/p&gt;
-
-&lt;p&gt; Execution resources are things like threads, GPUs, and so on. &lt;/p&gt;
-
-&lt;p&gt; Sends work to be done in a place. &lt;/p&gt;
-
-&lt;div class="notes" id="orga800408"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgf878c5c" class="outline-4"&gt;
-&lt;h5 id="orgf878c5c"&gt;Senders&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgf878c5c"&gt;
-&lt;p&gt; Senders describe work. &lt;/p&gt;
-
-&lt;div class="notes" id="org3d29294"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgf5c2ed9" class="outline-4"&gt;
-&lt;h5 id="orgf5c2ed9"&gt;Receivers&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgf5c2ed9"&gt;
-&lt;p&gt; Receivers are where work terminates. &lt;/p&gt;
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;&lt;p&gt; Value channel &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;&lt;p&gt; Error channel &lt;/p&gt;&lt;/li&gt;
-&lt;li&gt;Stopped channel&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class="notes" id="org5d9d478"&gt;
-&lt;p&gt; Work can terminate in three different ways. &lt;/p&gt;
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Return a value.&lt;/li&gt;
-&lt;li&gt;Throw an exception&lt;/li&gt;
-&lt;li&gt;Be canceled&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt; It's been a few minutes. Lets see some simple code. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd098f7f" class="outline-4"&gt;
-&lt;h5 id="orgd098f7f"&gt;Hello Async World&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgd098f7f"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-C++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;&lt;span class="org-preprocessor"&gt;#include&lt;/span&gt; &lt;span class="org-string"&gt;&amp;lt;stdexec/execution.hpp&amp;gt;&lt;/span&gt;
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;&lt;span class="org-preprocessor"&gt;#include&lt;/span&gt; &lt;span class="org-string"&gt;&amp;lt;exec/static_thread_pool.hpp&amp;gt;&lt;/span&gt;
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;&lt;span class="org-preprocessor"&gt;#include&lt;/span&gt; &lt;span class="org-string"&gt;&amp;lt;iostream&amp;gt;&lt;/span&gt;
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-function-name"&gt;main&lt;/span&gt;() {
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;  &lt;span class="org-constant"&gt;exec&lt;/span&gt;::&lt;span class="org-type"&gt;static_thread_pool&lt;/span&gt; &lt;span class="org-variable-name"&gt;pool&lt;/span&gt;(8);
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;  &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;scheduler&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;sch&lt;/span&gt; = pool.get_scheduler();
-&lt;span class="linenr"&gt;10: &lt;/span&gt;
-&lt;span class="linenr"&gt;11: &lt;/span&gt;  &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;begin&lt;/span&gt; = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::schedule(sch);
-&lt;span class="linenr"&gt;12: &lt;/span&gt;  &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;hi&lt;/span&gt;    = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then(begin, [] {
-&lt;span class="linenr"&gt;13: &lt;/span&gt;    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"Hello world! Have an int.\n"&lt;/span&gt;;
-&lt;span class="linenr"&gt;14: &lt;/span&gt;    &lt;span class="org-keyword"&gt;return&lt;/span&gt; 13;
-&lt;span class="linenr"&gt;15: &lt;/span&gt;  });
-&lt;span class="linenr"&gt;16: &lt;/span&gt;
-&lt;span class="linenr"&gt;17: &lt;/span&gt;  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;add_42&lt;/span&gt; = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then(hi, [](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;arg&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; arg + 42; });
-&lt;span class="linenr"&gt;18: &lt;/span&gt;
-&lt;span class="linenr"&gt;19: &lt;/span&gt;  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; [i] = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sync_wait(add_42).value();
-&lt;span class="linenr"&gt;20: &lt;/span&gt;
-&lt;span class="linenr"&gt;21: &lt;/span&gt;  &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"The int is "&lt;/span&gt; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; &lt;span class="org-string"&gt;'\n'&lt;/span&gt;;
-&lt;span class="linenr"&gt;22: &lt;/span&gt;
-&lt;span class="linenr"&gt;23: &lt;/span&gt;  &lt;span class="org-keyword"&gt;return&lt;/span&gt; 0;
-&lt;span class="linenr"&gt;24: &lt;/span&gt;}
-&lt;span class="linenr"&gt;25: &lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-
-&lt;p&gt; &lt;a href="https://godbolt.org/z/1M5enroaE"&gt;Compiler Explorer&lt;/a&gt; &lt;/p&gt;
-
-&lt;div class="notes" id="org2eb3f3f"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgf7d68f0" class="outline-4"&gt;
-&lt;h5 id="orgf7d68f0"&gt;Hello Async World Results&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgf7d68f0"&gt;
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-Hello world! Have an int.
-The int is 55
-&lt;/pre&gt;
-
-&lt;div class="notes" id="orgbf13cfb"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd5015b3" class="outline-4"&gt;
-&lt;h5 id="orgd5015b3"&gt;When All - Concurent Async&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgd5015b3"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;&lt;span class="org-constant"&gt;exec&lt;/span&gt;::&lt;span class="org-type"&gt;static_thread_pool&lt;/span&gt; &lt;span class="org-variable-name"&gt;pool&lt;/span&gt;(3);
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;sched&lt;/span&gt; = pool.get_scheduler();
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;fun&lt;/span&gt; = [](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;i&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; i * i; };
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;work&lt;/span&gt; = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::when_all(
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(sched, &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(0) | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then(fun)),
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(sched, &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(1) | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then(fun)),
-&lt;span class="linenr"&gt;10: &lt;/span&gt;    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(sched, &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(2) | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then(fun)));
-&lt;span class="linenr"&gt;11: &lt;/span&gt;
-&lt;span class="linenr"&gt;12: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; [i, j, k] = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sync_wait(&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(work)).value();
-&lt;span class="linenr"&gt;13: &lt;/span&gt;
-&lt;span class="linenr"&gt;14: &lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::printf(&lt;span class="org-string"&gt;"%d %d %d\n"&lt;/span&gt;, i, j, k);
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="notes" id="org5b2f4f0"&gt;
-&lt;p&gt; Describe some work: &lt;/p&gt;
-
-&lt;p&gt; Creates 3 sender pipelines that are executed concurrently by passing to `when_all` &lt;/p&gt;
-
-&lt;p&gt; Each sender is scheduled on `sched` using `on` and starts with `just(n)` that creates a Sender that just forwards `n` to the next sender. &lt;/p&gt;
-
-&lt;p&gt; After `just(n)`, we chain `then(fun)` which invokes `fun` using the value provided from `just()` &lt;/p&gt;
-
-&lt;p&gt; Note: No work actually happens here. Everything is lazy and `work` is just an object that statically represents the work to later be executed &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org8c3d7d7" class="outline-4"&gt;
-&lt;h5 id="org8c3d7d7"&gt;When All - Concurent Async - Results&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org8c3d7d7"&gt;
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-0 1 4
-&lt;/pre&gt;
-
-&lt;div class="notes" id="orgebda57b"&gt;
-&lt;p&gt; Order of execution is by chance, order of results is determined. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgb1730fb" class="outline-4"&gt;
-&lt;h5 id="orgb1730fb"&gt;Dynamic Choice of Sender&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgb1730fb"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;&lt;span class="org-constant"&gt;exec&lt;/span&gt;::&lt;span class="org-type"&gt;static_thread_pool&lt;/span&gt; &lt;span class="org-variable-name"&gt;pool&lt;/span&gt;(3);
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;sched&lt;/span&gt; = pool.get_scheduler();
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;fun&lt;/span&gt; = [](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;i&lt;/span&gt;) -&amp;gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sender &lt;span class="org-keyword"&gt;auto&lt;/span&gt; {
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;  &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-keyword"&gt;namespace&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;string_literals&lt;/span&gt;;
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;  &lt;span class="org-keyword"&gt;if&lt;/span&gt; ((i % 2) == 0) {
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(&lt;span class="org-string"&gt;"even"&lt;/span&gt;s);
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;  } &lt;span class="org-keyword"&gt;else&lt;/span&gt; {
-&lt;span class="linenr"&gt;10: &lt;/span&gt;    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(&lt;span class="org-string"&gt;"odd"&lt;/span&gt;s);
-&lt;span class="linenr"&gt;11: &lt;/span&gt;  }
-&lt;span class="linenr"&gt;12: &lt;/span&gt;};
-&lt;span class="linenr"&gt;13: &lt;/span&gt;
-&lt;span class="linenr"&gt;14: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;work&lt;/span&gt; = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::when_all(
-&lt;span class="linenr"&gt;15: &lt;/span&gt;    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(sched, &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(0) | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value(fun)),
-&lt;span class="linenr"&gt;16: &lt;/span&gt;    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(sched, &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(1) | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value(fun)),
-&lt;span class="linenr"&gt;17: &lt;/span&gt;    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(sched, &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(2) | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value(fun)));
-&lt;span class="linenr"&gt;18: &lt;/span&gt;
-&lt;span class="linenr"&gt;19: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; [i, j, k] = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sync_wait(&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(work)).value();
-&lt;span class="linenr"&gt;20: &lt;/span&gt;
-&lt;span class="linenr"&gt;21: &lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::printf(&lt;span class="org-string"&gt;"%s %s %s"&lt;/span&gt;, i.c_str(), j.c_str(), k.c_str());
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt; &lt;a href="https://godbolt.org/z/7vx69cMj9"&gt;Compiler Explorer&lt;/a&gt; &lt;/p&gt;
-
-&lt;div class="notes" id="org8b2f9b4"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgb681eb0" class="outline-4"&gt;
-&lt;h5 id="orgb681eb0"&gt;Enough API to talk about control flow&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgb681eb0"&gt;
-&lt;p&gt; The minimal set being: &lt;/p&gt;
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;stdexec::on&lt;/li&gt;
-&lt;li&gt;stdexec::just&lt;/li&gt;
-&lt;li&gt;stdexec::then&lt;/li&gt;
-&lt;li&gt;stdexec::let_value&lt;/li&gt;
-&lt;li&gt;stdexec::sync_wait&lt;/li&gt;
-&lt;/ul&gt;
-
-
-&lt;p&gt; I will mostly ignore the error and stop channels &lt;/p&gt;
-
-&lt;div class="notes" id="orgd3933b4"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org294db44" class="outline-2"&gt;
-&lt;h3 id="org294db44"&gt;Vigorous Handwaving&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org294db44"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgaa994df" class="outline-3"&gt;
-&lt;h4 id="orgaa994df"&gt;Some Theory&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgaa994df"&gt;
-&lt;p&gt; Continuation Passing Style &lt;/p&gt;
-
-&lt;div class="notes" id="orgfcb288c"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd5b64c5" class="outline-4"&gt;
-&lt;h5 id="orgd5b64c5"&gt;Not At All New&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgd5b64c5"&gt;
-&lt;p&gt; Sussman and Steele in 1975 &lt;/p&gt;
-
-&lt;p&gt; &lt;a href="https://dspace.mit.edu/bitstream/handle/1721.1/5794/AIM-349.pdf"&gt;AI Memo 349: "Scheme: An Interpreter for Extended Lambda Calculus"&lt;/a&gt; &lt;/p&gt;
-
-&lt;div class="notes" id="org4fc8969"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org0871c6c" class="outline-4"&gt;
-&lt;h5 id="org0871c6c"&gt;Pass a "Continuation"&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org0871c6c"&gt;
-&lt;p&gt; Where to go next rather than return the value. &lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-haskell" id="nil"&gt;&lt;span class="org-haskell-definition"&gt;add&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;::&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt;
-&lt;span class="org-haskell-definition"&gt;add&lt;/span&gt; a b &lt;span class="org-haskell-operator"&gt;=&lt;/span&gt; a &lt;span class="org-haskell-operator"&gt;+&lt;/span&gt; b
-
-&lt;span class="org-haskell-definition"&gt;add_cps&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;::&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; (&lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; a) &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; a
-&lt;span class="org-haskell-definition"&gt;add_cps&lt;/span&gt; a b cont &lt;span class="org-haskell-operator"&gt;=&lt;/span&gt; cont (a &lt;span class="org-haskell-operator"&gt;+&lt;/span&gt; b)
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;add&lt;/span&gt;(&lt;span class="org-type"&gt;float&lt;/span&gt; &lt;span class="org-variable-name"&gt;a&lt;/span&gt;, &lt;span class="org-type"&gt;float&lt;/span&gt; &lt;span class="org-variable-name"&gt;b&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;float&lt;/span&gt; {
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; a + b;
-}
-
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;Cont&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;add_cps&lt;/span&gt;(&lt;span class="org-type"&gt;float&lt;/span&gt; &lt;span class="org-variable-name"&gt;a&lt;/span&gt;, &lt;span class="org-type"&gt;float&lt;/span&gt; &lt;span class="org-variable-name"&gt;b&lt;/span&gt;, &lt;span class="org-type"&gt;Cont&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt;) {
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; k(a+b);
-}
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="notes" id="org83586c7"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org0559af1" class="outline-4"&gt;
-&lt;h5 id="org0559af1"&gt;Inherently a tail call&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org0559af1"&gt;
-&lt;p&gt; In continuation passing style we never return. &lt;/p&gt;
-
-&lt;p&gt; We send a value to the rest of the program. &lt;/p&gt;
-
-&lt;p&gt; Hard to express in C++. &lt;/p&gt;
-
-&lt;p&gt; Extra machinery necessary to do the plumbing. &lt;/p&gt;
-
-&lt;p&gt; Also, some risk, so we don't always do TCO. &lt;/p&gt;
-
-&lt;p&gt; We keep the sender "thunks" live so we don't dangle references. &lt;/p&gt;
-
-&lt;div class="notes" id="org7ce856a"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org1e75715" class="outline-4"&gt;
-&lt;h5 id="org1e75715"&gt;Intermittently Popular as a Compiler Technique&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org1e75715"&gt;
-&lt;p&gt; The transformations of direct functions to CPS are mechanical. &lt;/p&gt;
-
-&lt;p&gt; The result is easier to optimize and mechanically reason about. &lt;/p&gt;
-
-&lt;p&gt; Equivalent to Single Static Assignment. &lt;/p&gt;
-
-&lt;p&gt; Structured Programming can be converted to CPS. &lt;/p&gt;
-
-&lt;div class="notes" id="org6493700"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org9562d05" class="outline-4"&gt;
-&lt;h5 id="org9562d05"&gt;Delimted Continuations&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org9562d05"&gt;
-&lt;p&gt; General continuations reified as a function. &lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt; Everyone knows that when a process executes a system call like ‘read’, it gets suspended. When the disk delivers the data, the process is resumed. That suspension of a process is its continuation. It is delimited: it is not the check-point of the whole OS, it is the check-point of a process only, from the invocation of main() up to the point main() returns. Normally these suspensions are resumed only once, but can be zero times (exit) or twice (fork). &lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt; Oleg Kiselyov &lt;a href="https://okmij.org/ftp/continuations/Fest2008-talk-notes.pdf"&gt;Fest2008-talk-notes.pdf&lt;/a&gt; &lt;/p&gt;
-
-&lt;div class="notes" id="orgf6e78f9"&gt;
-&lt;p&gt; If this qoute reminds you of coroutines, you are paying attention. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org9068f85" class="outline-4"&gt;
-&lt;h5 id="org9068f85"&gt;Haskell's Cont Type&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org9068f85"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-haskell" id="nil"&gt;&lt;span class="org-haskell-keyword"&gt;newtype&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Cont&lt;/span&gt; r a &lt;span class="org-haskell-operator"&gt;=&lt;/span&gt; &lt;span class="org-haskell-constructor"&gt;Cont&lt;/span&gt; { runCont &lt;span class="org-haskell-operator"&gt;::&lt;/span&gt; (a &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; r) &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; r }
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt; This is &lt;u&gt;roughly&lt;/u&gt; equivalent to the sender value channel. A Cont takes a reciever, a function that consumes the value being sent, and produces an r, the result type. &lt;/p&gt;
-
-&lt;p&gt; The &lt;code&gt;identity&lt;/code&gt; function is often used. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org172f559" class="outline-4"&gt;
-&lt;h5 id="org172f559"&gt;Underlies &lt;code&gt;std::execution&lt;/code&gt;&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org172f559"&gt;
-&lt;p&gt; The plumbing is hidden. &lt;/p&gt;
-
-&lt;p&gt; Senders "send" to their continuations, delimted by the Reciever. &lt;/p&gt;
-
-&lt;div class="notes" id="orgd311a42"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgf9763ec" class="outline-3"&gt;
-&lt;h4 id="orgf9763ec"&gt;Another Level of Indirection&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgf9763ec"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org68f9649" class="outline-4"&gt;
-&lt;h5 id="org68f9649"&gt;Solves all problems&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org68f9649"&gt;
-&lt;p&gt; Adds two more. &lt;/p&gt;
-
-&lt;p&gt; At least &lt;/p&gt;
-
-&lt;div class="notes" id="orgb13c3fd"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orga29d66f" class="outline-4"&gt;
-&lt;h5 id="orga29d66f"&gt;CPS Indirects Function Return&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orga29d66f"&gt;
-&lt;p&gt; Transform a function &lt;/p&gt;
-
-&lt;p style="text-align:center"&gt; $latex   A  \rightarrow B   $ &lt;/p&gt;
-
-
-&lt;p&gt; to &lt;/p&gt;
-
-&lt;p style="text-align:center"&gt; $latex   A  \rightarrow B  \rightarrow ( B \rightarrow R ) \rightarrow R   $ &lt;/p&gt;
-
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-haskell" id="nil"&gt;&lt;span class="org-haskell-definition"&gt;add&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;::&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt;
-&lt;span class="org-haskell-definition"&gt;add&lt;/span&gt; a b &lt;span class="org-haskell-operator"&gt;=&lt;/span&gt; a &lt;span class="org-haskell-operator"&gt;+&lt;/span&gt; b
-
-&lt;span class="org-haskell-definition"&gt;add_cps&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;::&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; (&lt;span class="org-haskell-type"&gt;Float&lt;/span&gt; &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="org-haskell-type"&gt;A&lt;/span&gt;) &lt;span class="org-haskell-operator"&gt;-&amp;gt;&lt;/span&gt; &lt;span class="org-haskell-type"&gt;A&lt;/span&gt;
-&lt;span class="org-haskell-definition"&gt;add_cps&lt;/span&gt; a b cont &lt;span class="org-haskell-operator"&gt;=&lt;/span&gt; cont (a &lt;span class="org-haskell-operator"&gt;+&lt;/span&gt; b)
-&lt;/pre&gt;
-&lt;/div&gt;
-
-
-&lt;div class="notes" id="orgde3c0e9"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgaf9b3e1" class="outline-4"&gt;
-&lt;h5 id="orgaf9b3e1"&gt;Sender Closes Over A&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgaf9b3e1"&gt;
-&lt;p style="text-align:center"&gt; $latex   B  \rightarrow ( B \rightarrow R ) \rightarrow R   $ &lt;/p&gt;
-
-&lt;p&gt; The $LATEX A$ is (mostly) erased from the Sender. &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org2621484" class="outline-4"&gt;
-&lt;h5 id="org2621484"&gt;Reciever Is The Transform to Result&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org2621484"&gt;
-&lt;p style="text-align:center"&gt; $latex   ( B \rightarrow R ) \rightarrow R   $ &lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org4c55ea0" class="outline-3"&gt;
-&lt;h4 id="org4c55ea0"&gt;Some Pictures&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org4c55ea0"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org5e7ea49" class="outline-5"&gt;
-&lt;h6 id="org5e7ea49"&gt;Sender&lt;/h6&gt;
-&lt;div class="outline-text-5" id="text-org5e7ea49"&gt;
-&lt;div id="org2d613b7" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/images/sender.png" alt="sender.png"&gt; &lt;/p&gt; &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgb5de8b8" class="outline-5"&gt;
-&lt;h6 id="orgb5de8b8"&gt;&lt;code&gt;just&lt;/code&gt;&lt;/h6&gt;
-&lt;div class="outline-text-5" id="text-orgb5de8b8"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(0)
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div id="org23c38c7" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/images/just.png" alt="just.png"&gt; &lt;/p&gt; &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org533dd2e" class="outline-5"&gt;
-&lt;h6 id="org533dd2e"&gt;&lt;code&gt;then&lt;/code&gt;&lt;/h6&gt;
-&lt;div class="outline-text-5" id="text-org533dd2e"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;f&lt;/span&gt;(&lt;span class="org-type"&gt;A&lt;/span&gt; &lt;span class="org-variable-name"&gt;a&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;B&lt;/span&gt;;
-&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;s&lt;/span&gt; = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(a) | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then(f);
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div id="org7400c8c" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/images/then.png" alt="then.png"&gt; &lt;/p&gt; &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgf0c5b3f" class="outline-5"&gt;
-&lt;h6 id="orgf0c5b3f"&gt;&lt;code&gt;let_value&lt;/code&gt;&lt;/h6&gt;
-&lt;div class="outline-text-5" id="text-orgf0c5b3f"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-type"&gt;sender_of&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;set_value_t&lt;/span&gt;(&lt;span class="org-variable-name"&gt;B&lt;/span&gt;)&amp;gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;snd&lt;/span&gt;(&lt;span class="org-type"&gt;A&lt;/span&gt; &lt;span class="org-variable-name"&gt;a&lt;/span&gt;);
-&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;s&lt;/span&gt; = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(a) | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value(snd);
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div id="org8f34211" class="figure"&gt; &lt;p&gt;&lt;img src="https://sdowney.org/images/let_value.png" alt="let_value.png"&gt; &lt;/p&gt; &lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org5ac08ab" class="outline-3"&gt;
-&lt;h4 id="org5ac08ab"&gt;In which we use the M word&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org5ac08ab"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org134a392" class="outline-4"&gt;
-&lt;h5 id="org134a392"&gt;Sender is a Monad&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org134a392"&gt;
-&lt;p&gt; (surprise) &lt;/p&gt;
-
-&lt;p&gt; (shock, dismay) &lt;/p&gt;
-
-&lt;div class="notes" id="orgdbe487b"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org8b69996" class="outline-4"&gt;
-&lt;h5 id="org8b69996"&gt;Function Composition is the hint&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org8b69996"&gt;
-&lt;p&gt; Functions are units of work. &lt;/p&gt;
-
-&lt;p&gt; We compose them into programs. &lt;/p&gt;
-
-&lt;p&gt; The question is if the rules apply. &lt;/p&gt;
-
-&lt;div class="notes" id="org981c41e"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orge30880f" class="outline-4"&gt;
-&lt;h5 id="orge30880f"&gt;Monadic Interface&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orge30880f"&gt;
-&lt;dl class="org-dl"&gt;
-&lt;dt&gt;bind or and_then&lt;/dt&gt;&lt;dd&gt;&lt;p style="text-align:center"&gt; $latex   M \langle a \rangle \rightarrow (a \rightarrow M \langle b \rangle ) \rightarrow M \langle b \rangle   $ &lt;/p&gt;&lt;/dd&gt;
-
-&lt;dt&gt;fish or kleisli arrow &lt;/dt&gt;&lt;dd&gt;&lt;p style="text-align:center"&gt; $latex   (a \rightarrow M \langle b \rangle ) \rightarrow (b \rightarrow M \langle c \rangle ) \rightarrow (a \rightarrow M \langle c \rangle )   $ &lt;/p&gt;&lt;/dd&gt;
-
-&lt;dt&gt;join or flatten or mconcat&lt;/dt&gt;&lt;dd&gt;&lt;p style="text-align:center"&gt; $latex   M \langle M \langle a \rangle \rangle \rightarrow  M \langle a \rangle   $ &lt;/p&gt;&lt;/dd&gt;
-&lt;/dl&gt;
-
-&lt;div class="notes" id="orgb4e34d8"&gt;
-&lt;p&gt; Monad Interface &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgadd7e17" class="outline-4"&gt;
-&lt;h5 id="orgadd7e17"&gt;Applicative and Functor parts&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgadd7e17"&gt;
-&lt;dl class="org-dl"&gt;
-&lt;dt&gt;make or pure or return&lt;/dt&gt;&lt;dd&gt;&lt;p style="text-align:center"&gt; $latex   a  \rightarrow  M \langle a \rangle   $ &lt;/p&gt;&lt;/dd&gt;
-
-&lt;dt&gt;fmap or transform&lt;/dt&gt;&lt;dd&gt;&lt;p style="text-align:center"&gt; $latex     (a \rightarrow b) \rightarrow M \langle a \rangle \rightarrow M \langle b \rangle    $ &lt;/p&gt;&lt;/dd&gt;
-&lt;/dl&gt;
-
-&lt;p&gt; Any one of the first three and one of the second two can define the other three &lt;/p&gt;
-
-&lt;div class="notes" id="org1ea8d66"&gt;
-&lt;p&gt; Monad Interface &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org8809cf7" class="outline-4"&gt;
-&lt;h5 id="org8809cf7"&gt;Monad Laws&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org8809cf7"&gt;
-&lt;dl class="org-dl"&gt;
-&lt;dt&gt;left identity&lt;/dt&gt;&lt;dd&gt;bind(pure(a), h) == h(a)&lt;/dd&gt;
-&lt;dt&gt;right identity&lt;/dt&gt;&lt;dd&gt;bind(m, pure) == m&lt;/dd&gt;
-&lt;dt&gt;associativity&lt;/dt&gt;&lt;dd&gt;bind(bind(m, g), h) == bind(m, bind((\x -&amp;gt; g(x), h))&lt;/dd&gt;
-&lt;/dl&gt;
-
-&lt;div class="notes" id="orgdeee1f4"&gt;
-&lt;p&gt; Monad Laws &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org4a2ed42" class="outline-4"&gt;
-&lt;h5 id="org4a2ed42"&gt;Sender is Three Monads in a Trench-coat&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org4a2ed42"&gt;
-&lt;p&gt; Stacked up. &lt;/p&gt;
-
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Value&lt;/li&gt;
-&lt;li&gt;Error&lt;/li&gt;
-&lt;li&gt;Stopped&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class="notes" id="orge90651e"&gt;
-&lt;p&gt; The three channels can be crossed, mixed, and remixed. Focus on the value channel for simplicity. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgd26dd21" class="outline-3"&gt;
-&lt;h4 id="orgd26dd21"&gt;The Three Monadic Parts&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgd26dd21"&gt;
-&lt;div class="notes" id="org2736585"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgec26678" class="outline-4"&gt;
-&lt;h5 id="orgec26678"&gt;&lt;code&gt;just&lt;/code&gt;&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgec26678"&gt;
-&lt;p&gt; Send a value. &lt;/p&gt;
-
-&lt;p&gt; &lt;code&gt;pure&lt;/code&gt; &lt;/p&gt;
-
-&lt;div class="notes" id="orga22f135"&gt;
-&lt;p&gt; just lifts a value into the monad &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgfe3008d" class="outline-4"&gt;
-&lt;h5 id="orgfe3008d"&gt;&lt;code&gt;then&lt;/code&gt;&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-orgfe3008d"&gt;
-&lt;p&gt; Send a value returned from a function that takes its argument from a Sender. &lt;/p&gt;
-
-&lt;p&gt; &lt;code&gt;fmap&lt;/code&gt; or &lt;code&gt;transform&lt;/code&gt; &lt;/p&gt;
-
-&lt;div class="notes" id="org4ce6d5a"&gt;
-&lt;p&gt; then is the functor fmap &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org19ddb5d" class="outline-4"&gt;
-&lt;h5 id="org19ddb5d"&gt;&lt;code&gt;let_value&lt;/code&gt;&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org19ddb5d"&gt;
-&lt;p&gt; Send what is returned by a Sender returned from a function that takes its argument from a Sender. &lt;/p&gt;
-
-&lt;p&gt; &lt;code&gt;bind&lt;/code&gt; &lt;/p&gt;
-
-&lt;div class="notes" id="orga0ab095"&gt;
-&lt;p&gt; let value is the monadic bind &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org65d75e4" class="outline-4"&gt;
-&lt;h5 id="org65d75e4"&gt;Necessary and Sufficient&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org65d75e4"&gt;
-&lt;p&gt; The monadic bind gives us the runtime choices we need. &lt;/p&gt;
-
-&lt;div class="notes" id="org3710183"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org9a8af39" class="outline-3"&gt;
-&lt;h4 id="org9a8af39"&gt;Basis of Control&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-org9a8af39"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Sequence&lt;/li&gt;
-&lt;li&gt;Decision&lt;/li&gt;
-&lt;li&gt;Recursion&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;div class="notes" id="org24383ab"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org9ba54a2" class="outline-4"&gt;
-&lt;h5 id="org9ba54a2"&gt;Sequence&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org9ba54a2"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;  &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;work&lt;/span&gt; =
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;      &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::schedule(sch)
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;      | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([] {
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;          &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"Hello world! Have an int."&lt;/span&gt;;
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;          &lt;span class="org-keyword"&gt;return&lt;/span&gt; 13;
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;      })
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;      | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;arg&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; arg + 42; });
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;  &lt;span class="org-keyword"&gt;auto&lt;/span&gt; [i] = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sync_wait(work).value();
-&lt;span class="linenr"&gt;10: &lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="notes" id="org27c1c32"&gt;
-&lt;p&gt; One thing after another. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org72e7b8d" class="outline-4"&gt;
-&lt;h5 id="org72e7b8d"&gt;Decision&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org72e7b8d"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;&lt;span class="org-constant"&gt;exec&lt;/span&gt;::&lt;span class="org-type"&gt;static_thread_pool&lt;/span&gt; &lt;span class="org-variable-name"&gt;pool&lt;/span&gt;(8);
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;&lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;scheduler&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;sch&lt;/span&gt; = pool.get_scheduler();
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;&lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;begin&lt;/span&gt;  = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::schedule(sch);
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;&lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;seven&lt;/span&gt;  = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(7);
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;&lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;eleven&lt;/span&gt; = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(11);
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;&lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;branch&lt;/span&gt; =
-&lt;span class="linenr"&gt;10: &lt;/span&gt;    begin
-&lt;span class="linenr"&gt;11: &lt;/span&gt;    | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([]() { &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::make_tuple(5, 4); })
-&lt;span class="linenr"&gt;12: &lt;/span&gt;    | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value(
-&lt;span class="linenr"&gt;13: &lt;/span&gt;        [=](&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;tpl&lt;/span&gt;) {
-&lt;span class="linenr"&gt;14: &lt;/span&gt;        &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp; [&lt;span class="org-constant"&gt;i&lt;/span&gt;, &lt;span class="org-constant"&gt;j&lt;/span&gt;] = tpl;
-&lt;span class="linenr"&gt;15: &lt;/span&gt;
-&lt;span class="linenr"&gt;16: &lt;/span&gt;        &lt;span class="org-keyword"&gt;return&lt;/span&gt; tst((i &amp;gt; j),
-&lt;span class="linenr"&gt;17: &lt;/span&gt;                   seven | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([&amp;amp;](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt;) &lt;span class="org-keyword"&gt;noexcept&lt;/span&gt; {
-&lt;span class="linenr"&gt;18: &lt;/span&gt;                       &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"true branch "&lt;/span&gt; &amp;lt;&amp;lt; k &amp;lt;&amp;lt; &lt;span class="org-string"&gt;'\n'&lt;/span&gt;;
-&lt;span class="linenr"&gt;19: &lt;/span&gt;                   }),
-&lt;span class="linenr"&gt;20: &lt;/span&gt;                   eleven | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([&amp;amp;](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt;) &lt;span class="org-keyword"&gt;noexcept&lt;/span&gt; {
-&lt;span class="linenr"&gt;21: &lt;/span&gt;                       &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"false branch "&lt;/span&gt; &amp;lt;&amp;lt; k &amp;lt;&amp;lt; &lt;span class="org-string"&gt;'\n'&lt;/span&gt;;
-&lt;span class="linenr"&gt;22: &lt;/span&gt;                   }));
-&lt;span class="linenr"&gt;23: &lt;/span&gt;    });
-&lt;span class="linenr"&gt;24: &lt;/span&gt;
-&lt;span class="linenr"&gt;25: &lt;/span&gt;&lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sync_wait(&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(branch));
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-true branch 7
-&lt;/pre&gt;
-
-&lt;div class="notes" id="org6433988"&gt;
-&lt;p&gt; Control what sender is sent at rentime depending on the state of the program when the work is executing rather than in the structure of the senders. &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgbaa8db1" class="outline-5"&gt;
-&lt;h6 id="orgbaa8db1"&gt;&lt;code&gt;tst&lt;/code&gt; function&lt;/h6&gt;
-&lt;div class="outline-text-5" id="text-orgbaa8db1"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;&lt;span class="org-keyword"&gt;inline&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;tst&lt;/span&gt; = [](&lt;span class="org-type"&gt;bool&lt;/span&gt;                 &lt;span class="org-variable-name"&gt;cond&lt;/span&gt;,
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;                     &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;left&lt;/span&gt;,
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;                     &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;right&lt;/span&gt;)
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;    -&amp;gt; &lt;span class="org-constant"&gt;exec&lt;/span&gt;::&lt;span class="org-type"&gt;variant_sender&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(left),
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;                            &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(right)&amp;gt; {
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;  &lt;span class="org-keyword"&gt;if&lt;/span&gt; (cond)
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;    &lt;span class="org-keyword"&gt;return&lt;/span&gt; left;
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;  &lt;span class="org-keyword"&gt;else&lt;/span&gt;
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;    &lt;span class="org-keyword"&gt;return&lt;/span&gt; right;
-&lt;span class="linenr"&gt;10: &lt;/span&gt;};
-&lt;span class="linenr"&gt;11: &lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org84e1bd6" class="outline-4"&gt;
-&lt;h5 id="org84e1bd6"&gt;Recursion&lt;/h5&gt;
-&lt;div class="outline-text-4" id="text-org84e1bd6"&gt;
-&lt;div class="notes" id="org5757047"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org64da46e" class="outline-5"&gt;
-&lt;h6 id="org64da46e"&gt;Simple Recursion&lt;/h6&gt;
-&lt;div class="outline-text-5" id="text-org64da46e"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;any_int_sender&lt;/span&gt; =
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;    &lt;span class="org-type"&gt;any_sender_of&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::set_value_t(&lt;span class="org-type"&gt;int&lt;/span&gt;),
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;                  &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::set_stopped_t(),
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;                  &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::set_error_t(&lt;span class="org-constant"&gt;std&lt;/span&gt;::exception_ptr)&amp;gt;;
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;fac&lt;/span&gt;(&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;n&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;any_int_sender&lt;/span&gt; {
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"factorial of "&lt;/span&gt; &amp;lt;&amp;lt; n &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"\n"&lt;/span&gt;;
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;    &lt;span class="org-keyword"&gt;if&lt;/span&gt; (n == 0)
-&lt;span class="linenr"&gt;10: &lt;/span&gt;        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(1);
-&lt;span class="linenr"&gt;11: &lt;/span&gt;
-&lt;span class="linenr"&gt;12: &lt;/span&gt;    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(n - 1)
-&lt;span class="linenr"&gt;13: &lt;/span&gt;        | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value([](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; fac(k); })
-&lt;span class="linenr"&gt;14: &lt;/span&gt;        | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([&lt;span class="org-constant"&gt;n&lt;/span&gt;](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; k * n; });
-&lt;span class="linenr"&gt;15: &lt;/span&gt;}
-&lt;span class="linenr"&gt;16: &lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;    &lt;span class="org-type"&gt;int&lt;/span&gt;                  &lt;span class="org-variable-name"&gt;k&lt;/span&gt; = 10;
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;factorial&lt;/span&gt; =
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;        begin
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;        | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([=]() { &lt;span class="org-keyword"&gt;return&lt;/span&gt; k; })
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;        | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value([](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; fac(k); });
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"factorial built\n\n"&lt;/span&gt;;
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;
-&lt;span class="linenr"&gt;10: &lt;/span&gt;    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; [i] = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sync_wait(&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(factorial)).value();
-&lt;span class="linenr"&gt;11: &lt;/span&gt;    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"factorial "&lt;/span&gt; &amp;lt;&amp;lt; k &amp;lt;&amp;lt; &lt;span class="org-string"&gt;" = "&lt;/span&gt; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; &lt;span class="org-string"&gt;'\n'&lt;/span&gt;;
-&lt;span class="linenr"&gt;12: &lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-factorial built
-
-factorial of 10
-factorial of 9
-factorial of 8
-factorial of 7
-factorial of 6
-factorial of 5
-factorial of 4
-factorial of 3
-factorial of 2
-factorial of 1
-factorial of 0
-factorial 10 = 3628800
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgfc40dd9" class="outline-5"&gt;
-&lt;h6 id="orgfc40dd9"&gt;General Recursion&lt;/h6&gt;
-&lt;div class="outline-text-5" id="text-orgfc40dd9"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;fib&lt;/span&gt;(&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;n&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;any_int_sender&lt;/span&gt; {
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;    &lt;span class="org-keyword"&gt;if&lt;/span&gt; (n == 0)
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(getDefaultScheduler(),  &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(0));
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;    &lt;span class="org-keyword"&gt;if&lt;/span&gt; (n == 1)
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(getDefaultScheduler(), &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(1));
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;work&lt;/span&gt; = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::when_all(
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;                    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(getDefaultScheduler(), &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(n - 1)) |
-&lt;span class="linenr"&gt;10: &lt;/span&gt;                        &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value([](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; fib(k); }),
-&lt;span class="linenr"&gt;11: &lt;/span&gt;                    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(getDefaultScheduler(), &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(n - 2)) |
-&lt;span class="linenr"&gt;12: &lt;/span&gt;                        &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value([](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; fib(k); })) |
-&lt;span class="linenr"&gt;13: &lt;/span&gt;                &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([](&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;i&lt;/span&gt;, &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;j&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; i + j; });
-&lt;span class="linenr"&gt;14: &lt;/span&gt;
-&lt;span class="linenr"&gt;15: &lt;/span&gt;    &lt;span class="org-keyword"&gt;return&lt;/span&gt; work;
-&lt;span class="linenr"&gt;16: &lt;/span&gt;}
-&lt;span class="linenr"&gt;17: &lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;&lt;span class="org-type"&gt;int&lt;/span&gt;                  &lt;span class="org-variable-name"&gt;k&lt;/span&gt; = 30;
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;fibonacci&lt;/span&gt; =
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;        begin | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([=]() { &lt;span class="org-keyword"&gt;return&lt;/span&gt; k; }) |
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;        &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value([](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;k&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; fib(k); });
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"fibonacci built\n"&lt;/span&gt;;
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; [i] = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sync_wait(&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(fibonacci)).value();
-&lt;span class="linenr"&gt;10: &lt;/span&gt;    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"fibonacci "&lt;/span&gt; &amp;lt;&amp;lt; k &amp;lt;&amp;lt; &lt;span class="org-string"&gt;" = "&lt;/span&gt; &amp;lt;&amp;lt; i &amp;lt;&amp;lt; &lt;span class="org-string"&gt;'\n'&lt;/span&gt;;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-fibonacci built
-fibonacci 30 = 832040
-fibonacci 30 = 832040
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org5fd882c" class="outline-5"&gt;
-&lt;h6 id="org5fd882c"&gt;Fold&lt;/h6&gt;
-&lt;div class="outline-text-5" id="text-org5fd882c"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;        &lt;span class="org-keyword"&gt;if&lt;/span&gt; (first == last) {
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;            &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(U{&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(init)});
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;        }
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;        &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;nxt&lt;/span&gt; =
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;            &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(&lt;span class="org-constant"&gt;std&lt;/span&gt;::invoke(f, &lt;span class="org-constant"&gt;std&lt;/span&gt;::move(init), *first)) |
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;            &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value([&lt;span class="org-keyword"&gt;this&lt;/span&gt;,
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;                                &lt;span class="org-variable-name"&gt;first&lt;/span&gt; = first,
-&lt;span class="linenr"&gt;10: &lt;/span&gt;                                &lt;span class="org-variable-name"&gt;last&lt;/span&gt; = last,
-&lt;span class="linenr"&gt;11: &lt;/span&gt;                                &lt;span class="org-variable-name"&gt;f&lt;/span&gt; = f
-&lt;span class="linenr"&gt;12: &lt;/span&gt;                                ](&lt;span class="org-type"&gt;U&lt;/span&gt; &lt;span class="org-variable-name"&gt;u&lt;/span&gt;) {
-&lt;span class="linenr"&gt;13: &lt;/span&gt;                &lt;span class="org-type"&gt;I&lt;/span&gt; &lt;span class="org-variable-name"&gt;i&lt;/span&gt; = first;
-&lt;span class="linenr"&gt;14: &lt;/span&gt;                &lt;span class="org-keyword"&gt;return&lt;/span&gt; (*&lt;span class="org-keyword"&gt;this&lt;/span&gt;)(++i, last, u, f);
-&lt;span class="linenr"&gt;15: &lt;/span&gt;            });
-&lt;span class="linenr"&gt;16: &lt;/span&gt;        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::move(nxt);
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="linenr"&gt; 1: &lt;/span&gt;
-&lt;span class="linenr"&gt; 2: &lt;/span&gt;    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;v&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;ranges&lt;/span&gt;::iota_view{1, 10'000};
-&lt;span class="linenr"&gt; 3: &lt;/span&gt;
-&lt;span class="linenr"&gt; 4: &lt;/span&gt;    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;work&lt;/span&gt; =
-&lt;span class="linenr"&gt; 5: &lt;/span&gt;        begin
-&lt;span class="linenr"&gt; 6: &lt;/span&gt;        | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value([&lt;span class="org-variable-name"&gt;i&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;ranges&lt;/span&gt;::begin(v),
-&lt;span class="linenr"&gt; 7: &lt;/span&gt;                              &lt;span class="org-variable-name"&gt;s&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;ranges&lt;/span&gt;::end(v)]() {
-&lt;span class="linenr"&gt; 8: &lt;/span&gt;            &lt;span class="org-keyword"&gt;return&lt;/span&gt; fold_left(i, s, 0, [](&lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;i&lt;/span&gt;, &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-variable-name"&gt;j&lt;/span&gt;) { &lt;span class="org-keyword"&gt;return&lt;/span&gt; i + j; });
-&lt;span class="linenr"&gt; 9: &lt;/span&gt;        });
-&lt;span class="linenr"&gt;10: &lt;/span&gt;
-&lt;span class="linenr"&gt;11: &lt;/span&gt;    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; [i] = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sync_wait(&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(work)).value();
-&lt;span class="linenr"&gt;12: &lt;/span&gt;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-work  = 49995000
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgcb782a7" class="outline-5"&gt;
-&lt;h6 id="orgcb782a7"&gt;Backtrack&lt;/h6&gt;
-&lt;div class="outline-text-5" id="text-orgcb782a7"&gt;
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;any_node_sender&lt;/span&gt; =
-    &lt;span class="org-type"&gt;any_sender_of&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::set_value_t(&lt;span class="org-constant"&gt;tree&lt;/span&gt;::&lt;span class="org-type"&gt;NodePtr&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt;),
-                  &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::set_stopped_t(),
-                  &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::set_error_t(&lt;span class="org-constant"&gt;std&lt;/span&gt;::exception_ptr)&amp;gt;;
-
-&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;search_tree&lt;/span&gt;(&lt;span class="org-keyword"&gt;auto&lt;/span&gt;                    &lt;span class="org-variable-name"&gt;test&lt;/span&gt;,
-                 &lt;span class="org-constant"&gt;tree&lt;/span&gt;::&lt;span class="org-type"&gt;NodePtr&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt;      &lt;span class="org-variable-name"&gt;tree&lt;/span&gt;,
-                 &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;scheduler&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;sch&lt;/span&gt;,
-                 &lt;span class="org-type"&gt;any_node_sender&lt;/span&gt;&amp;amp;&amp;amp;       &lt;span class="org-variable-name"&gt;fail&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;any_node_sender&lt;/span&gt; {
-    &lt;span class="org-keyword"&gt;if&lt;/span&gt; (tree == &lt;span class="org-constant"&gt;nullptr&lt;/span&gt;) {
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::move(fail);
-    }
-    &lt;span class="org-keyword"&gt;if&lt;/span&gt; (test(tree)) {
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just(tree);
-    }
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(sch, &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just()) |
-           &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value([=, &lt;span class="org-variable-name"&gt;fail&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::move(fail)]() &lt;span class="org-keyword"&gt;mutable&lt;/span&gt; {
-               &lt;span class="org-keyword"&gt;return&lt;/span&gt; search_tree(
-                   test,
-                   tree-&amp;gt;left(),
-                   sch,
-                   &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::on(sch, &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::just()) |
-                       &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value(
-                           [=, &lt;span class="org-variable-name"&gt;fail&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::move(fail)]() &lt;span class="org-keyword"&gt;mutable&lt;/span&gt; {
-                               &lt;span class="org-keyword"&gt;return&lt;/span&gt; search_tree(
-                                   test, tree-&amp;gt;right(), sch, &lt;span class="org-constant"&gt;std&lt;/span&gt;::move(fail));
-                           }));
-           });
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; fail;
-}
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;label class="org-src-name"&gt;&lt;em&gt;&lt;/em&gt;&lt;/label&gt;
-&lt;pre class="src src-c++" id="nil"&gt;    &lt;span class="org-constant"&gt;tree&lt;/span&gt;::&lt;span class="org-type"&gt;NodePtr&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt; &lt;span class="org-variable-name"&gt;t&lt;/span&gt;;
-    &lt;span class="org-keyword"&gt;for&lt;/span&gt; (&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;i&lt;/span&gt; : &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;ranges&lt;/span&gt;::&lt;span class="org-constant"&gt;views&lt;/span&gt;::iota(1, 10'000)) {
-        &lt;span class="org-constant"&gt;tree&lt;/span&gt;::&lt;span class="org-constant"&gt;Tree&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt;::insert(i, t);
-    }
-
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;test&lt;/span&gt; = [](&lt;span class="org-constant"&gt;tree&lt;/span&gt;::&lt;span class="org-type"&gt;NodePtr&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt; &lt;span class="org-variable-name"&gt;t&lt;/span&gt;) -&amp;gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; {
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; t ? t-&amp;gt;data() == 500 : &lt;span class="org-constant"&gt;false&lt;/span&gt;;
-    };
-
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;fail&lt;/span&gt; = begin | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::then([]() { &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;tree&lt;/span&gt;::&lt;span class="org-type"&gt;NodePtr&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt;{}; });
-
-    &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::&lt;span class="org-type"&gt;sender&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;work&lt;/span&gt; =
-        begin | &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::let_value([=]() {
-            &lt;span class="org-keyword"&gt;return&lt;/span&gt; search_tree(test, t, sch, &lt;span class="org-constant"&gt;std&lt;/span&gt;::move(fail));
-        });
-
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; [n] = &lt;span class="org-constant"&gt;stdexec&lt;/span&gt;::sync_wait(&lt;span class="org-constant"&gt;std&lt;/span&gt;::move(work)).value();
-
-    &lt;span class="org-constant"&gt;std&lt;/span&gt;::cout &amp;lt;&amp;lt; &lt;span class="org-string"&gt;"work "&lt;/span&gt;
-              &amp;lt;&amp;lt; &lt;span class="org-string"&gt;" = "&lt;/span&gt; &amp;lt;&amp;lt; n-&amp;gt;data() &amp;lt;&amp;lt; &lt;span class="org-string"&gt;'\n'&lt;/span&gt;;
-&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;em&gt;&lt;/em&gt;
-&lt;pre class="example" id="nil"&gt;
-work  = 500
-&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org91abfba" class="outline-2"&gt;
-&lt;h3 id="org91abfba"&gt;Don't Do That&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org91abfba"&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org1aa4228" class="outline-3"&gt;
-&lt;h4 id="org1aa4228"&gt;Can is not Should&lt;/h4&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orga3f48a3" class="outline-3"&gt;
-&lt;h4 id="orga3f48a3"&gt;Write an Algorithm&lt;/h4&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-orgbea3c89" class="outline-3"&gt;
-&lt;h4 id="orgbea3c89"&gt;Why You Might&lt;/h4&gt;
-&lt;div class="outline-text-3" id="text-orgbea3c89"&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;Throughput&lt;/li&gt;
-&lt;li&gt;Interruptable&lt;/li&gt;
-&lt;/ul&gt;
-
-
-&lt;div class="notes" id="orgd77b1a9"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="outline-container-org03d3e92" class="outline-2"&gt;
-&lt;h3 id="org03d3e92"&gt;Thank You&lt;/h3&gt;
-&lt;div class="outline-text-2" id="text-org03d3e92"&gt;
-&lt;div class="notes" id="org76ec745"&gt;
-&lt;p&gt;  &lt;/p&gt;
-
-&lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;</content>
   </entry>
