@@ -132,7 +132,7 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
             <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
             
 <article class="blog-post h-entry"><div class="e-content entry-content">
-        <div class="abstract" id="org7f838bd">
+        <div class="abstract" id="org1ab8a8c">
 <p>
 I am working on a proposal to let any callable be written between two backticks
 as an infix binary operator: <code>x `f` y</code> means exactly <code>f(x, y)</code>. It is borrowed
@@ -143,8 +143,8 @@ Clang and GCC. This post is the announcement and the design tour.
 </div>
 
 <!-- TEASER_END -->
-<div id="ox-nikola-outline-container-org0904bd6" class="ox-nikola-outline-2">
-<h2 id="org0904bd6">
+<div id="ox-nikola-outline-container-orgcf0addc" class="ox-nikola-outline-2">
+<h2 id="orgcf0addc">
 <span class="section-number-2">1.</span> The pitch in one line</h2>
 <div class="outline-text-2" id="text-1">
 <p>
@@ -180,8 +180,8 @@ are lexed before the punctuator stage and are therefore untouched.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orgfb8b737" class="ox-nikola-outline-2">
-<h2 id="orgfb8b737">
+<div id="ox-nikola-outline-container-org00f006b" class="ox-nikola-outline-2">
+<h2 id="org00f006b">
 <span class="section-number-2">2.</span> It desugars to a call, and that is the whole point</h2>
 <div class="outline-text-2" id="text-2">
 <p>
@@ -231,8 +231,8 @@ know how a call behaves, you know how this behaves.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orgd04333f" class="ox-nikola-outline-2">
-<h2 id="orgd04333f">
+<div id="ox-nikola-outline-container-orgb5c9a69" class="ox-nikola-outline-2">
+<h2 id="orgb5c9a69">
 <span class="section-number-2">3.</span> How it parses</h2>
 <div class="outline-text-2" id="text-3">
 <p>
@@ -277,8 +277,8 @@ lambda, are all fine.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org44d358e" class="ox-nikola-outline-2">
-<h2 id="org44d358e">
+<div id="ox-nikola-outline-container-orgd0e58c8" class="ox-nikola-outline-2">
+<h2 id="orgd0e58c8">
 <span class="section-number-2">4.</span> The one genuinely tricky part</h2>
 <div class="outline-text-2" id="text-4">
 <p>
@@ -316,8 +316,8 @@ asymmetric and then omits the parentheses on purpose.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org892bfa4" class="ox-nikola-outline-2">
-<h2 id="org892bfa4">
+<div id="ox-nikola-outline-container-org9adcea0" class="ox-nikola-outline-2">
+<h2 id="org9adcea0">
 <span class="section-number-2">5.</span> A second use for the same token: escaping keywords</h2>
 <div class="outline-text-2" id="text-5">
 <p>
@@ -353,8 +353,8 @@ contradiction.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org87492a3" class="ox-nikola-outline-2">
-<h2 id="org87492a3">
+<div id="ox-nikola-outline-container-org9b5142c" class="ox-nikola-outline-2">
+<h2 id="org9b5142c">
 <span class="section-number-2">6.</span> What it is good for</h2>
 <div class="outline-text-2" id="text-6">
 <p>
@@ -427,8 +427,8 @@ earn a place in a library.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org9870641" class="ox-nikola-outline-2">
-<h2 id="org9870641">
+<div id="ox-nikola-outline-container-org519018c" class="ox-nikola-outline-2">
+<h2 id="org519018c">
 <span class="section-number-2">7.</span> It is not the pipeline operator, and does not want to be</h2>
 <div class="outline-text-2" id="text-7">
 <p>
@@ -464,8 +464,8 @@ in one program.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org1a3d032" class="ox-nikola-outline-2">
-<h2 id="org1a3d032">
+<div id="ox-nikola-outline-container-orgc1d97f3" class="ox-nikola-outline-2">
+<h2 id="orgc1d97f3">
 <span class="section-number-2">8.</span> Implementation status</h2>
 <div class="outline-text-2" id="text-8">
 <p>
@@ -497,8 +497,8 @@ for" claims are implementation experience, not assertion.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org420599f" class="ox-nikola-outline-2">
-<h2 id="org420599f">
+<div id="ox-nikola-outline-container-orge54a9dd" class="ox-nikola-outline-2">
+<h2 id="orge54a9dd">
 <span class="section-number-2">9.</span> What I am proposing, and what comes next</h2>
 <div class="outline-text-2" id="text-9">
 <p>
@@ -511,10 +511,10 @@ Compiler Explorer deployment strengthen the story but do not block it.
 <p>
 If you have a binary operation that has always read worse as <code>f(x, y)</code> than it
 would as <code>x `f` y</code> — a domain predicate, a metric, a combinator — that is the
-use case, and I would like to hear about it. The design log, the per-compiler
-implementation plans, and the running record of where reality corrected the
-design all live alongside this post; comments, objections, and motivating
-examples are all welcome before this goes in front of the committee.
+use case, and I would like to hear about it. The two compiler forks linked above
+are public if you want to build the branch and try it; comments, objections, and
+motivating examples are all welcome — reach me at <a href="mailto:sdowney@gmail.com">sdowney@gmail.com</a> — before this
+goes in front of the committee.
 </p>
 </div>
 </div>

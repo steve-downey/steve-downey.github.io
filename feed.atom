@@ -3,7 +3,7 @@
 <feed xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
   <title>What Comes to Mind</title>
   <id>https://sdowney.org/feed.atom</id>
-  <updated>2026-06-29T12:11:47Z</updated>
+  <updated>2026-06-29T12:47:46Z</updated>
   <author>
     <name>Steve Downey</name>
   </author>
@@ -19,7 +19,7 @@
       <name>Steve Downey</name>
     </author>
     <link rel="alternate" type="text/html" href="https://sdowney.org/posts/infix-backtick-operator/"/>
-    <summary type="html">&lt;div&gt;&lt;div class="abstract" id="org7f838bd"&gt;
+    <summary type="html">&lt;div&gt;&lt;div class="abstract" id="org1ab8a8c"&gt;
 &lt;p&gt;
 I am working on a proposal to let any callable be written between two backticks
 as an infix binary operator: &lt;code&gt;x `f` y&lt;/code&gt; means exactly &lt;code&gt;f(x, y)&lt;/code&gt;. It is borrowed
@@ -30,7 +30,7 @@ Clang and GCC. This post is the announcement and the design tour.
 &lt;/div&gt;
 
 &lt;p&gt;&lt;a href="https://sdowney.org/posts/infix-backtick-operator/"&gt;Read more…&lt;/a&gt; (8 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
-    <content type="html">&lt;div class="abstract" id="org7f838bd"&gt;
+    <content type="html">&lt;div class="abstract" id="org1ab8a8c"&gt;
 &lt;p&gt;
 I am working on a proposal to let any callable be written between two backticks
 as an infix binary operator: &lt;code&gt;x `f` y&lt;/code&gt; means exactly &lt;code&gt;f(x, y)&lt;/code&gt;. It is borrowed
@@ -41,8 +41,8 @@ Clang and GCC. This post is the announcement and the design tour.
 &lt;/div&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="ox-nikola-outline-container-org0904bd6" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org0904bd6"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; The pitch in one line&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgcf0addc" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgcf0addc"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; The pitch in one line&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 C++ lets you spell a handful of binary operations infix — &lt;code&gt;a + b&lt;/code&gt;, &lt;code&gt;a &amp;lt; b&lt;/code&gt;,
@@ -77,8 +77,8 @@ are lexed before the punctuator stage and are therefore untouched.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgfb8b737" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgfb8b737"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; It desugars to a call, and that is the whole point&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org00f006b" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org00f006b"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; It desugars to a call, and that is the whole point&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 The single most important design decision is that the operator lowers to a
@@ -127,8 +127,8 @@ know how a call behaves, you know how this behaves.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgd04333f" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgd04333f"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; How it parses&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgb5c9a69" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgb5c9a69"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; How it parses&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 Two questions decide how an infix operator feels: how tightly it binds, and how
@@ -172,8 +172,8 @@ lambda, are all fine.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org44d358e" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org44d358e"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; The one genuinely tricky part&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgd0e58c8" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgd0e58c8"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; The one genuinely tricky part&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-4"&gt;
 &lt;p&gt;
 The open and close delimiter are the same token. A naive parser, having read
@@ -210,8 +210,8 @@ asymmetric and then omits the parentheses on purpose.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org892bfa4" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org892bfa4"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; A second use for the same token: escaping keywords&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org9adcea0" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org9adcea0"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; A second use for the same token: escaping keywords&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-5"&gt;
 &lt;p&gt;
 Because the proposal claims the backtick as a punctuator, it is worth asking
@@ -246,8 +246,8 @@ contradiction.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org87492a3" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org87492a3"&gt;&lt;span class="section-number-2"&gt;6.&lt;/span&gt; What it is good for&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org9b5142c" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org9b5142c"&gt;&lt;span class="section-number-2"&gt;6.&lt;/span&gt; What it is good for&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-6"&gt;
 &lt;p&gt;
 The shallow answer is readability for binary operations that read better infix:
@@ -319,8 +319,8 @@ earn a place in a library.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org9870641" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org9870641"&gt;&lt;span class="section-number-2"&gt;7.&lt;/span&gt; It is not the pipeline operator, and does not want to be&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org519018c" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org519018c"&gt;&lt;span class="section-number-2"&gt;7.&lt;/span&gt; It is not the pipeline operator, and does not want to be&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-7"&gt;
 &lt;p&gt;
 The obvious neighbour is Barry Revzin's &lt;code&gt;|&amp;gt;&lt;/code&gt; (P2011, the "pizza" operator). Both
@@ -355,8 +355,8 @@ in one program.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org1a3d032" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org1a3d032"&gt;&lt;span class="section-number-2"&gt;8.&lt;/span&gt; Implementation status&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgc1d97f3" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgc1d97f3"&gt;&lt;span class="section-number-2"&gt;8.&lt;/span&gt; Implementation status&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-8"&gt;
 &lt;p&gt;
 This is not a paper design with a hand-wave at implementability. The operator
@@ -386,8 +386,8 @@ for" claims are implementation experience, not assertion.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org420599f" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org420599f"&gt;&lt;span class="section-number-2"&gt;9.&lt;/span&gt; What I am proposing, and what comes next&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orge54a9dd" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orge54a9dd"&gt;&lt;span class="section-number-2"&gt;9.&lt;/span&gt; What I am proposing, and what comes next&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-9"&gt;
 &lt;p&gt;
 A pure core-language feature, targeting C++29: the infix backtick operator plus
@@ -399,10 +399,10 @@ Compiler Explorer deployment strengthen the story but do not block it.
 &lt;p&gt;
 If you have a binary operation that has always read worse as &lt;code&gt;f(x, y)&lt;/code&gt; than it
 would as &lt;code&gt;x `f` y&lt;/code&gt; — a domain predicate, a metric, a combinator — that is the
-use case, and I would like to hear about it. The design log, the per-compiler
-implementation plans, and the running record of where reality corrected the
-design all live alongside this post; comments, objections, and motivating
-examples are all welcome before this goes in front of the committee.
+use case, and I would like to hear about it. The two compiler forks linked above
+are public if you want to build the branch and try it; comments, objections, and
+motivating examples are all welcome — reach me at &lt;a href="mailto:sdowney@gmail.com"&gt;sdowney@gmail.com&lt;/a&gt; — before this
+goes in front of the committee.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;</content>
