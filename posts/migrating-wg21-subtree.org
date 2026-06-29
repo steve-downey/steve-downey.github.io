@@ -1,0 +1,228 @@
+#+options: ':nil *:t -:t ::t <:t H:3 \n:nil ^:nil arch:headline author:t
+#+options: broken-links:nil c:nil creator:nil d:(not "LOGBOOK") date:t e:t
+#+options: email:nil f:t inline:t num:t p:nil pri:nil prop:nil stat:t tags:t
+#+options: tasks:t tex:t timestamp:t title:t toc:nil todo:t |:t
+#+options: html5-fancy:t
+#+TITLE: Refreshing a Stale Git Subtree
+#+AUTHOR: Steve Downey
+#+EMAIL: sdowney@gmail.com
+#+LANGUAGE: en
+#+SELECT_TAGS: export
+#+EXCLUDE_TAGS: noexport
+#+DESCRIPTION:
+#+KEYWORDS:
+#+SUBTITLE: Or: Never Patch the Vendored Copy
+#+TAGS: c++, wg21, pandoc, git, subtree, build, tooling
+#+DATE: {{{modification-time(%Y-%m-%d, VC)}}}
+#+STARTUP: showall
+#+OPTIONS: html-link-use-abs-url:nil html-postamble:nil html-preamble:t
+#+OPTIONS: html-scripts:n html-style:nil html5-fancy:nil tex:t
+#+HTML_DOCTYPE: xhtml-strict
+#+HTML_CONTAINER: div
+#+DESCRIPTION:
+#+KEYWORDS:
+#+HTML_LINK_HOME:
+#+HTML_LINK_UP:
+#+HTML_MATHJAX:
+#+HTML_HEAD:
+#+HTML_HEAD_EXTRA:
+#+SUBTITLE:
+#+INFOJS_OPT:
+
+#+begin_abstract
+I write my WG21 papers with [[https://github.com/mpark/wg21][MPark/WG21]], a Pandoc-based framework I vendor into the paper repo as a git subtree. The framework had a major overhaul--the build system split apart, and Pandoc jumped from 2.18 to 3.9--and my copy was 98 commits behind. Worse, the subtree had drifted in two directions at once: real local patches for a TLS-intercepting corporate network, and a pile of pointless autoformatter churn from my own pre-commit hooks. This is how I dragged it back to a verbatim copy of upstream, moved to the new ~flat.mk~ include, and pushed every local change back /out/ of the subtree so the next update is a one-liner.
+#+end_abstract
+
+{{{TEASER_END}}}
+
+* What the overhaul changed
+
+A few things upstream matter to anyone who integrates MPark/WG21.
+
+The Make machinery was split. The old monolithic ~Makefile~--the one you used via ~include wg21/Makefile~--became three fragments: ~wg21.mk~ is the engine you never include directly, ~flat.mk~ is for all-papers-in-one-directory, and ~paper.mk~ is for one-directory-per-paper. The old ~include wg21/Makefile~ still works through a backward-compat shim, but it nags you with a deprecation warning on every build and points you at ~flat.mk~.
+
+Pandoc went from 2.18 to 3.9.0.2. That brings MathJax to MathML, stricter raw-HTML handling, and changed citeproc behavior. Rendering can move under you, so this is the part to actually look at rather than assume.
+
+And a few behaviors shifted. Bare ~make~ now builds HTML, LaTeX, /and/ PDF; it used to build only PDF. ~make clean~ now removes only the output directory, and wiping the downloaded toolchain is ~make distclean~. The generated stable-reference file was renamed ~srefs.md~ to ~srefs.defs~.
+
+* Where I started, and why it was a mess
+
+The layout was an ordinary flat one.
+
+#+begin_example
+transcode/
+`-- papers/
+    |-- Makefile           # one line: include wg21/Makefile
+    |-- transcode-view.md  # the actual paper
+    |-- TEST.md
+    `-- wg21/              # the framework, as a git subtree
+#+end_example
+
+The trouble was all hiding inside ~papers/wg21/~. A subtree vendors the framework's files directly into your tree, which is the whole point--and also the whole problem. Anything that edits files in your repo edits the framework too, and you won't necessarily notice.
+
+So two things had happened. My ~pre-commit~ config didn't exclude the subtree, so ~ruff~ and friends had quietly reformatted ~wg21.py~ (489 lines of pure churn), ~refs.py~, and others. None of it changed behavior. All of it was a future merge conflict. On top of that I had genuine local patches for a corporate MITM-TLS network: a CA-bundle export, ~verify=False~ in ~refs.py~ where it fetches ~wg21.link~, a switch from ~pip~ to ~uv~, and a ~truststore~ dependency.
+
+One pile I wanted to throw away. The other I needed to keep. Neither belonged in the subtree, which is the lesson I'll keep repeating: the vendored copy should be a verbatim mirror of upstream and nothing else.
+
+* Branch, and a baseline to diff against
+
+#+begin_src shell
+git switch -c chore/update-wg21-subtree
+
+# Build the current (Pandoc 2.18) output, to diff against later.
+cd papers && make transcode-view.html
+cp generated/transcode-view.html /tmp/baseline.html
+#+end_src
+
+Crossing a Pandoc major version, I want to /see/ what moved, not trust that nothing did. The baseline costs a couple of minutes and pays for itself.
+
+* Refreshing the subtree
+
+~git subtree pull~ refuses to run with a dirty tree, so stash anything unrelated first, then pull from upstream master, squashed, the same way the subtree was originally adopted.
+
+#+begin_src shell
+git stash push -m park-unrelated -- some/unrelated/file
+git subtree pull --prefix=papers/wg21 \
+    https://github.com/mpark/wg21.git master --squash \
+    -m "Update wg21 subtree to mpark/master (Pandoc 3.9, Make overhaul)"
+#+end_src
+
+Because my subtree had diverged, this conflicted, exactly as it should. Six files collided on content, and two were modify/delete conflicts where upstream had deleted files I'd touched. My goal was simple, so the resolution was simple: the subtree should end up identical to upstream master. Take theirs, everywhere.
+
+#+begin_src shell
+# Take upstream ("theirs") for the content conflicts, then stage them.
+git checkout --theirs -- papers/wg21/Makefile \
+    papers/wg21/data/filters/citetitle.py \
+    papers/wg21/data/filters/wg21.py \
+    papers/wg21/data/templates/wg21.latex.patch \
+    papers/wg21/deps/install-pandoc.sh \
+    papers/wg21/deps/requirements.txt
+git add papers/wg21/...   # the files above
+
+# Upstream deleted these; accept the deletion.
+git rm -f papers/wg21/generated/TEST.html papers/wg21/tools/TEST-side-by-side.py
+#+end_src
+
+** The merge conflict you don't get
+
+Here is the part that a casual "resolve and commit" walks straight past. A three-way merge only raises a conflict when /both/ sides changed the same file. For a file I had churned but upstream hadn't touched since the squash base, Git auto-merges by silently keeping my version. No conflict. No prompt. The reformatted file just survives.
+
+The conflict it doesn't raise is the one that bites.
+
+So don't trust the conflict list. Diff the whole subtree against upstream and make sure it's byte-for-byte.
+
+#+begin_src shell
+# "mode sha path" for the staged subtree, prefix stripped:
+git ls-files -s papers/wg21 \
+  | awk '{p=$4; sub(/^papers\/wg21\//,"",p); print $1, $2, p}' | sort > /tmp/staged.txt
+
+# The same listing from a checkout of upstream master:
+git -C /path/to/mpark-wg21-checkout ls-tree -r master \
+  | awk '{print $1, $3, $4}' | sort > /tmp/upstream.txt
+
+diff /tmp/staged.txt /tmp/upstream.txt && echo "IDENTICAL TO UPSTREAM"
+#+end_src
+
+This caught two files--~refs.py~ and ~toc-depth.py~--still carrying their reformatted selves. I overwrote them with the upstream copies, re-ran the diff until it was empty, and only then committed the merge.
+
+#+begin_src shell
+cp /path/to/mpark-wg21-checkout/data/refs.py      papers/wg21/data/refs.py
+cp /path/to/mpark-wg21-checkout/data/toc-depth.py papers/wg21/data/toc-depth.py
+git add papers/wg21/data/refs.py papers/wg21/data/toc-depth.py
+# diff is empty -> commit the in-progress subtree merge
+git commit --no-verify
+#+end_src
+
+The squashed merge keeps the subtree metadata intact, so the next refresh is just another ~git subtree pull --squash~.
+
+* One line to ~flat.mk~
+
+The migration proper is a single line in /my/ Makefile, not the subtree's.
+
+#+begin_src makefile
+include wg21/flat.mk
+#+end_src
+
+While I was in there I folded the environment handling into the same file, because ~papers/Makefile~ is mine to edit and the subtree is not.
+
+* Keeping the subtree pristine
+
+This is the whole philosophy, so I'll say it plainly: never patch a file inside the subtree. Every line you change there is a line you re-fight on every pull. Both kinds of drift get pushed back out.
+
+** Environment patches go in my Makefile
+
+The framework fetches ~wg21.link~ with Python ~requests~ and builds a venv with ~pip~. On a TLS-intercepting network both have to trust the intercepting root CA. Instead of editing ~refs.py~ to pass ~verify=False~, or swapping ~uv~ into the install script, I point everything at the system CA bundle from ~papers/Makefile~.
+
+#+begin_src makefile
+# papers/Makefile
+# Point Python / requests / pip at the system CA bundle so the wg21.link fetch
+# and the venv install validate certs, without touching the subtree.
+export SSL_CERT_FILE      := /etc/ssl/certs/ca-certificates.crt
+export REQUESTS_CA_BUNDLE := /etc/ssl/certs/ca-certificates.crt
+export PIP_CERT           := /etc/ssl/certs/ca-certificates.crt
+
+include wg21/flat.mk
+#+end_src
+
+The reward is that the stock upstream ~refs.py~ now fetches ~wg21.link~ with verification passing--no ~verify=False~, no ~InsecureRequestWarning~--and the venv builds with plain ~pip~. The ~uv~ and ~truststore~ patches turned out to be unnecessary once the certificates simply validated. ~uv~ is genuinely nice for speed; I'll propose a clean ~PIP~ override upstream rather than fork the install script to get it back.
+
+** Churn gets fenced out of pre-commit
+
+To stop my hooks reformatting the subtree forever, I excluded it.
+
+#+begin_src yaml
+# .pre-commit-config.yaml
+# papers/wg21/ is mpark/wg21 vendored as a git subtree; keep it pristine so
+# `git subtree pull` stays conflict-free.
+exclude: 'template/|copier/|infra/|port/|papers/wg21/'
+#+end_src
+
+* Verifying, because Pandoc moved a major version
+
+I built every format and compared against the baseline.
+
+#+begin_src shell
+cd papers
+make transcode-view.html
+make transcode-view.latex transcode-view.pdf
+#+end_src
+
+The things I actually looked at: comparison tables (~::: cmptable~) still render; math is MathML rather than MathJax; the ~<!-- markdownlint -->~ line stays an invisible HTML comment instead of leaking as visible text; the title block and citations look right.
+
+The build also surfaced three problems that were already there in the 2.18 baseline, so not the upgrade's fault, but worth knowing. Seven citations defined in my local ~.bib~ files don't resolve, because the framework's bibliography configuration wins over the document's own ~bibliography:~ key. A duplicate ~email:~ key in the paper's YAML means Pandoc 3.x keeps only the last one. And emoji and superscript glyphs aren't in the default LaTeX font, so they quietly vanish from the PDF. Bugs for another day, but I'd rather know about them.
+
+* Living with it
+
+The flat layout is pleasant once it's in place. From ~papers/~:
+
+#+begin_src shell
+make transcode-view.html    # -> generated/transcode-view.html
+make transcode-view.pdf     # -> generated/transcode-view.pdf
+make transcode-view.latex   # the intermediate LaTeX
+
+make                        # ALL papers, ALL formats (html + latex + pdf)
+make html                   # all papers, HTML only
+make clean                  # remove generated/ (NOT the toolchain)
+make distclean              # also remove the downloaded Pandoc + venv
+#+end_src
+
+Two things to remember. Bare ~make~ now builds three formats, not one, so name the target if CI only wants HTML. And the downloaded Pandoc and the venv live under ~papers/wg21/deps/~ and are git-ignored; the first build re-fetches them, and ~make distclean~ gets the space back.
+
+* Refreshing, next time
+
+Because the subtree is pristine and fenced off from the hooks, the next update is the one-liner the tool always promised.
+
+#+begin_src shell
+git subtree pull --prefix=papers/wg21 \
+    https://github.com/mpark/wg21.git master --squash
+#+end_src
+
+If it ever conflicts again, the recipe is the same: resolve toward upstream, then run the ~ls-files~ versus ~ls-tree~ diff to prove the subtree is byte-identical before committing.
+
+* What I'd tell myself
+
+Subtree versus submodule is a real choice, not a coin flip. A subtree vendors files into your tree, which means your repo-wide tooling will happily edit the vendored code. Decide that on purpose and fence it off.
+
+Patches belong downstream. Anything you can say in your own Makefile or config--an environment variable, an include, an exclude--should live there, not inside the vendored copy.
+
+And the merge that silently keeps your side is the dangerous one, not the noisy conflict you can see. After any subtree refresh, diff against upstream. Trust the diff, not the conflict list.
