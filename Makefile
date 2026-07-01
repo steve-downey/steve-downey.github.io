@@ -20,6 +20,29 @@ NIKOLA := $(UV) run nikola
 _output_path := ./output/
 _cache_path := ./cache/
 
+# Tailwind config must be defined before any target that lists
+# $(TAILWIND_OUTPUT) as a prerequisite (e.g. `compile`). Make expands a
+# rule's prerequisites when the rule is read, so a later definition would
+# expand to empty and silently drop the CSS build from the graph.
+TAILWIND_THEME ?= 4
+
+ifeq ($(TAILWIND_THEME),3)
+TAILWIND_VERSION := 3.4.17
+TAILWIND_INPUT := themes/nikola-tailwind3-base/tailwind.input.css
+TAILWIND_EXTRA := --config themes/nikola-tailwind3-base/tailwind.config.js
+TAILWIND_OUTPUT := themes/nikola-tailwind3-base/assets/css/tailwind.css
+else
+TAILWIND_VERSION := 4.3.0
+TAILWIND_INPUT := themes/nikola-tailwind4-base/tailwind.input.css
+TAILWIND_EXTRA :=
+TAILWIND_OUTPUT := themes/nikola-tailwind4-base/assets/css/tailwind.css
+endif
+
+TAILWIND := .tools/tailwindcss-$(TAILWIND_VERSION)
+TAILWIND_URL := https://github.com/tailwindlabs/tailwindcss/releases/download/v$(TAILWIND_VERSION)/tailwindcss-linux-x64
+
+_tmpl_files := $(shell find themes -name '*.tmpl' 2>/dev/null)
+
 
 .update-submodules:
 	git submodule update --init --recursive
@@ -129,24 +152,8 @@ bash zsh: venv
 bash zsh: ## Run bash or zsh with the venv activated
 	$(ACTIVATE) $@
 
-TAILWIND_THEME ?= 4
-
-ifeq ($(TAILWIND_THEME),3)
-TAILWIND_VERSION := 3.4.17
-TAILWIND_INPUT := themes/nikola-tailwind3-base/tailwind.input.css
-TAILWIND_EXTRA := --config themes/nikola-tailwind3-base/tailwind.config.js
-TAILWIND_OUTPUT := themes/nikola-tailwind3-base/assets/css/tailwind.css
-else
-TAILWIND_VERSION := 4.3.0
-TAILWIND_INPUT := themes/nikola-tailwind4-base/tailwind.input.css
-TAILWIND_EXTRA :=
-TAILWIND_OUTPUT := themes/nikola-tailwind4-base/assets/css/tailwind.css
-endif
-
-TAILWIND := .tools/tailwindcss-$(TAILWIND_VERSION)
-TAILWIND_URL := https://github.com/tailwindlabs/tailwindcss/releases/download/v$(TAILWIND_VERSION)/tailwindcss-linux-x64
-
-_tmpl_files := $(shell find themes -name '*.tmpl' 2>/dev/null)
+# TAILWIND_* variables are defined near the top of this file (before the
+# `compile` target) so $(TAILWIND_OUTPUT) is in scope when that rule is read.
 
 $(TAILWIND):
 	mkdir -p .tools
