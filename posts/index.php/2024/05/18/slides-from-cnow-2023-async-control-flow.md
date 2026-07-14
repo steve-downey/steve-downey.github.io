@@ -483,7 +483,7 @@ The int is 55
 <div id="outline-container-org5e7ea49" class="outline-5">
 <h5 id="org5e7ea49">Sender</h5>
 <div class="outline-text-5" id="text-org5e7ea49">
-<div id="org2d613b7" class="figure"> <p><img src="/wp-content/uploads/2024/05/sender.png" alt="sender.png"> </p> </div>
+<div id="org2d613b7" class="figure"> <p><img src="/images/sender.png" alt="sender.png"> </p> </div>
 </div>
 </div>
 <div id="outline-container-orgb5de8b8" class="outline-5">
@@ -495,7 +495,7 @@ The int is 55
 </pre>
 </div>
 
-<div id="org23c38c7" class="figure"> <p><img src="/wp-content/uploads/2024/05/just.png" alt="just.png"> </p> </div>
+<div id="org23c38c7" class="figure"> <p><img src="/images/just.png" alt="just.png"> </p> </div>
 </div>
 </div>
 <div id="outline-container-org533dd2e" class="outline-5">
@@ -508,7 +508,7 @@ The int is 55
 </pre>
 </div>
 
-<div id="org7400c8c" class="figure"> <p><img src="/wp-content/uploads/2024/05/then.png" alt="then.png"> </p> </div>
+<div id="org7400c8c" class="figure"> <p><img src="/images/then.png" alt="then.png"> </p> </div>
 </div>
 </div>
 <div id="outline-container-orgf0c5b3f" class="outline-5">
@@ -521,7 +521,7 @@ The int is 55
 </pre>
 </div>
 
-<div id="org8f34211" class="figure"> <p><img src="/wp-content/uploads/2024/05/let_value.png" alt="let_value.png"> </p> </div>
+<div id="org8f34211" class="figure"> <p><img src="/images/let_value.png" alt="let_value.png"> </p> </div>
 </div>
 </div>
 </div>

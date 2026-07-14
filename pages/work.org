@@ -1,0 +1,94 @@
+#+BEGIN_COMMENT
+.. title: Work
+.. slug: work
+.. date: 2024-01-01 00:00:00
+.. tags:
+.. link:
+.. description: Conference talks, WG21 papers, and other C++ work.
+.. type: text
+#+END_COMMENT
+
+Programming and C++ standardization work: conference presentations, WG21 papers, and related projects.
+
+* Conference Talks
+
+** C++Now
+
+- [[https://cppnow.org/2023-program/][2023]] — /Async Control Flow/: sender/receiver, the continuation monad, and how ~std::execution~ structures asynchronous work.
+
+  [[https://sdowney.org/posts/index.php/2024/05/18/slides-from-cnow-2023-async-control-flow/][Slides (on this blog)]]
+
+** CppCon
+
+#+HTML: <!-- Add CppCon talk links here as they accumulate -->
+
+* WG21 Papers
+
+Selected papers where I was primary author or a significant contributor.
+All links resolve to the current head revision at [[https://wg21.link/][wg21.link]].
+
+** Active and Accepted
+
+- [[https://wg21.link/P2988][P2988]] — /std::optional<T&>/ (with Peter Sommerlad).
+  Gives ~optional~ reference semantics that rebind on assignment, closing a long-standing gap in the vocabulary type.
+  Currently in flight for C++26.
+
+- [[https://wg21.link/P1255][P1255]] — /views::nullable and a concept to constrain maybes/.
+  A view adaptor for types that are 0-or-1 elements: ~optional~, pointers, and anything satisfying the ~maybe~ concept.
+
+- [[https://wg21.link/P3913][P3913]] — /Optimize for std::optional in range adaptors/ (with Tomasz Kamiński).
+
+- [[https://wg21.link/P3836][P3836]] — /Make optional<T&> trivially copyable/ (with Jan Schultke and Nevin Liber).
+
+- [[https://wg21.link/P3574][P3574]] — /Constexpr Callables/.
+
+- [[https://wg21.link/P3473][P3473]] — /Splicing Should Respect Access Control/.
+
+- [[https://wg21.link/P3717][P3717]] — /Update Annex E onto Unicode 16/.
+
+** Accepted and Shipped
+
+- [[https://wg21.link/P1949][P1949]] — /C++ Identifier Syntax using Unicode Standard Annex 31/ (with Zach Laine, Tom Honermann, Peter Bindels, Jens Maurer).
+  Adopted for C++23.  Restricts identifiers to UAX #31 profiles, removing a long tail of confusable characters.
+
+- [[https://wg21.link/P2558][P2558]] — /Add @, $, and ` to the basic character set/.
+  Adopted for C++26.
+
+- [[https://wg21.link/P2071][P2071]] — /Named universal character escapes/ (with Tom Honermann, Peter Bindels, Corentin Jabot, R. Martinho Fernandes).
+  Adopted for C++23.  ~\N{SNOWMAN}~ is now valid in string literals.
+
+- [[https://wg21.link/P2301][P2301]] — /Add a pmr alias for std::stacktrace/.
+  Adopted for C++23.
+
+- [[https://wg21.link/P2540][P2540]] — /Empty Product for certain Views/.
+
+- [[https://wg21.link/P2787][P2787]] — /pmr::generator — Promise Types are not Values/.
+
+- [[https://wg21.link/P1025][P1025]] — /Update The Reference To The Unicode Standard/ (with JeanHeyd Meneide, Martinho Fernandes).
+  Adopted for C++20.
+
+** Direction and Analysis
+
+- [[https://wg21.link/P1988][P1988]] — /Allow Templates in Local Classes/.
+
+- [[https://wg21.link/P2653][P2653]] — /Update Annex E based on Unicode 15.0 UAX 31/.
+
+- [[https://wg21.link/P3199][P3199]] — /Choices for make_optional and value()/.
+
+- [[https://wg21.link/P3276][P3276]] — /P2900 Is Superior to a Contracts TS/ (with Joshua Berne, Jake Fevold, Mungo Gill, Rostislav Khlebnikov, John Lakos, Alisdair Meredith).
+
+- [[https://wg21.link/P1439][P1439]] — /Charset Transcoding, Transformation, and Transliteration/.
+
+- [[https://wg21.link/P1253][P1253]] — /Guidelines for when a WG21 proposal should be reviewed by SG16/.
+
+- [[https://wg21.link/P1254][P1254]] — /Notes on C++ Package Management/.
+
+- [[https://wg21.link/P1859][P1859]] — /Standard terminology for execution character set encodings/.
+
+* Projects
+
+- [[https://github.com/steve-downey/trees][trees]] — Functional data structures in C++: finger trees, fixpoint trees, typeclass objects.
+
+- [[https://github.com/steve-downey/wg21org][wg21org]] — Emacs org-mode tooling for writing WG21 papers.
+
+- [[https://github.com/steve-downey/optional_ref][optional_ref]] — Reference implementation for P2988 ~std::optional<T&>~.

@@ -10,3 +10,6 @@ nikolaserve.pid
 /plugins/orgmode/elpa-*/
 /plugins/orgmode/elpa/
 /uv.lock
+.tools/
+themes/nikola-tailwind3-base/assets/css/tailwind.css
+themes/nikola-tailwind4-base/assets/css/tailwind.css

@@ -1,0 +1,10 @@
+[Theme]
+engine = mako
+parent = nikola-tailwind3-base
+author = Steve Downey
+author_url = https://github.com/steve-downey
+license = MIT
+tags = tailwind, tailwind3, blog
+
+[Family]
+family = nikola-tailwind3

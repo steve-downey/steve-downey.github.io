@@ -1,0 +1,39 @@
+#+BEGIN_COMMENT
+.. title: About
+.. slug: about-me
+.. date: 2024-01-01 00:00:00
+.. tags:
+.. link:
+.. description: About Steve Downey.
+.. type: text
+#+END_COMMENT
+
+I'm a software engineer at [[https://www.bloomberg.com][Bloomberg LP]], where I've worked since 2003.
+Most of my current technical work is in C++, standardization, and tooling.
+
+I participate in [[https://isocpp.org/std/the-committee][WG21]], the ISO C++ committee.  My main active work is
+[[https://wg21.link/P2988][P2988]] (=std::optional<T&>=) and [[https://wg21.link/P1255][P1255]] (=views::nullable=).  Previously I worked
+on Unicode-related proposals that landed in C++20 and C++23, including
+[[https://wg21.link/P1949][P1949]] (identifier syntax) and [[https://wg21.link/P2071][P2071]] (named character escapes).
+
+A longer list of papers and conference talks is on the [[/pages/work/][Work]] page.
+
+* Background
+
+Before Bloomberg: Netfolio, JPMorgan, Mortgage Industry Advisory Corp, and
+Cohane Rafferty Securities.  I graduated from [[https://www.purchase.edu/][SUNY Purchase]].
+
+* This Blog
+
+"What Comes to Mind" has been running in various forms since 2004.  Posts
+are written in [[https://orgmode.org/][Emacs org-mode]] and published with [[https://getnikola.com/][Nikola]].  The current
+theme is built on [[https://tailwindcss.com/][Tailwind CSS]].  Syntax highlighting uses
+[[https://protesilaos.com/emacs/modus-themes][modus-vivendi-tinted]] via a custom Emacs package that exports face
+definitions directly from the theme's color palette.
+
+* Contact
+
+- Email: [[mailto:sdowney@sdowney.dev][sdowney@sdowney.dev]]
+- GitHub: [[https://github.com/steve-downey][steve-downey]]
+- Mastodon: [[https://mastodon.social/@Sdowney][@Sdowney@mastodon.social]]
+- Bluesky: [[https://bsky.app/profile/sdowney.bsky.social][@sdowney.bsky.social]]

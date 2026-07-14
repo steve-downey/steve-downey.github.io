@@ -1,0 +1,232 @@
+#+BEGIN_COMMENT
+.. title: Tailwind, Modus Themes, and the Blog Theming Workflow
+.. slug: tailwind-theme-workflow
+.. date: 2026-05-10 18:00:00-04:00
+.. tags: emacs, tailwind, nikola, org-mode, modus-themes
+.. link:
+.. description: How the blog's Tailwind CSS theme works end-to-end: from Emacs modus-themes palette through secretaire-css to rendered source blocks.
+.. type: text
+#+END_COMMENT
+
+I replaced the Foundation 6 theme on this blog with Tailwind CSS.  The
+immediate motivation was a CSS conflict---Foundation's global =code= and =kbd=
+rules bled into org-mode source blocks---but the deeper reason is that Tailwind
+has the community and documentation that Foundation no longer does.
+
+This post documents the workflow: how the theme is structured, how syntax
+highlighting CSS connects Emacs to the browser, and what the current
+configuration choices are.
+
+#+HTML:<!-- TEASER_END -->
+
+* The Theme Stack
+
+The blog uses three Nikola themes stacked via the parent chain:
+
+#+begin_example
+sdowney-tailwind → nikola-tailwind-blog → nikola-tailwind-base → base
+#+end_example
+
+=nikola-tailwind-base= provides the Tailwind Play CDN loading, a responsive
+navbar, a centered content column wrapped in Tailwind's =prose= class, and CSS
+for org-mode source blocks (centering, language labels, copy buttons).  It has
+no opinions about fonts or accent colors.
+
+=nikola-tailwind-blog= adds an indigo accent, post/index/tag templates, and the
+visual structure of a blog.
+
+=sdowney-tailwind= is just my personal layer: Google Fonts (Source Sans 3, Open
+Sans, Source Code Pro), Font Awesome, and the modus-vivendi syntax highlighting
+CSS.
+
+Each tier is a standard Nikola theme directory under =themes/=.  Nikola finds
+templates by walking the chain, so I only override what I actually change.
+
+* How Tailwind Is Loaded
+
+The Tailwind Play CDN is a =<script>= tag that processes utility classes at
+runtime:
+
+#+begin_src html
+<script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+#+end_src
+
+The Typography plugin provides the =prose= class, which styles all content
+elements (headings, paragraphs, lists, blockquotes, code, tables) inside the
+main content area.  For a blog where content comes from org-mode export, this
+is exactly right---I don't control the HTML org produces, and =prose= handles
+it gracefully.
+
+The Tailwind config is inline in a =<script>= block, defined in my personal
+=base_helper.tmpl=:
+
+#+begin_src javascript
+var heading = ['"Open Sans"', 'Roboto', 'Arial', 'sans-serif'];
+tailwind.config = {
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: ['"Source Sans 3"'].concat(heading),
+                heading: heading,
+                mono: ['"Source Code Pro"', 'Inconsolata', 'ui-monospace', 'Courier', 'monospace'],
+            },
+            typography: {
+                DEFAULT: {
+                    css: {
+                        'h1, h2, h3, h4, h5, h6': {
+                            fontFamily: heading.join(', '),
+                        },
+                    },
+                },
+            },
+        },
+    },
+};
+#+end_src
+
+Font stacks are defined once.  The =heading= array is reused in three places.
+
+* Source Block Rendering
+
+Org-mode's HTML exporter produces this structure:
+
+#+begin_src html
+<div class="org-src-container">
+  <pre class="src src-cpp">
+    <code><span class="org-keyword">template</span> ...</code>
+  </pre>
+</div>
+#+end_src
+
+The =src-cpp= class carries the language.  JavaScript in =base.tmpl= reads it,
+maps =cpp= to "C++", and injects a label in the top-left corner and a copy
+button in the top-right.  Any language works---unknown ones display their raw
+name.
+
+The CSS positions the container with =position: relative=, =margin: auto=,
+=width: fit-content=, =min-width: 60%=, and gives the =pre= a dark background
+(=--code-bg=) with padding.  The =padding-top: 2.25rem= makes room for the
+label and button.
+
+* Syntax Highlighting: The Modus Connection
+
+Org-mode's HTML exporter uses =htmlize= to apply face colors as CSS classes.
+When =org-html-htmlize-output-type= is ='css=, it produces =<span
+class="org-keyword">=, =<span class="org-type">=, etc.  The corresponding CSS
+must exist in an external stylesheet.
+
+Protesilaos Stavrou's [[https://protesilaos.com/emacs/modus-themes][modus-themes]] provide a structured palette: an alist of
+=(semantic-name . hex-color)= pairs.  Face definitions reference these palette
+names.  =font-lock-keyword-face=, for example, maps to =magenta-alt-other= in
+modus-vivendi.
+
+=secretaire-css.el= bridges Emacs and the browser:
+
+1. Load the target theme (e.g., =modus-vivendi-tinted=)
+2. Require deferred major modes so their faces exist
+3. Read the palette via =(modus-themes-current-palette)=
+4. For each face, resolve attributes and reverse-map hex → palette name
+5. Emit CSS rules using =var(--palette-name)= references
+6. Include only referenced palette entries in the =:root= block
+
+The result:
+
+#+begin_src css
+:root {
+    --bg-main: #0d0e1c;
+    --fg-main: #ffffff;
+    --magenta-alt-other: #b6a0ff;
+    --green: #44bc44;
+    /* ... only used entries ... */
+}
+
+/* font-lock-keyword-face: magenta-alt-other */
+.org-keyword {
+    color: var(--magenta-alt-other);
+    font-weight: bold;
+}
+#+end_src
+
+The =tailwind-base.css= file in the base tier references these variables:
+
+#+begin_src css
+:root {
+    --code-bg: var(--bg-main, #1e1e2e);
+    --code-fg: var(--fg-main, #cdd6f4);
+}
+#+end_src
+
+Change the modus variant, regenerate, and code block backgrounds follow.
+
+* Current Configuration
+
+** What's using the Play CDN
+
+The Tailwind Play CDN generates CSS client-side.  There is no =node_modules=,
+no =package.json=, no build step.  Page load includes a brief delay while
+Tailwind processes the utility classes.  For a personal blog with moderate
+traffic, this is acceptable.
+
+If it becomes a problem, the switch to a pre-built CSS file is
+straightforward: install the Tailwind CLI, run =npx tailwindcss -o
+tailwind.css=, replace the =<script>= with a =<link>=.
+
+** Typography plugin via prose
+
+The =prose prose-lg prose-indigo= classes on the content =<div>= provide:
+- Reasonable line lengths and spacing
+- Styled headings, links, lists, blockquotes, tables
+- Code blocks with monospace font
+- =prose-indigo= for accent-colored links
+
+Anything outside =prose= (navbar, footer, tag pills) uses =not-prose= or
+lives outside the =prose= wrapper.
+
+** Fonts
+
+- Body: Source Sans 3 (with Open Sans fallback)
+- Headings: Open Sans
+- Code: Source Code Pro
+
+All loaded via Google Fonts.  Tailwind's =font-sans= and =font-mono= utilities
+reference these through the config.
+
+** Accent color: indigo
+
+Tailwind's =indigo= palette provides the accent: =bg-indigo-700= for the
+header banner, =text-indigo-600= for links, =bg-indigo-100 text-indigo-700=
+for tag pills.  Changing to another color is a mechanical search-replace
+across the blog tier templates.
+
+** Icons: Font Awesome 7.0.1
+
+Loaded via CDN in the personal tier.  Navigation links in =conf.py= include
+Font Awesome =<i>= tags directly in the link text.
+
+* What I Might Tweak Later
+
+** Dark mode
+
+The syntax highlighting is already dark (modus-vivendi).  The page chrome is
+light.  A proper dark mode would add =dark:= variants to the templates and
+switch the modus CSS to operandi for the light code blocks.  Tailwind makes
+this straightforward with =darkMode: 'media'= in the config.
+
+** Production Tailwind
+
+If page load times bother me, switching to a pre-built CSS file removes the
+Play CDN runtime cost.  The config is already defined inline; moving it to
+=tailwind.config.js= is mechanical.
+
+** Palette-aware CSS generation
+
+=secretaire-css= currently falls back to htmlize for the actual face scanning
+when the modus palette API isn't available.  The full palette-aware path (emitting
+=var()= references instead of flat hex) works with modus-themes 3.x and 4.x.
+See =docs/secretaire-css-design.org= for what the ideal output looks like.
+
+** Fonts
+
+I'm eyeing [[https://www.brailleinstitute.org/freefont/][Atkinson Hyperlegible Next]] for body text.  Changing fonts is a
+two-place edit: the Google Fonts =<link>= tag and the Tailwind config in
+=base_helper.tmpl=.

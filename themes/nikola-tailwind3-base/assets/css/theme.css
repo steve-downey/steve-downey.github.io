@@ -1,0 +1,4 @@
+/* Intentionally empty.
+ * Overrides the Nikola base theme's theme.css which conflicts with Tailwind.
+ * All styling is handled by Tailwind CSS utilities and tailwind-extras.css.
+ */

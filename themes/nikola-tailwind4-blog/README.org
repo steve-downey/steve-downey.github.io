@@ -1,0 +1,32 @@
+* nikola-tailwind4-blog
+
+Derived blog-oriented theme built on top of [[../nikola-tailwind4-base/README.org][nikola-tailwind4-base]].
+
+** Parent theme
+
+This theme derives from =nikola-tailwind4-base=.
+
+Read [[../nikola-tailwind4-base/README.org][the parent theme README]] first for the shared ownership rules.
+
+** What this theme should own
+
+This theme should own blog-specific composition.
+
+Examples:
+
+- blog landing page structure
+- post templates
+- archive, tag, and list presentation
+- blog-oriented content wrappers such as whether the article container uses =dark:prose-invert=
+
+** What this theme should not own
+
+This theme should not silently take over the lower-level theme model.
+
+In particular:
+
+- prose token ownership remains with Tailwind Typography and the base theme
+- source block structure remains in the parent theme's =assets/css/tailwind-base.css=
+- dark-mode switching remains class-based and should not drift into a separate media-query-owned system
+
+If a change feels like general theme infrastructure rather than blog presentation, move it down to the base theme.

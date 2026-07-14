@@ -1,0 +1,78 @@
+#+title: Quote File
+#+date: {{{modification-time(%Y-%m-%d, VC)}}}
+#+author: Steve Downey
+#+email: sdowney@gmail.com
+#+description: A Collection of Quotes
+#+keywords:
+#+language: en
+
+#+org-export-with-smart-quotes: nil
+#+org-export-with-emphasize: t
+#+org-export-with-special-strings: t
+#+org-export-with-fixed-width: t
+#+org-export-with-timestamps: t
+#+org-export-preserve-breaks: nil
+#+org-export-with-sub-superscripts: nil
+#+org-export-with-archived-trees: headline
+#+org-export-with-author: t
+#+org-export-headline-levels: 3
+
+#+org-export-with-broken-links: nil
+#+org-export-with-clocks: nil
+#+org-export-with-creator: nil
+#+org-export-with-drawers: (not "LOGBOOK")
+#+org-export-with-date: t
+#+org-export-with-entities: t
+
+#+org-export-with-email: nil
+#+org-export-with-footnotes: t
+#+org-export-with-inlinetasks: t
+#+org-export-with-section-numbers: t
+#+org-export-with-planning: nil
+#+org-export-with-priority: nil
+#+org-export-with-properties: nil
+#+org-export-with-statistics-cookies: t
+#+org-export-with-tags: t
+
+#+org-export-with-tasks: t
+#+org-export-with-latex: t
+#+org-export-timestamp-file: t
+#+org-export-with-title: n
+#+org-export-with-toc: nil
+#+org-export-with-todo: t
+#+org-export-with-tables: t
+
+#+org-html-link-use-abs-url: nil
+#+org-html-postamble: nil
+#+org-html-preamble: t
+#+org-html-scripts: n
+#+org-html-style: nil
+#+org-html5-fancy: t
+#+org-html-self-link-headlines: t
+
+#+html_doctype: xhtml5
+#+html_container: div
+#+html_link_home:
+#+html_link_up:
+#+html_mathjax:
+#+html_head:
+#+html_head_extra:
+#+infojs_opt:
+
+#+select_tags: export
+#+exclude_tags: noexport
+
+#+bibliography: ../references.bib
+#+cite_export: csl
+
+#+STARTUP: showall
+
+
+
+* Gerry Weinberg
+** Three Laws of Consulting
+- The Second Law of Consulting :: No matter how it looks at first, it’s always a people problem.
+- The First Law of Consulting ::  In spite of what your client may tell you, there’s always a problem.
+- The Third Law of Consulting :: Never forget they’re paying you by the hour, not by the solution.
+
+\mdash  [cite/b/b:@Weinberg1985-no]

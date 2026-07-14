@@ -1,0 +1,45 @@
+## -*- coding: utf-8 -*-
+<%namespace name="helper" file="index_helper.tmpl"/>
+<%namespace name="comments" file="comments_helper.tmpl"/>
+<%namespace name="math" file="math_helper.tmpl"/>
+<%inherit file="base.tmpl"/>
+
+<%block name="extra_head">
+    ${parent.extra_head()}
+    % if posts and (permalink == '/' or permalink == '/' + index_file):
+        <link rel="prefetch" href="${posts[0].permalink()}" type="text/html">
+    % endif
+    ${math.math_styles()}
+</%block>
+
+<%block name="content">
+<%block name="content_header"></%block>
+% if 'main_index' in pagekind:
+    ${front_index_header}
+% endif
+<div class="space-y-10">
+% for post in posts:
+    <article class="blog-post">
+        <h3 class="not-prose text-2xl font-semibold">
+            <a href="${post.permalink()}" class="text-gray-900 dark:text-gray-100 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">${post.title()|h}</a>
+        </h3>
+        <p class="not-prose text-sm text-gray-500 mt-1">
+            <time class="published dt-published" datetime="${post.formatted_date('webiso')}" title="${post.formatted_date(date_format)|h}">${post.formatted_date(date_format)|h}</time>
+        </p>
+        % if not post.meta('nocomments') and site_has_comments:
+            <p class="not-prose text-sm text-gray-400 mt-1">${comments.comment_link(post.permalink(), post._base_path)}</p>
+        % endif
+        <div class="mt-3">
+        %if index_teasers:
+            ${post.text(teaser_only=True)}
+        %else:
+            ${post.text(teaser_only=False)}
+        %endif
+        </div>
+    </article>
+% endfor
+</div>
+${helper.html_pager()}
+${comments.comment_link_script()}
+${math.math_scripts()}
+</%block>

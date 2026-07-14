@@ -1,0 +1,48 @@
+## -*- coding: utf-8 -*-
+<%inherit file="base.tmpl"/>
+
+<%block name="page_header">
+%if title:
+    <h1 class="text-4xl font-bold">${blog_title|h}</h1>
+    <p class="mt-2 text-lg text-indigo-200">${title|h}</p>
+%else:
+    <h1 class="text-4xl font-bold">${blog_title|h}</h1>
+    <p class="mt-2 text-lg text-indigo-200">${blog_description|h}</p>
+%endif
+</%block>
+
+<%block name="content">
+    % if cat_items:
+        % if items:
+            <h2 class="text-2xl font-semibold mb-4">${messages("Categories")}</h2>
+        % endif
+        % for text, full_name, path, link, indent_levels, indent_change_before, indent_change_after in cat_hierarchy:
+            % for i in range(indent_change_before):
+                <ul class="list-disc list-inside ml-4 space-y-1">
+            % endfor
+            <li><a class="text-indigo-600 hover:underline" href="${link}">${text}</a>
+            % if indent_change_after <= 0:
+                </li>
+            % endif
+            % for i in range(-indent_change_after):
+                </ul>
+                % if i + 1 < len(indent_levels):
+                    </li>
+                % endif
+            % endfor
+        % endfor
+        % if items:
+            <h2 class="text-2xl font-semibold mt-8 mb-4">${messages("Tags")}</h2>
+        % endif
+    %endif
+    % if items:
+        <div class="not-prose flex flex-wrap gap-2">
+        % for text, link in items:
+            % if text not in hidden_tags:
+                <a href="${link}"
+                   class="inline-block bg-indigo-100 text-indigo-700 text-sm font-medium px-4 py-2 rounded-full hover:bg-indigo-200 transition-colors">${text|h}</a>
+            % endif
+        % endfor
+        </div>
+    % endif
+</%block>

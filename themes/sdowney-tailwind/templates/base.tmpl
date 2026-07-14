@@ -1,0 +1,116 @@
+## -*- coding: utf-8 -*-
+<%namespace name="base" file="base_helper.tmpl" import="*"/>
+<%namespace name="header" file="base_header.tmpl" import="*"/>
+<%namespace name="footer" file="base_footer.tmpl" import="*"/>
+${set_locale(lang)}
+${base.html_headstart()}
+<%block name="extra_head">
+### Leave this block alone.
+</%block>
+${template_hooks['extra_head']()}
+</head>
+<body class="bg-white text-gray-900 font-sans dark:bg-gray-900 dark:text-gray-100">
+    <a href="#content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-white focus:px-4 focus:py-2 focus:z-50">${messages("Skip to main content")}</a>
+    ${header.html_header()}
+    <div class="relative text-white py-10 text-center bg-cover bg-center" \
+% if theme_config.get('header_image'):
+         style="background-image: url('${theme_config.get("header_image")}');" \
+% endif
+>
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10">
+        <%block name="page_header">
+            <h1 class="text-4xl font-bold text-balance">${blog_title|h}</h1>
+            <p class="mt-2 text-lg text-gray-100">${blog_description|h}</p>
+        </%block>
+        </div>
+    </div>
+    <main id="content" class="max-w-6xl mx-auto px-4 py-8">
+        <div class="lg:flex lg:gap-10">
+            <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
+            <%block name="content"></%block>
+            </div>
+            <%include file="sidebar.tmpl"/>
+        </div>
+    </main>
+    <hr class="max-w-6xl mx-auto border-gray-200">
+    <div class="max-w-6xl mx-auto px-4 py-6">
+        ${footer.html_footer()}
+    </div>
+    ${base.late_load_js()}
+    % if date_fanciness != 0:
+    <!-- fancy dates -->
+    <script>
+    luxon.Settings.defaultLocale = "${luxon_locales[lang]}";
+    fancydates(${date_fanciness}, ${luxon_date_format});
+    </script>
+    <!-- end fancy dates -->
+    % endif
+    <%block name="extra_js"></%block>
+    <script>
+    baguetteBox.run('main#content', {
+        ignoreClass: 'islink',
+        captions: function(element){var i=element.getElementsByTagName('img')[0];return i===undefined?'':i.alt;}});
+    </script>
+    <script>
+    (function() {
+        var langNames = {
+            'cpp': 'C++', 'c++': 'C++', 'C++': 'C++', 'C+': 'C++',
+            'haskell': 'Haskell', 'Haskell': 'Haskell',
+            'python': 'Python', 'rust': 'Rust', 'cmake': 'CMake',
+            'bash': 'Bash', 'sh': 'Shell', 'shell': 'Shell', 'zsh': 'Zsh',
+            'makefile': 'Makefile', 'latex': 'LaTeX', 'asm': 'Assembly',
+            'nil': '', 'emacs-lisp': 'Emacs Lisp', 'elisp': 'Emacs Lisp',
+            'javascript': 'JavaScript', 'js': 'JavaScript',
+            'typescript': 'TypeScript', 'ts': 'TypeScript',
+            'html': 'HTML', 'css': 'CSS', 'json': 'JSON', 'yaml': 'YAML',
+            'sql': 'SQL', 'ruby': 'Ruby', 'perl': 'Perl',
+            'java': 'Java', 'go': 'Go', 'swift': 'Swift',
+            'org': 'Org', 'xml': 'XML', 'toml': 'TOML'
+        };
+        function getLang(pre) {
+            var classes = pre.className.split(/\s+/);
+            for (var i = 0; i < classes.length; i++) {
+                if (classes[i].indexOf('src-') === 0) return classes[i].substring(4);
+            }
+            return '';
+        }
+        function addControls(container, pre, lang) {
+            var displayName = langNames[lang] || lang;
+            if (displayName) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = displayName;
+                container.appendChild(label);
+            }
+            var btn = document.createElement('button');
+            btn.className = 'code-copy-btn';
+            btn.textContent = 'Copy';
+            btn.setAttribute('aria-label', 'Copy code to clipboard');
+            btn.addEventListener('click', function() {
+                var code = pre.querySelector('code');
+                var text = (code || pre).textContent;
+                navigator.clipboard.writeText(text).then(function() {
+                    btn.textContent = 'Copied!';
+                    setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
+                });
+            });
+            container.appendChild(btn);
+        }
+        document.querySelectorAll('.org-src-container').forEach(function(container) {
+            var pre = container.querySelector('pre.src');
+            if (pre) addControls(container, pre, getLang(pre));
+        });
+        document.querySelectorAll('pre.example').forEach(function(pre) {
+            var wrapper = document.createElement('div');
+            wrapper.className = 'example-container';
+            pre.parentNode.insertBefore(wrapper, pre);
+            wrapper.appendChild(pre);
+            addControls(wrapper, pre, '');
+        });
+    })();
+    </script>
+    ${body_end}
+    ${template_hooks['body_end']()}
+</body>
+</html>
