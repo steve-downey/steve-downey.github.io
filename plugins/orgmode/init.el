@@ -82,6 +82,45 @@
 (use-package ox-nikolahtml
   :load-path "./")
 
+(use-package org-transclusion
+  :vc (:url "https://github.com/nobiot/org-transclusion")
+  :config
+  (add-hook 'org-mode-hook #'org-transclusion-mode))
+
+;; Vendored locally (plugins/orgmode/orgit-file-transclusion.el); not on MELPA,
+;; so load it from this directory rather than trying to install it.
+(use-package orgit-file-transclusion
+  :load-path "./"
+  :ensure nil)
+
+;; Allow org-transclusion to resolve orgit links to the local file system
+(defun org-transclusion-add-orgit (link plist)
+  "Resolve orgit links into file links in-place."
+  (when (string= "orgit" (org-element-property :type link))
+    (let* ((full-path (org-element-property :path link))
+           (parts (split-string full-path "::"))
+           (repo-dir (car parts))
+           (inner-file (cadr parts))
+           (search-uuid (if (> (length parts) 2) (caddr parts) nil))
+           (actual-file (expand-file-name inner-file repo-dir))
+           (raw-link (concat "file:" actual-file)))
+
+      (when search-uuid
+        (setq raw-link (concat raw-link "::" search-uuid)))
+
+      ;; CRITICAL: Mutate the original link in-place so downstream plugins
+      ;; (like org-transclusion-src-lines) see the correct file path!
+      (org-element-put-property link :type "file")
+      (org-element-put-property link :path actual-file)
+      (org-element-put-property link :raw-link raw-link)
+      (if search-uuid
+          (org-element-put-property link :search-option search-uuid)
+        (org-element-put-property link :search-option nil))))
+  ;; ALWAYS return nil so the NEXT functions (like org-transclusion-add-src-lines) can handle it!
+  nil)
+
+(add-hook 'org-transclusion-add-functions 'org-transclusion-add-orgit)
+
 (setq plantuml-jar-path "/usr/share/plantuml/plantuml.jar")
 (setq plantuml-default-exec-mode 'jar)
 
@@ -126,6 +165,48 @@
                ((eq 'html backend)
                 (format "<a href=\"link:%s\">%s</a>"
                         path (or desc path))))))
+
+;; Export orgit: links to GitHub blob URLs.
+;;
+;; orgit's own resolver needs a live magit/repo and fails under `emacs
+;; --batch', aborting the export.  We only ever use orgit links as
+;; source-file references following the convention:
+;;
+;;   orgit:REPO-DIR::FILE[::SEARCH]
+;;
+;; so translate them directly into a GitHub permalink built from the
+;; repo's `origin' remote and its current HEAD.
+(require 'orgit nil t)
+
+(defun sd-orgit-github-permalink (repo-dir file)
+  "Build a GitHub blob URL for FILE inside the git worktree REPO-DIR.
+Return nil if REPO-DIR is not a github.com checkout."
+  (let* ((default-directory (file-name-as-directory (expand-file-name repo-dir)))
+         (remote (string-trim
+                  (shell-command-to-string "git remote get-url origin 2>/dev/null")))
+         (rev (string-trim
+               (shell-command-to-string "git rev-parse HEAD 2>/dev/null"))))
+    (when (and (not (string-empty-p remote))
+               (not (string-empty-p rev))
+               (string-match "github\\.com[:/]\\(.+?\\)\\(?:\\.git\\)?/?\\'" remote))
+      (format "https://github.com/%s/blob/%s/%s"
+              (match-string 1 remote) rev file))))
+
+(defun org-orgit-link-export (path desc format)
+  "Export orgit:REPO-DIR::FILE links as GitHub links.
+Falls back to DESC (or PATH) so export never aborts on an
+unresolvable repository."
+  (let* ((parts (split-string path "::"))
+         (repo-dir (car parts))
+         (file (cadr parts))
+         (url (and file (sd-orgit-github-permalink repo-dir file))))
+    (cond
+     ((and url (eq format 'html))
+      (format "<a href=\"%s\">%s</a>" url (or desc file)))
+     (url (or desc url))
+     (t (or desc file path)))))
+
+(org-link-set-parameters "orgit" :export #'org-orgit-link-export)
 
 ;; Export function used by Nikola.
 (defun nikola-html-export (infile outfile)
