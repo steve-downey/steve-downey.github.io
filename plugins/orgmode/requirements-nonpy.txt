@@ -1,2 +1,2 @@
 Emacs::https://www.gnu.org/software/emacs/
-Org-mode::https://orgmode.org/
+Org-mode::http://orgmode.org/

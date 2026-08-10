@@ -10,5 +10,5 @@ PluginCategory = PageCompiler
 [Documentation]
 Author = Puneeth Chaganti
 Version = 0.3
-Website = https://plugins.getnikola.com/#orgmode
+Website = http://plugins.getnikola.com/#orgmode
 Description = Compile org-mode markup into HTML using emacs.
