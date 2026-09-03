@@ -180,28 +180,35 @@
 ;; repo's `origin' remote and its current HEAD.
 (require 'orgit nil t)
 
-(defun sd-orgit-github-permalink (repo-dir file)
-  "Build a GitHub blob URL for FILE inside the git worktree REPO-DIR.
-Return nil if REPO-DIR is not a github.com checkout."
-  (let* ((default-directory (file-name-as-directory (expand-file-name repo-dir)))
-         (remote (string-trim
-                  (shell-command-to-string "git remote get-url origin 2>/dev/null")))
-         (rev (string-trim
-               (shell-command-to-string "git rev-parse HEAD 2>/dev/null"))))
-    (when (and (not (string-empty-p remote))
-               (not (string-empty-p rev))
-               (string-match "github\\.com[:/]\\(.+?\\)\\(?:\\.git\\)?/?\\'" remote))
-      (format "https://github.com/%s/blob/%s/%s"
-              (match-string 1 remote) rev file))))
+(defun sd-orgit-github-permalink (repo file)
+  "Build a GitHub blob URL for FILE in REPO, at the repository's default branch.
+Return nil if REPO names no known repository.
+
+REPO is resolved the way a pinned `orgit-file:' link resolves it --
+through `orgit-file-transclusion-repo-alist' -- so this needs no local
+checkout either.  It used to read one: `git remote get-url' and `git
+rev-parse HEAD' run inside REPO, which meant a published post could only
+be rebuilt on the laptop it was written on, and signalled from inside
+`shell-command-to-string' when the directory was absent, defeating the
+fallback its caller documents.
+
+Unlike `orgit-file:', an `orgit:' link carries no revision: it means
+the file as it currently stands, and `HEAD' is how GitHub spells that
+in a blob URL.  Such a link therefore follows the file rather than
+freezing it -- correct for a living document, and the reason prose in a
+published post should prefer a pinned `orgit-file:' link."
+  (let ((slug (ignore-errors (orgit-file-transclusion--slug repo))))
+    (when slug
+      (format "%s%s/blob/HEAD/%s" orgit-file-transclusion-github-url slug file))))
 
 (defun org-orgit-link-export (path desc format)
-  "Export orgit:REPO-DIR::FILE links as GitHub links.
+  "Export orgit:REPO::FILE links as GitHub links.
 Falls back to DESC (or PATH) so export never aborts on an
 unresolvable repository."
   (let* ((parts (split-string path "::"))
-         (repo-dir (car parts))
+         (repo (car parts))
          (file (cadr parts))
-         (url (and file (sd-orgit-github-permalink repo-dir file))))
+         (url (and file (sd-orgit-github-permalink repo file))))
     (cond
      ((and url (eq format 'html))
       (format "<a href=\"%s\">%s</a>" url (or desc file)))
