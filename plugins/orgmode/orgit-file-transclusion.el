@@ -44,6 +44,7 @@
 
 (require 'org-transclusion)
 (require 'subr-x)
+(require 'seq)
 
 (defgroup orgit-file-transclusion nil
   "Transclude UUID-anchored source regions pinned to a git revision."
@@ -57,13 +58,85 @@ SHA, so a stale entry cannot be served for a different revision."
   :type 'directory
   :group 'orgit-file-transclusion)
 
-(defcustom orgit-file-transclusion-base-url
-  "https://github.com/steve-downey/compile-time-scheme/blob/"
-  "Base URL for exporting `orgit-file' links, with a trailing slash.
-The pinned REV is appended, so an exported link is a permalink to the
-revision the post was written against rather than to a moving branch."
+(defcustom orgit-file-transclusion-remote "origin"
+  "Name of the git remote a checkout's forge URL is derived from.
+A blog draws posts from many source repositories, so the forge cannot be
+a single constant: it is read per-link from the REPO component.  Where a
+checkout has several remotes -- a personal fork as `origin' and the
+project it tracks as `upstream' -- this picks which one a permalink
+should point at."
   :type 'string
   :group 'orgit-file-transclusion)
+
+(defcustom orgit-file-transclusion-forge-alist nil
+  "Alist of (CHECKOUT-REGEXP . BASE-URL) overriding remote derivation.
+CHECKOUT-REGEXP is matched against the expanded REPO path; the first
+match wins.  BASE-URL is everything a permalink needs before the
+revision, with a trailing slash -- so it also carries the forge's own
+path convention, which is how a host that does not spell it
+`.../blob/REV/PATH' (GitLab, sourcehut) is accommodated.
+
+Leave this nil unless a checkout needs it.  Deriving from the remote is
+what keeps a permalink honest when a repository moves."
+  :type '(alist :key-type regexp :value-type string)
+  :group 'orgit-file-transclusion)
+
+(defvar orgit-file-transclusion--forge-cache (make-hash-table :test 'equal)
+  "Memoised REPO -> base URL, so a post costs one `git remote' per repo.")
+
+(defun orgit-file-transclusion--remote-url (repo)
+  "Return the URL of `orgit-file-transclusion-remote' in REPO, or nil."
+  (with-temp-buffer
+    (when (zerop (call-process "git" nil t nil
+                               "-C" (expand-file-name repo)
+                               "remote" "get-url"
+                               orgit-file-transclusion-remote))
+      (let ((url (string-trim (buffer-string))))
+        (unless (string-empty-p url) url)))))
+
+(defun orgit-file-transclusion--browse-url (remote-url)
+  "Convert REMOTE-URL, in any of git's transports, to a browsable base.
+Returns nil for a URL with no recognisable host and path, which includes
+a purely local remote -- a path or a `file://' URL names no forge."
+  (let ((url (string-trim remote-url)))
+    ;; scp-style `git@host:owner/name.git' is not a URI; normalise it first.
+    ;; Guarded on the absence of a scheme, or `https://host/p' would parse as
+    ;; host "https" with everything after the colon as its path.
+    (when (and (not (string-match-p "://" url))
+               (string-match "\\`\\(?:[^/@:]+@\\)?\\([^/:]+\\):\\(.+\\)\\'" url))
+      (setq url (concat "https://" (match-string 1 url) "/" (match-string 2 url))))
+    (when (string-match "\\`\\(?:https?\\|ssh\\|git\\)://\\(?:[^/@]+@\\)?\\([^/]+\\)/\\(.+\\)\\'" url)
+      (let ((host (match-string 1 url))
+            (path (match-string 2 url)))
+        ;; A port belongs to the transport, not to the web front end.
+        (setq host (replace-regexp-in-string ":[0-9]+\\'" "" host))
+        (setq path (replace-regexp-in-string "/+\\'" "" path))
+        (setq path (replace-regexp-in-string "\\.git\\'" "" path))
+        (unless (string-empty-p path)
+          (format "https://%s/%s" host path))))))
+
+(defun orgit-file-transclusion--forge-base (repo)
+  "Return the permalink base URL for checkout REPO, with a trailing slash.
+Consults `orgit-file-transclusion-forge-alist' first, then the URL of
+`orgit-file-transclusion-remote'.  Signals if neither yields one: a
+permalink pointing at the wrong repository is worse than a failed
+build."
+  (let ((key (expand-file-name repo)))
+    (or (gethash key orgit-file-transclusion--forge-cache)
+        (puthash
+         key
+         (or (cdr (seq-find (lambda (entry) (string-match-p (car entry) key))
+                            orgit-file-transclusion-forge-alist))
+             (let* ((remote (orgit-file-transclusion--remote-url repo))
+                    (browse (and remote
+                                 (orgit-file-transclusion--browse-url remote))))
+               (unless browse
+                 (error "orgit-file: no forge URL for %s (remote %S is %s); \
+set orgit-file-transclusion-forge-alist"
+                        repo orgit-file-transclusion-remote
+                        (if remote (format "%S" remote) "missing")))
+               (concat browse "/blob/")))
+         orgit-file-transclusion--forge-cache))))
 
 (defun orgit-file-transclusion--parse (raw)
   "Split RAW into (REPO REV PATH UUID); signal on any other shape."
@@ -126,16 +199,24 @@ worktree-resolved link."
 (add-hook 'org-transclusion-add-functions #'orgit-file-transclusion-add)
 
 ;; Export `orgit-file' links as forge permalinks at the pinned revision.
-;; Posts currently carry these links only on `#+transclude:' lines, which
-;; org-transclusion consumes before export, so this is for future inline use.
+;; The forge comes from REPO, not from a constant: a blog collects posts from
+;; several source repositories, and they cannot share one base URL.
 (org-link-set-parameters
  "orgit-file"
  :export
  (lambda (path desc backend)
+   ;; Tolerates a UUID-less link: inline prose often points at a whole file
+   ;; at the pinned revision, where a region anchor would say nothing.
    (let* ((parts (split-string path "::"))
+          (repo (nth 0 parts))
           (rev (nth 1 parts))
-          (filepath (or (nth 2 parts) path))
-          (url (concat orgit-file-transclusion-base-url rev "/" filepath)))
+          (filepath (nth 2 parts))
+          (url (progn
+                 (unless (and repo rev filepath)
+                   (error "orgit-file link needs REPO::REV::PATH[::UUID], got: %s"
+                          path))
+                 (concat (orgit-file-transclusion--forge-base repo)
+                         rev "/" filepath))))
      (cond
       ((memq backend '(md gfm)) (format "[`%s`](%s)" (or desc filepath) url))
       ((eq backend 'html)
