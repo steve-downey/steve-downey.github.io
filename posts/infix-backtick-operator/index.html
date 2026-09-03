@@ -48,6 +48,7 @@
 <link rel="canonical" href="https://sdowney.org/posts/infix-backtick-operator/">
 <meta name="author" content="Steve Downey">
 <link rel="prev" href="../migrating-wg21-subtree/" title="Refreshing a Stale Git Subtree" type="text/html">
+<link rel="next" href="../scrap-your-static_assert/" title="Scrap Your static_assert" type="text/html">
 <meta property="og:site_name" content="What Comes to Mind">
 <meta property="og:title" content="An Infix Backtick Operator for C++">
 <meta property="og:url" content="https://sdowney.org/posts/infix-backtick-operator/">
@@ -132,7 +133,7 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
             <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
             
 <article class="blog-post h-entry"><div class="e-content entry-content">
-        <div class="abstract" id="org5d2e159">
+        <div class="abstract" id="orge6551d2">
 <p>
 I am working on a proposal to let any callable be written between two backticks
 as an infix binary operator: <code>x `f` y</code> means exactly <code>f(x, y)</code>. It is borrowed
@@ -143,8 +144,8 @@ Clang and GCC. This post is the announcement and the design tour.
 </div>
 
 <!-- TEASER_END -->
-<div id="ox-nikola-outline-container-orgefa3cbf" class="ox-nikola-outline-2">
-<h2 id="orgefa3cbf">
+<div id="ox-nikola-outline-container-org01c5cf6" class="ox-nikola-outline-2">
+<h2 id="org01c5cf6">
 <span class="section-number-2">1.</span> The pitch in one line</h2>
 <div class="outline-text-2" id="text-1">
 <p>
@@ -180,8 +181,8 @@ are lexed before the punctuator stage and are therefore untouched.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orgdb90860" class="ox-nikola-outline-2">
-<h2 id="orgdb90860">
+<div id="ox-nikola-outline-container-org8393f10" class="ox-nikola-outline-2">
+<h2 id="org8393f10">
 <span class="section-number-2">2.</span> It desugars to a call, and that is the whole point</h2>
 <div class="outline-text-2" id="text-2">
 <p>
@@ -231,8 +232,8 @@ know how a call behaves, you know how this behaves.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org86cafda" class="ox-nikola-outline-2">
-<h2 id="org86cafda">
+<div id="ox-nikola-outline-container-org882ade3" class="ox-nikola-outline-2">
+<h2 id="org882ade3">
 <span class="section-number-2">3.</span> How it parses</h2>
 <div class="outline-text-2" id="text-3">
 <p>
@@ -277,8 +278,8 @@ lambda, are all fine.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orgb6a3246" class="ox-nikola-outline-2">
-<h2 id="orgb6a3246">
+<div id="ox-nikola-outline-container-org148e130" class="ox-nikola-outline-2">
+<h2 id="org148e130">
 <span class="section-number-2">4.</span> The one genuinely tricky part</h2>
 <div class="outline-text-2" id="text-4">
 <p>
@@ -316,8 +317,8 @@ asymmetric and then omits the parentheses on purpose.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orgb276d5e" class="ox-nikola-outline-2">
-<h2 id="orgb276d5e">
+<div id="ox-nikola-outline-container-org4e73816" class="ox-nikola-outline-2">
+<h2 id="org4e73816">
 <span class="section-number-2">5.</span> A second use for the same token: escaping keywords</h2>
 <div class="outline-text-2" id="text-5">
 <p>
@@ -353,8 +354,8 @@ contradiction.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org47d21c7" class="ox-nikola-outline-2">
-<h2 id="org47d21c7">
+<div id="ox-nikola-outline-container-org75e6d3c" class="ox-nikola-outline-2">
+<h2 id="org75e6d3c">
 <span class="section-number-2">6.</span> What it is good for</h2>
 <div class="outline-text-2" id="text-6">
 <p>
@@ -427,8 +428,8 @@ earn a place in a library.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org84b6ce3" class="ox-nikola-outline-2">
-<h2 id="org84b6ce3">
+<div id="ox-nikola-outline-container-orgef4ce6c" class="ox-nikola-outline-2">
+<h2 id="orgef4ce6c">
 <span class="section-number-2">7.</span> It is not the pipeline operator, and does not want to be</h2>
 <div class="outline-text-2" id="text-7">
 <p>
@@ -464,8 +465,8 @@ in one program.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org9c5f106" class="ox-nikola-outline-2">
-<h2 id="org9c5f106">
+<div id="ox-nikola-outline-container-org4310aea" class="ox-nikola-outline-2">
+<h2 id="org4310aea">
 <span class="section-number-2">8.</span> Implementation status</h2>
 <div class="outline-text-2" id="text-8">
 <p>
@@ -497,8 +498,8 @@ for" claims are implementation experience, not assertion.
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org8c9f6fc" class="ox-nikola-outline-2">
-<h2 id="org8c9f6fc">
+<div id="ox-nikola-outline-container-org6c74ec4" class="ox-nikola-outline-2">
+<h2 id="org6c74ec4">
 <span class="section-number-2">9.</span> What I am proposing, and what comes next</h2>
 <div class="outline-text-2" id="text-9">
 <p>
@@ -532,7 +533,9 @@ goes in front of the committee.
         <nav class="not-prose mt-8 flex justify-between items-center" aria-label="Post navigation"><a href="../migrating-wg21-subtree/" rel="prev" class="text-indigo-600 hover:underline" title="Refreshing a Stale Git Subtree">
                 « <span class="hidden sm:inline">Previous post</span>
             </a>
-            <span></span>
+            <a href="../scrap-your-static_assert/" rel="next" class="text-indigo-600 hover:underline" title="Scrap Your static_assert">
+                <span class="hidden sm:inline">Next post</span> »
+            </a>
         </nav></article><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
                 renderMathInElement(document.body,
                     {
@@ -558,6 +561,10 @@ delimiters: [
     </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Recent Posts</h2>
         <ul class="space-y-3">
 <li>
+                <a href="../scrap-your-static_assert/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Scrap Your static_assert</a>
+                <time class="text-xs text-gray-400" datetime="2026-08-10T18:12:21-04:00">2026-08-10 18:12</time>
+</li>
+            <li>
                 <a href="." class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">An Infix Backtick Operator for C++</a>
                 <time class="text-xs text-gray-400" datetime="2026-06-29T08:00:00-04:00">2026-06-29 08:00</time>
 </li>
@@ -592,10 +599,6 @@ delimiters: [
             <li>
                 <a href="../substitution-is-sometimes-a-failure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Substitution is Sometimes a Failure</a>
                 <time class="text-xs text-gray-400" datetime="2025-11-28T12:06:58-05:00">2025-11-28 12:06</time>
-</li>
-            <li>
-                <a href="../nikola-blog-infrastructure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Nikola Blog Infrastructure</a>
-                <time class="text-xs text-gray-400" datetime="2024-12-23T13:15:27-05:00">2024-12-23 13:15</time>
 </li>
         </ul></section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Archives</h2>
         <a href="../../archive.html" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">All posts →</a>

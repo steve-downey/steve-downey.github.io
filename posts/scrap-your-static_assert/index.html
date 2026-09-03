@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Privacy Policy | What Comes to Mind</title>
+<title>Scrap Your static_assert | What Comes to Mind</title>
 <script>
     (function () {
         var s = localStorage.getItem('theme');
@@ -45,14 +45,17 @@
 <meta name="generator" content="Nikola (getnikola.com)">
 <link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
 <link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="../../feed.atom">
-<link rel="canonical" href="https://sdowney.org/pages/privacy-policy/">
+<link rel="canonical" href="https://sdowney.org/posts/scrap-your-static_assert/">
 <meta name="author" content="Steve Downey">
+<link rel="prev" href="../infix-backtick-operator/" title="An Infix Backtick Operator for C++" type="text/html">
 <meta property="og:site_name" content="What Comes to Mind">
-<meta property="og:title" content="Privacy Policy">
-<meta property="og:url" content="https://sdowney.org/pages/privacy-policy/">
-<meta property="og:description" content="Who we areOur website address is: http://www.panix.com/~sdowney.What personal data we collect and why we collect itCommentsWhen visitors leave comments on the site we collect the data shown in the com">
+<meta property="og:title" content="Scrap Your static_assert">
+<meta property="og:url" content="https://sdowney.org/posts/scrap-your-static_assert/">
+<meta property="og:description" content="The obvious way to test a compile-time fact is static_assert. It's right
+there, it needs no framework, and for a fact that has to hold it's the right
+tool. As a test, though, it has one bad property: ">
 <meta property="og:type" content="article">
-<meta property="article:published_time" content="2020-11-27T23:45:53-05:00">
+<meta property="article:published_time" content="2026-08-10T18:12:21-04:00">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@sdowney.org">
 <meta name="twitter:creator" content="@sdowney">
@@ -117,10 +120,10 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
         <div class="absolute inset-0 bg-black/40"></div>
         <div class="relative z-10">
         
-    <h1 class="text-4xl font-bold">Privacy Policy</h1>
+    <h1 class="text-4xl font-bold">Scrap Your static_assert</h1>
     <p class="mt-2 text-indigo-200">
-        <time class="published dt-published" datetime="2020-11-27T23:45:53-05:00">2020-11-27 23:45</time><span class="mx-2 opacity-50">·</span>
-            <span>3 min read</span>
+        <time class="published dt-published" datetime="2026-08-10T18:12:21-04:00">2026-08-10 18:12</time><span class="mx-2 opacity-50">·</span>
+            <span>4 min read</span>
     </p>
 
         </div>
@@ -128,49 +131,196 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
     <main id="content" class="max-w-6xl mx-auto px-4 py-8"><div class="lg:flex lg:gap-10">
             <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
             
-<article class="post-text storypage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Privacy Policy</a></h1>
+<article class="blog-post h-entry"><div class="e-content entry-content">
+        <p>
+The obvious way to test a compile-time fact is <code>static_assert</code>. It's right
+there, it needs no framework, and for a fact that has to hold it's the right
+tool. As a <i>test</i>, though, it has one bad property: a wrong answer is a
+translation failure. The build stops at the first one, you get a compiler
+diagnostic instead of a test result, and every other test in the file goes
+unrun. The xUnit report is empty. You learn that something is wrong, once, and
+nothing about the rest.
+</p>
 
-        
+<p>
+There's a second, smaller problem. Even when you write the check as a runtime
+<code>CHECK</code> so that it gets reported, a bare trait doesn't report anything you can
+use:
+</p>
 
-    </header><div class="e-content entry-content" itemprop="articleBody text">
-    <h3>Who we are</h3>
-<!-- /wp:heading --><!-- wp:paragraph --><p>Our website address is: http://www.panix.com/~sdowney.</p>
-<!-- /wp:paragraph --><!-- wp:heading --><h3>What personal data we collect and why we collect it</h3>
-<!-- /wp:heading --><!-- wp:heading {"level":3} --><h4>Comments</h4>
-<!-- /wp:heading --><!-- wp:paragraph --><p>When visitors leave comments on the site we collect the data shown in the comments form, and also the visitor’s IP address and browser user agent string to help spam detection.</p>
-<!-- /wp:paragraph --><!-- wp:paragraph --><p>An anonymized string created from your email address (also called a hash) may be provided to the Gravatar service to see if you are using it. The Gravatar service privacy policy is available here: https://automattic.com/privacy/. After approval of your comment, your profile picture is visible to the public in the context of your comment.</p>
-<!-- /wp:paragraph --><!-- wp:heading {"level":3} --><h4>Media</h4>
-<!-- /wp:heading --><!-- wp:paragraph --><p>If you upload images to the website, you should avoid uploading images with embedded location data (EXIF GPS) included. Visitors to the website can download and extract any location data from images on the website.</p>
-<!-- /wp:paragraph --><!-- wp:heading {"level":3} --><h4>Contact forms</h4>
-<!-- /wp:heading --><!-- wp:heading {"level":3} --><h4>Cookies</h4>
-<!-- /wp:heading --><!-- wp:paragraph --><p>If you leave a comment on our site you may opt-in to saving your name, email address and website in cookies. These are for your convenience so that you do not have to fill in your details again when you leave another comment. These cookies will last for one year.</p>
-<!-- /wp:paragraph --><!-- wp:paragraph --><p>If you visit our login page, we will set a temporary cookie to determine if your browser accepts cookies. This cookie contains no personal data and is discarded when you close your browser.</p>
-<!-- /wp:paragraph --><!-- wp:paragraph --><p>When you log in, we will also set up several cookies to save your login information and your screen display choices. Login cookies last for two days, and screen options cookies last for a year. If you select "Remember Me", your login will persist for two weeks. If you log out of your account, the login cookies will be removed.</p>
-<!-- /wp:paragraph --><!-- wp:paragraph --><p>If you edit or publish an article, an additional cookie will be saved in your browser. This cookie includes no personal data and simply indicates the post ID of the article you just edited. It expires after 1 day.</p>
-<!-- /wp:paragraph --><!-- wp:heading {"level":3} --><h4>Embedded content from other websites</h4>
-<!-- /wp:heading --><!-- wp:paragraph --><p>Articles on this site may include embedded content (e.g. videos, images, articles, etc.). Embedded content from other websites behaves in the exact same way as if the visitor has visited the other website.</p>
-<!-- /wp:paragraph --><!-- wp:paragraph --><p>These websites may collect data about you, use cookies, embed additional third-party tracking, and monitor your interaction with that embedded content, including tracking your interaction with the embedded content if you have an account and are logged in to that website.</p>
-<!-- /wp:paragraph --><!-- wp:heading {"level":3} --><h4>Analytics</h4>
-<!-- /wp:heading --><!-- wp:heading --><h3>Who we share your data with</h3>
-<!-- /wp:heading --><!-- wp:heading --><h3>How long we retain your data</h3>
-<!-- /wp:heading --><!-- wp:paragraph --><p>If you leave a comment, the comment and its metadata are retained indefinitely. This is so we can recognize and approve any follow-up comments automatically instead of holding them in a moderation queue.</p>
-<!-- /wp:paragraph --><!-- wp:paragraph --><p>For users that register on our website (if any), we also store the personal information they provide in their user profile. All users can see, edit, or delete their personal information at any time (except they cannot change their username). Website administrators can also see and edit that information.</p>
-<!-- /wp:paragraph --><!-- wp:heading --><h3>What rights you have over your data</h3>
-<!-- /wp:heading --><!-- wp:paragraph --><p>If you have an account on this site, or have left comments, you can request to receive an exported file of the personal data we hold about you, including any data you have provided to us. You can also request that we erase any personal data we hold about you. This does not include any data we are obliged to keep for administrative, legal, or security purposes.</p>
-<!-- /wp:paragraph --><!-- wp:heading --><h3>Where we send your data</h3>
-<!-- /wp:heading --><!-- wp:paragraph --><p>Visitor comments may be checked through an automated spam detection service.</p>
-<!-- /wp:paragraph --><!-- wp:heading --><h3>Your contact information</h3>
-<!-- /wp:heading --><!-- wp:heading --><h3>Additional information</h3>
-<!-- /wp:heading --><!-- wp:heading {"level":3} --><h4>How we protect your data</h4>
-<!-- /wp:heading --><!-- wp:heading {"level":3} --><h4>What data breach procedures we have in place</h4>
-<!-- /wp:heading --><!-- wp:heading {"level":3} --><h4>What third parties we receive data from</h4>
-<!-- /wp:heading --><!-- wp:heading {"level":3} --><h4>What automated decision making and/or profiling we do with user data</h4>
-<!-- /wp:heading --><!-- wp:heading {"level":3} --><h4>Industry regulatory disclosure requirements</h4>
-<!-- /wp:heading -->
+<div class="org-src-container">
+<pre class="src src-C++"><code>CHECK(<span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-keyword">decltype</span>(*e), <span class="org-type">int</span>&amp;&gt;);  <span class="org-comment-delimiter">// </span><span class="org-comment">FAILED: CHECK( false )</span>
+</code></pre>
+</div>
+
+<p>
+The expansion is the word <code>false</code>. You already knew the two types differed; the
+framework won't tell you what either of them was.
+</p>
+
+<p>
+Converting the <code>expected</code> tests off <code>static_assert</code> came down to two
+header-only components that fix these two problems. Neither is clever.
+(The title owes Lämmel and Peyton Jones; the debt stops at the title.)
+</p>
+<div id="ox-nikola-outline-container-org279f4ed" class="ox-nikola-outline-2">
+<h2 id="org279f4ed">Type identity as a value</h2>
+<div class="outline-text-2" id="text-org279f4ed">
+<p>
+The fix for the second problem is to compare type <i>identities</i> that carry their
+spelling for diagnostics, instead of comparing a bool. See
+<a href="https://github.com/steve-downey/expected/blob/blog/scrap-static-assert/tests/beman/expected/testing/type_name.hpp"><code>type_name.hpp</code></a>. The
+comparison is still <code>std::is_same_v</code>, so the verdict is exact and a false pass
+isn't possible:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-cpp"><code><span class="org-keyword">template</span> &lt;<span class="org-keyword">class</span> <span class="org-type">T</span>, <span class="org-keyword">class</span> <span class="org-type">U</span>&gt;
+<span class="org-keyword">constexpr</span> <span class="org-type">bool</span> <span class="org-constant">beman</span>::<span class="org-constant">expected</span>::<span class="org-constant">testing</span>::<span class="org-keyword">operator</span>==(<span class="org-type">type_name_t</span>&lt;<span class="org-type">T</span>&gt;, <span class="org-type">type_name_t</span>&lt;<span class="org-type">U</span>&gt;) {
+    <span class="org-keyword">return</span> <span class="org-constant">std</span>::<span class="org-type">is_same_v</span>&lt;<span class="org-type">T</span>, <span class="org-type">U</span>&gt;;
+}
+</code></pre>
+</div>
+
+<p>
+The spelling is consulted only after a comparison has already failed and the
+framework needs to explain it. So a failing check explains itself:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-text"><code>FAILED: CHECK( type_name&lt;decltype(*e)&gt;() == type_name&lt;int&amp;&gt;() )
+with expansion: const int&amp; == int&amp;
+</code></pre>
+</div>
+
+<p>
+And the tests read like the trait they replaced:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-cpp"><code>TEST_CASE(<span class="org-string">"expected: operator* ref-qualification return types"</span>, <span class="org-string">"[ExpectedTest]"</span>) {
+    <span class="org-keyword">using</span> <span class="org-type">expected_t</span> = <span class="org-constant">expt</span>::<span class="org-type">expected</span>&lt;<span class="org-type">int</span>, <span class="org-type">int</span>&gt;;
+    CHECK(type_name&lt;<span class="org-keyword">decltype</span>(*<span class="org-constant">std</span>::declval&lt;<span class="org-type">expected_t</span>&amp;&gt;())&gt;() == type_name&lt;<span class="org-type">int</span>&amp;&gt;());
+    CHECK(type_name&lt;<span class="org-keyword">decltype</span>(*<span class="org-constant">std</span>::declval&lt;<span class="org-keyword">const</span> <span class="org-type">expected_t</span>&amp;&gt;())&gt;() == type_name&lt;<span class="org-keyword">const</span> <span class="org-type">int</span>&amp;&gt;());
+    CHECK(type_name&lt;<span class="org-keyword">decltype</span>(*<span class="org-constant">std</span>::declval&lt;<span class="org-type">expected_t</span>&amp;&amp;&gt;())&gt;() == type_name&lt;<span class="org-type">int</span>&amp;&amp;&gt;());
+    CHECK(type_name&lt;<span class="org-keyword">decltype</span>(*<span class="org-constant">std</span>::declval&lt;<span class="org-keyword">const</span> <span class="org-type">expected_t</span>&amp;&amp;&gt;())&gt;() == type_name&lt;<span class="org-keyword">const</span> <span class="org-type">int</span>&amp;&amp;&gt;());
+}
+</code></pre>
+</div>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orge1542a0" class="ox-nikola-outline-2">
+<h2 id="orge1542a0">Reporting a compile-time value at runtime</h2>
+<div class="outline-text-2" id="text-orge1542a0">
+<p>
+The fix for the first problem is to split the two questions a constexpr test
+actually asks. "Can this be constant-evaluated at all?" is a property of the
+code; it stays a hard translation failure, which is correct, because that's a
+fact that has to hold. "Does it produce the right answer?" is a property of a
+value, and there's no reason a wrong value should stop the build.
+</p>
+
+<p>
+<a href="https://github.com/steve-downey/expected/blob/blog/scrap-static-assert/tests/beman/expected/testing/constant_eval.hpp"><code>constant_eval.hpp</code></a>
+is <code>consteval</code>, so a call to it is evaluated during translation. If the probe
+body isn't usable in a constant expression the program is ill-formed, and the
+first question is answered by the call itself, with no <code>static_assert</code> needed.
+The result then behaves as an ordinary prvalue, free to be handed to <code>CHECK</code>.
+The whole thing is a one-line wrapper:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-cpp"><code><span class="org-keyword">template</span> &lt;<span class="org-keyword">class</span> <span class="org-type">Probe</span>&gt;
+<span class="org-keyword">consteval</span> <span class="org-keyword">auto</span> <span class="org-constant">beman</span>::<span class="org-constant">expected</span>::<span class="org-constant">testing</span>::<span class="org-function-name">constant_eval</span>(<span class="org-type">Probe</span> <span class="org-variable-name">probe</span>) {
+    <span class="org-keyword">return</span> probe();
+}
+</code></pre>
+</div>
+
+<p>
+A probe is a plain lambda that reduces what it observes to a literal aggregate:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-cpp"><code>TEST_CASE(<span class="org-string">"expected: constexpr default construction"</span>, <span class="org-string">"[ExpectedTest]"</span>) {
+    <span class="org-keyword">constexpr</span> <span class="org-keyword">auto</span> <span class="org-variable-name">probe</span> = [] {
+        <span class="org-keyword">constexpr</span> <span class="org-constant">expt</span>::<span class="org-type">expected</span>&lt;<span class="org-type">int</span>, <span class="org-type">int</span>&gt; <span class="org-variable-name">e</span>;
+        <span class="org-keyword">return</span> int_state{e.has_value(), *e};
+    };
+    CHECK(constant_eval(probe) == int_state{<span class="org-constant">true</span>, 0});
+    CHECK(probe() == int_state{<span class="org-constant">true</span>, 0});
+}
+</code></pre>
+</div>
+
+<p>
+Because the probe is a plain lambda and not a <code>consteval</code> one, the same body
+runs in both evaluation modes. Constant evaluation and ordinary evaluation can
+take different paths through a union-based type like <code>expected</code>, so running both
+earns its second line:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-C++"><code>CHECK(<span class="org-type">constant_eval</span>(<span class="org-variable-name">probe</span>) == expect);  <span class="org-comment-delimiter">// </span><span class="org-comment">constant evaluation
+</span>CHECK(probe() == expect);               <span class="org-comment-delimiter">// </span><span class="org-comment">ordinary evaluation</span>
+</code></pre>
+</div>
+
+<p>
+Give the returned aggregate an <code>operator&lt;&lt;</code>. Without one, Catch2 prints <code>{?} ==
+{?}</code> and you're back where <code>static_assert</code> left you.
+</p>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orgc676f10" class="ox-nikola-outline-2">
+<h2 id="orgc676f10">What it buys</h2>
+<div class="outline-text-2" id="text-orgc676f10">
+<p>
+Two things. The reporting is better: a mismatch names both types, or prints both
+states, instead of expanding to <code>false</code> or stopping at a diagnostic before it
+can say anything. And a wrong answer is no longer a compile failure that blocks
+everything behind it. The suite builds, runs, and reports every case; a broken
+trait shows up as one red line among the green, with the rest of the run intact.
+</p>
+
+<p>
+None of this abolishes <code>static_assert</code>. The genuinely ill-formed cases stay
+ill-formed, checked in their own negative-compilation files. What moved to
+runtime is only the part that was a test wearing an assertion's clothes.
+</p>
+</div>
+</div>
     </div>
+
+    <div class="not-prose mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+<li>Author: Steve Downey</li>
+        </ul>
+</div>
+
     
 
-</article>
+    
+        <nav class="not-prose mt-8 flex justify-between items-center" aria-label="Post navigation"><a href="../infix-backtick-operator/" rel="prev" class="text-indigo-600 hover:underline" title="An Infix Backtick Operator for C++">
+                « <span class="hidden sm:inline">Previous post</span>
+            </a>
+            <span></span>
+        </nav></article><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
+                renderMathInElement(document.body,
+                    {
+                        
+delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "\\[", right: "\\]", display: true},
+    {left: "\\begin{equation*}", right: "\\end{equation*}", display: true},
+    {left: "$latex ", right: "$", display: false},
+    {left: "$", right: "$", display: false},
+    {left: "\\(", right: "\\)", display: false}
+]
+
+                    }
+                );
+            </script>
 </div>
             
 <aside class="not-prose mt-10 lg:mt-0 lg:w-64 lg:shrink-0 lg:sticky lg:top-6 lg:self-start space-y-8"><section><button id="theme-toggle" class="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors" aria-label="Toggle dark mode">
@@ -180,43 +330,43 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
     </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Recent Posts</h2>
         <ul class="space-y-3">
 <li>
-                <a href="../../posts/scrap-your-static_assert/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Scrap Your static_assert</a>
+                <a href="." class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Scrap Your static_assert</a>
                 <time class="text-xs text-gray-400" datetime="2026-08-10T18:12:21-04:00">2026-08-10 18:12</time>
 </li>
             <li>
-                <a href="../../posts/infix-backtick-operator/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">An Infix Backtick Operator for C++</a>
+                <a href="../infix-backtick-operator/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">An Infix Backtick Operator for C++</a>
                 <time class="text-xs text-gray-400" datetime="2026-06-29T08:00:00-04:00">2026-06-29 08:00</time>
 </li>
             <li>
-                <a href="../../posts/migrating-wg21-subtree/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Refreshing a Stale Git Subtree</a>
+                <a href="../migrating-wg21-subtree/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Refreshing a Stale Git Subtree</a>
                 <time class="text-xs text-gray-400" datetime="2026-06-28T23:37:51-04:00">2026-06-28 23:37</time>
 </li>
             <li>
-                <a href="../../posts/moving-forward-with-legacy-encodings/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Moving Forward With Legacy Encodings</a>
+                <a href="../moving-forward-with-legacy-encodings/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Moving Forward With Legacy Encodings</a>
                 <time class="text-xs text-gray-400" datetime="2026-05-24T13:11:21-04:00">2026-05-24 13:11</time>
 </li>
             <li>
-                <a href="../../posts/tailwind-theme-workflow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Tailwind, Modus Themes, and the Blog Theming Workflow</a>
+                <a href="../tailwind-theme-workflow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Tailwind, Modus Themes, and the Blog Theming Workflow</a>
                 <time class="text-xs text-gray-400" datetime="2026-05-10T18:00:00-04:00">2026-05-10 18:00</time>
 </li>
             <li>
-                <a href="../../posts/surround-with-uuid/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Surround With UUID</a>
+                <a href="../surround-with-uuid/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Surround With UUID</a>
                 <time class="text-xs text-gray-400" datetime="2026-04-09T17:41:26-04:00">2026-04-09 17:41</time>
 </li>
             <li>
-                <a href="../../posts/why-standard-organizations/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Why Standard Organizations</a>
+                <a href="../why-standard-organizations/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Why Standard Organizations</a>
                 <time class="text-xs text-gray-400" datetime="2026-03-07T10:21:36-05:00">2026-03-07 10:21</time>
 </li>
             <li>
-                <a href="../../posts/the-sender-sub-language/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">The Sender Sub-Language</a>
+                <a href="../the-sender-sub-language/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">The Sender Sub-Language</a>
                 <time class="text-xs text-gray-400" datetime="2026-02-28T18:40:21-05:00">2026-02-28 18:40</time>
 </li>
             <li>
-                <a href="../../posts/building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
+                <a href="../building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
                 <time class="text-xs text-gray-400" datetime="2025-12-27T12:03:15-05:00">2025-12-27 12:03</time>
 </li>
             <li>
-                <a href="../../posts/substitution-is-sometimes-a-failure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Substitution is Sometimes a Failure</a>
+                <a href="../substitution-is-sometimes-a-failure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Substitution is Sometimes a Failure</a>
                 <time class="text-xs text-gray-400" datetime="2025-11-28T12:06:58-05:00">2025-11-28 12:06</time>
 </li>
         </ul></section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Archives</h2>
