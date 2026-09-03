@@ -83,9 +83,11 @@
   :load-path "./")
 
 (use-package org-transclusion
-  :vc (:url "https://github.com/nobiot/org-transclusion")
-  :config
-  (add-hook 'org-mode-hook #'org-transclusion-mode))
+  :vc (:url "https://github.com/nobiot/org-transclusion"))
+;; No `org-mode-hook' entry: `nikola-html-export' calls
+;; `org-transclusion-add-all' itself.  On the hook the pass ran several times
+;; per export -- harmless when every pin resolves, but it multiplied the
+;; "Not transcluded" messages when one did not, burying the cause.
 
 ;; Vendored locally (plugins/orgmode/orgit-file-transclusion.el); not on MELPA,
 ;; so load it from this directory rather than trying to install it.
@@ -208,10 +210,46 @@ unresolvable repository."
 
 (org-link-set-parameters "orgit" :export #'org-orgit-link-export)
 
+(defun nikola-transclusion-assert-resolved ()
+  "Signal unless every `#+transclude:' keyword in the buffer resolved.
+
+`org-transclusion-add-all' wraps each keyword in `with-demoted-errors',
+so an unresolvable pin -- a tag that was never pushed, a path that moved
+-- leaves the keyword inert and the post exports with a hole in it: no
+error, no warning, just an article missing the code it is about.  A
+resolved keyword is replaced by its content, so any keyword still
+standing after the pass is a failure, and the build should stop rather
+than publish the hole."
+  (let (unresolved)
+    (save-excursion
+      (goto-char (point-min))
+      ;; Same regexp and same exemptions as `org-transclusion-add-all',
+      ;; so this counts exactly the keywords it undertook to resolve.
+      (while (re-search-forward "^[ \t]*#\\+TRANSCLUDE:" nil t)
+        (unless (or (org-transclusion-within-transclusion-p)
+                    (plist-get (org-transclusion-keyword-string-to-plist)
+                               :disable-auto))
+          (push (format "  line %d: #+transclude:%s"
+                        (line-number-at-pos)
+                        (buffer-substring-no-properties
+                         (point) (line-end-position)))
+                unresolved))))
+    (when unresolved
+      (error "%s: %d transclusion(s) did not resolve (see the \"Not transcluded\" \
+message above for the cause):\n%s"
+             (file-name-nondirectory (or (buffer-file-name) (buffer-name)))
+             (length unresolved)
+             (mapconcat #'identity (nreverse unresolved) "\n")))))
+
 ;; Export function used by Nikola.
 (defun nikola-html-export (infile outfile)
   "Export the body only of the input file and write it to
 specified location."
   (with-current-buffer (find-file infile)
+    ;; Explicit rather than relying on the `org-mode-hook' entry: the export
+    ;; must not depend on hook ordering, and `org-transclusion-add-all' only
+    ;; ever sees keywords a previous pass left unresolved.
+    (org-transclusion-add-all)
+    (nikola-transclusion-assert-resolved)
     (nikola-export-as-html nil nil t t)
     (write-file outfile nil)))
