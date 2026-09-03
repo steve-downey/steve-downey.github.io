@@ -30,7 +30,7 @@ header-only components that fix these two problems. Neither is clever.
 
 The fix for the second problem is to compare type /identities/ that carry their
 spelling for diagnostics, instead of comparing a bool. See
-[[orgit:~/src/steve-downey/expected/scrap-static-assert::tests/beman/expected/testing/type_name.hpp][type_name.hpp]]. The
+[[orgit-file:~/src/steve-downey/expected/scrap-static-assert::blog/scrap-static-assert::tests/beman/expected/testing/type_name.hpp][type_name.hpp]]. The
 comparison is still ~std::is_same_v~, so the verdict is exact and a false pass
 isn't possible:
 
@@ -56,7 +56,7 @@ code; it stays a hard translation failure, which is correct, because that's a
 fact that has to hold. "Does it produce the right answer?" is a property of a
 value, and there's no reason a wrong value should stop the build.
 
-[[orgit:~/src/steve-downey/expected/scrap-static-assert::tests/beman/expected/testing/constant_eval.hpp][constant_eval.hpp]]
+[[orgit-file:~/src/steve-downey/expected/scrap-static-assert::blog/scrap-static-assert::tests/beman/expected/testing/constant_eval.hpp][constant_eval.hpp]]
 is ~consteval~, so a call to it is evaluated during translation. If the probe
 body isn't usable in a constant expression the program is ill-formed, and the
 first question is answered by the call itself, with no ~static_assert~ needed.
