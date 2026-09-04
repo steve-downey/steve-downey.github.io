@@ -259,7 +259,7 @@ A component can have std::string or std::vector&lt;int&gt; in its interface with
             <div id="outline-container-org9373ade" class="outline-2">
 <h3 id="org9373ade">A Constrained Duck Typed Value Type</h3>
 <div class="outline-text-2" id="text-org9373ade">
- For yak shaving reasons, I need a type able to hold any type conforming to a particular interface. I'd like this to act as a (Semi)Regular value type. That is, I'd like it to be copyable, assignable, and so forth, and not be sliced or otherwise mangeled in the process. I want it to be reasonably efficient, not significantly worse than traditional virtual function overhead. I also don't want to be terribly creative in implementing, using existing std library types.
+ For yak shaving reasons, I need a type able to hold any type conforming to a particular interface. I'd like this to act as a (Semi)Regular value type. That is, I'd like it to be copyable, assignable, and so forth, and not be sliced or otherwise mangled in the process. I want it to be reasonably efficient, not significantly worse than traditional virtual function overhead. I also don't want to be terribly creative in implementing, using existing std library types.
 
 The overall pattern I've settled on for now is to hold the type in a <code>std::any</code> and dispatch to the held type through function pointers referring to lambdas. The lambda allows me to capture the type being stored into the <code>AnyDuck</code> and safely recover it. There's some boilerplate to write to dispatch to the lambda. Perhaps one day, when we have reflection, that can be automated.
 
@@ -521,12 +521,12 @@ ninja install
 </div>
 
 <div id="outline-container-org636cf76" class="outline-2">
-<h3 id="org636cf76">Suprises</h3>
+<h3 id="org636cf76">Surprises</h3>
 <div class="outline-text-2" id="text-org636cf76">
  This is due to Zach Laine, an actual expert, and sorting out what happened took several other experts, so the rest of us have little hope. 
 
 <div class="org-src-container">
-<pre class="src src-C++"><span class="org-type">char8_t</span> <span class="org-variable-name">suprise</span>[] = <span class="org-constant">u8</span><span class="org-string">"ς"</span>;
+<pre class="src src-C++"><span class="org-type">char8_t</span> <span class="org-variable-name">surprise</span>[] = <span class="org-constant">u8</span><span class="org-string">"ς"</span>;
 assert(strlen(surprise) == 5);
 </pre>
 </div>
@@ -664,7 +664,7 @@ In C++ that looks something like the following, using the test framework I'm wri
 
 </pre>
 </div>
-Here, x_ and y_ are atomic&lt;int&gt;s, and we're using the lowest possible atomic guarantee in C++, relaxed. Relaxed guarantees that the operation happens atomically. but there are no synchronization properties with anything else. This usally corresponds to the basic int type. Unless you're using a really insane processor that might let an int be partially written and observable. Like you might get the top half of the int, or the middle byte. The commercial processors that allowed this have pretty much died out.
+Here, x_ and y_ are atomic&lt;int&gt;s, and we're using the lowest possible atomic guarantee in C++, relaxed. Relaxed guarantees that the operation happens atomically. but there are no synchronization properties with anything else. This usually corresponds to the basic int type. Unless you're using a really insane processor that might let an int be partially written and observable. Like you might get the top half of the int, or the middle byte. The commercial processors that allowed this have pretty much died out.
 
 The test spins on seeing the load of y to be complete. It loads the value of x_ into a result tuple. The tuple is used as the key to a map which accumulates how many times each result has been seen.
 Running the above on my x86 laptop:
@@ -733,7 +733,7 @@ Initially x = y = 0
 
 r1 = 0 and r2 ==0 is allowed
 
-Note, in particular, there is no interleaving of M1 - 4 that could result in r1 and r2 being 0. Not without interupting an instruction in the middle. But the instructions themselves are atomic, and indivisible. If they were actually operating on shared memory, this would not be possible. However, it does happen.
+Note, in particular, there is no interleaving of M1 - 4 that could result in r1 and r2 being 0. Not without interrupting an instruction in the middle. But the instructions themselves are atomic, and indivisible. If they were actually operating on shared memory, this would not be possible. However, it does happen.
 <div class="org-src-container">
 <pre class="src src-c++"><span class="org-constant">SB</span>::<span class="org-function-name">SB</span>() : x_(0), y_(0) {}
 <span class="org-type">void</span> <span class="org-constant">SB</span>::<span class="org-function-name">t1</span>(<span class="org-type">Result</span>&amp; <span class="org-variable-name">read</span>) {

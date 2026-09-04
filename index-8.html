@@ -178,7 +178,7 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
 
  Two variables are initialized to 0. One thread stores 1 to x first, then to 1 to y. The other thread loops until it reads a non-zero in y, and then reads x. The value in x is the message being passed between threads. 
 
- In an actual test, the variables would be atomics, specifiying load and store strength, and the variables might have constraints on layout to help sharing cache line updates. 
+ In an actual test, the variables would be atomics, specifying load and store strength, and the variables might have constraints on layout to help sharing cache line updates. 
 </div>
 </div>
 
@@ -298,7 +298,7 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
         <p class="not-prose text-sm text-gray-500 mt-1">
             <time class="published dt-published" datetime="2018-03-01T00:00:00-05:00" title="2018-03-01 00:00">2018-03-01 00:00</time></p>
         <div class="mt-3">
-            <p> A short exposition on the simplest monad possible, the Identity monad, which does nothing. It is a pure context, that provides no extra capabilites. The only reason to consider it is that it provides a fairly pure implementation of the monad interface, with no other distractions. The only known use for the Identity monad, other than exposition, is to model Taint, where the context, such as user input, can't be removed. </p>
+            <p> A short exposition on the simplest monad possible, the Identity monad, which does nothing. It is a pure context, that provides no extra capabilities. The only reason to consider it is that it provides a fairly pure implementation of the monad interface, with no other distractions. The only known use for the Identity monad, other than exposition, is to model Taint, where the context, such as user input, can't be removed. </p>
 
 <div id="outline-container-org09d1c70" class="outline-2">
 <h3 id="org09d1c70">Identity Monad in Haskell</h3>
@@ -323,7 +323,7 @@ instance Monad Id where
 </pre>
 </div>
 
-<p> Id wraps a single value. There is no empty state. The mapping function, fmap, simply applies the a funtion to the value being wrapped. The function (&lt;*&gt;), also known as ap, takes a wrapped function, applies it to a wrapped value, and returns it wrapped up. The function pure, which is the same as return, just constructs an Id with the value in it. The bind function (&gt;&gt;=) does the same thing, only with a function that returns a wrapped value. </p>
+<p> Id wraps a single value. There is no empty state. The mapping function, fmap, simply applies the a function to the value being wrapped. The function (&lt;*&gt;), also known as ap, takes a wrapped function, applies it to a wrapped value, and returns it wrapped up. The function pure, which is the same as return, just constructs an Id with the value in it. The bind function (&gt;&gt;=) does the same thing, only with a function that returns a wrapped value. </p>
 </div>
 </div>
 
@@ -350,7 +350,7 @@ instance Monad Id where
 </pre>
 </div>
 
-<p> In particular, there are no accesors for the <code class="src src-C++"><span class="org-type">T</span> <span class="org-variable-name">t_</span></code> being held. Values go in but they can't get out. At least not yet, and not without side-effect using functions. This is why it's sometimes used as Taint, where you can not lose track of the data coming from outside and being untrusted. </p>
+<p> In particular, there are no accessors for the <code class="src src-C++"><span class="org-type">T</span> <span class="org-variable-name">t_</span></code> being held. Values go in but they can't get out. At least not yet, and not without side-effect using functions. This is why it's sometimes used as Taint, where you can not lose track of the data coming from outside and being untrusted. </p>
 </div>
 </div>
 
@@ -358,7 +358,7 @@ instance Monad Id where
 <div id="outline-container-org6bd987d" class="outline-2">
 <h3 id="org6bd987d">Identity Functor</h3>
 <div class="outline-text-2" id="text-org6bd987d">
-<p> To make a data structure a Functor a <code class="src src-C++">fmap</code> function needs to be provided that satisfies certain requirements. It also turns out that if there is such a function, for a particular data struture, all of the implmentations are isomorphic. So there's basically only one for a particular data structure. Fmap for a functor F takes two arguments, a function from T-&gt;U, an F&lt;T&gt;, and it will return an F&lt;U&gt;. Although, for C++ this is a bit over-restrictive, and we probably want to be able to apply any function where the template type of the Identity can be used to call the function being mapped. Fortunately C++17 added some traits to work with invocables, and we can use <code class="src src-C++"><span class="org-constant">std</span>::invoke_result_t</code> to both detect if a call can be made, and determine the type of the result. </p>
+<p> To make a data structure a Functor a <code class="src src-C++">fmap</code> function needs to be provided that satisfies certain requirements. It also turns out that if there is such a function, for a particular data structure, all of the implementations are isomorphic. So there's basically only one for a particular data structure. Fmap for a functor F takes two arguments, a function from T-&gt;U, an F&lt;T&gt;, and it will return an F&lt;U&gt;. Although, for C++ this is a bit over-restrictive, and we probably want to be able to apply any function where the template type of the Identity can be used to call the function being mapped. Fortunately C++17 added some traits to work with invocables, and we can use <code class="src src-C++"><span class="org-constant">std</span>::invoke_result_t</code> to both detect if a call can be made, and determine the type of the result. </p>
 
 <div class="org-src-container">
 <label class="org-src-name"><em></em></label>
@@ -416,7 +416,7 @@ fmap (f . g) = (fmap f) . (fmap g)
 </pre>
 </div>
 
-<p> In haskell this is natuaral, and does not need a separate defintion because of currying. In haskell if you have a function of type (T -&gt; U) -&gt; F&lt;T&gt; -&gt; F&lt;U&gt;, it is both a function taking one argument, and returning a function, and a function taking two argument and returning a value. Both (T-&gt;U) -&gt; (F&lt;T&gt; -&gt; F&lt;U&gt;) and (T -&gt; U), F&lt;T&gt; -&gt; F&lt;U&gt; are true, depending on how many arguments you supply. </p>
+<p> In haskell this is natuaral, and does not need a separate definition because of currying. In haskell if you have a function of type (T -&gt; U) -&gt; F&lt;T&gt; -&gt; F&lt;U&gt;, it is both a function taking one argument, and returning a function, and a function taking two argument and returning a value. Both (T-&gt;U) -&gt; (F&lt;T&gt; -&gt; F&lt;U&gt;) and (T -&gt; U), F&lt;T&gt; -&gt; F&lt;U&gt; are true, depending on how many arguments you supply. </p>
 
 <p> The operator (.) in haskell has type <code class="src src-haskell">(.) :: (b -&gt; c) -&gt; (a -&gt; b) -&gt; (a -&gt; c)</code>, so f . g is g(f()), more function chaining. We can either lift the the function (a -&gt; c) into F&lt;a&gt; -&gt; F&lt;c&gt;, or we can chain together F&lt;a&gt; -&gt; F&lt;b&gt; into F&lt;b&gt; -&gt; F&lt;c&gt; and get the same result. This is a natural property of container-like Functors, like Identity, or an optional, or std::vector. </p>
 </div>
@@ -545,7 +545,7 @@ ASSERT_EQ(Identity{<span class="org-string">'\6'</span>}, c6);
 </pre>
 </div>
 
-<p> Infix notation, putting the operation in the middle of the arguments, can improve readability and ergonomics. It's one of the reasons the Uniform Function Call Syntax proposal gets traction. It's useful and natural to be able to say things in noun verb order, and is one of the attactions of member functions in the first place. There are libraries, such as Hana, that provide mechanisms to be able to infix funtions with syntax like <code class="src src-C++"> <span class="org-type">f</span> &lt;fmap&gt; <span class="org-variable-name">x</span></code>, which would translate to <code class="src src-C++">fmap(f, x)</code>. Note this doesn't match the argument order of the fmap I've used so far. The ergonomics of C++ dictate that functions that might take lambdas put that argument last, unless there is a compelling reason otherwise. API design work is hard. </p>
+<p> Infix notation, putting the operation in the middle of the arguments, can improve readability and ergonomics. It's one of the reasons the Uniform Function Call Syntax proposal gets traction. It's useful and natural to be able to say things in noun verb order, and is one of the attactions of member functions in the first place. There are libraries, such as Hana, that provide mechanisms to be able to infix functions with syntax like <code class="src src-C++"> <span class="org-type">f</span> &lt;fmap&gt; <span class="org-variable-name">x</span></code>, which would translate to <code class="src src-C++">fmap(f, x)</code>. Note this doesn't match the argument order of the fmap I've used so far. The ergonomics of C++ dictate that functions that might take lambdas put that argument last, unless there is a compelling reason otherwise. API design work is hard. </p>
 
 <p> The new function (&lt;*&gt;), also known as <code>ap</code>, takes a function wrapped in a Functor and applies it to an object wrapped in the Functor, and returns the result wrapped in the Functor. That function usually comes from fmaping, so you will see a chain of &lt;$&gt;&lt;*&gt;&lt;*&gt;… providing arguments to the function. For Identity this will just be calling the function with the contents. Often with the <code>pure</code> function as part of it, which is the other piece that Applicative introduces, with a terribly misleading name. The <code>pure</code> function takes a value and lifts it into the Functor in the most natural way possible. For container-like Applicatives, that is putting a single value into the container. </p>
 
@@ -921,7 +921,7 @@ clang++ --std=c++1z example2.cpp -o example2
 
  But, if we start with the idea that a type is a collection of things, and that we don't look to closely at the infinities, we are not going to be terribly wrong. So a type is a way of describing if a thing is in or out of the collection. 
 
- Now, I could pretend we don't know what a struct is. Start with pairs, where there are no names of the components of the struct, and build that up. But we all have a notion of struct. It's an ordered collection of types. The instances of the struct are all of the elements of each type contained in the struct, matched up with all of the other elements of all the other types in the struct. Known as the Cartesion product. So if you have a type A, and a type B, the collection of things in struct {A a; B b;} is the cross of As and Bs. That is {{a<sub>1</sub>, b<sub>1</sub>}, {a<sub>1</sub>, b<sub>2</sub>}, {a<sub>1</sub>, b<sub>3</sub>}, … , {a<sub>2</sub>, b<sub>1</sub>}, {a<sub>2</sub>, b<sub>2</sub>}, … {a<sub>n</sub>, b<sub>1</sub>}, … {a<sub>n</sub>, b<sub>m</sub>}} is all of the elements that are part of the type struct {A a; B b;}. The cardinality of {A, B} is the product of the cardinalities of A and B. 
+ Now, I could pretend we don't know what a struct is. Start with pairs, where there are no names of the components of the struct, and build that up. But we all have a notion of struct. It's an ordered collection of types. The instances of the struct are all of the elements of each type contained in the struct, matched up with all of the other elements of all the other types in the struct. Known as the Cartesian product. So if you have a type A, and a type B, the collection of things in struct {A a; B b;} is the cross of As and Bs. That is {{a<sub>1</sub>, b<sub>1</sub>}, {a<sub>1</sub>, b<sub>2</sub>}, {a<sub>1</sub>, b<sub>3</sub>}, … , {a<sub>2</sub>, b<sub>1</sub>}, {a<sub>2</sub>, b<sub>2</sub>}, … {a<sub>n</sub>, b<sub>1</sub>}, … {a<sub>n</sub>, b<sub>m</sub>}} is all of the elements that are part of the type struct {A a; B b;}. The cardinality of {A, B} is the product of the cardinalities of A and B. 
 
  Structs are very natural in C++, but hard to deal with generically, so there's a type that does it all for you, std::tuple. Getting at the parts of the tuple is a little more difficult that with a struct. You have to say std::get&lt;0&gt;(tuple), or std::get&lt;int&gt;(tuple). And the second might not even compile, if the tuple has more than one int. But you get tools for composing and decomposing tuples at compile time. And std::tuple lets you put pretty much any C++ type into the tuple, only restricting you when you try to, e.g. move a tuple that has an element that can't be moved. 
 
@@ -947,7 +947,7 @@ clang++ --std=c++1z example2.cpp -o example2
 
  One of the popular models for variant rises out of database-like interfaces. Even though databases are internally strongly typed, SQL queries are not. And the model of sending text over and getting some kind of response back makes it difficult to expose that to a host language. Particularly when the database schema may change, the query still be perfectly valid, but no longer return the same types. However, since we do know there is a relatively short list of permitted types in the database, a variant that allows just those types and the ability to query what type was returned can be quite useful, and not terribly hard to implement. There are JSON parsers taking similar approaches, only with the addition that a JSON type may have JSON objects contained in them recursively, and those have to be outside the object somehow, or the size of the object is unbounded. 
 
- From the implementors point of view, supporting pointers and arrays is a huge amout of extra work. Not allowing an array to decay to a pointer is quite difficult. References have issues when treated generically. Not to mention that references have decidely odd semantics in the differences between construction and assignment. And the degenerate case of an empty variant was also difficult. If that needs to be represented, the type std::monostate has been introduced, which is a type designed to have exactly one item in it, so that all instances of std::monostate are identical. This is also the same as the unit type for product types. It's not an accident that it's represented in Haskell as (), which is the empty tuple. All empty lists are equivalent. It could have been <code>std::tuple&lt;&gt;</code>, but no one in the room happened to think of that. 
+ From the implementors point of view, supporting pointers and arrays is a huge amount of extra work. Not allowing an array to decay to a pointer is quite difficult. References have issues when treated generically. Not to mention that references have decidedly odd semantics in the differences between construction and assignment. And the degenerate case of an empty variant was also difficult. If that needs to be represented, the type std::monostate has been introduced, which is a type designed to have exactly one item in it, so that all instances of std::monostate are identical. This is also the same as the unit type for product types. It's not an accident that it's represented in Haskell as (), which is the empty tuple. All empty lists are equivalent. It could have been <code>std::tuple&lt;&gt;</code>, but no one in the room happened to think of that. 
 </div>
 </div>
 </div>
@@ -996,7 +996,7 @@ clang++ --std=c++1z example2.cpp -o example2
 </pre>
 </div>
 
- Actually, a bit more complicated than the totally standard idiom, since it factors out the printer into a application across the tuple, but it's not much more compilcated. The tuple_for_each constructs an index sequence based on the argument list, and delegates that to the impl, which uses it to apply the function to each element of the tuple. The _impl ought to be in a nested detail namespace, so as not to leak out. Swallow is the typical name for using an otherwise unnamed, and uninteresting, type to apply something to each element of the tuple for a side-effect. The void cast is to make sure the variable is used, and is evaluated. 
+ Actually, a bit more complicated than the totally standard idiom, since it factors out the printer into a application across the tuple, but it's not much more complicated. The tuple_for_each constructs an index sequence based on the argument list, and delegates that to the impl, which uses it to apply the function to each element of the tuple. The _impl ought to be in a nested detail namespace, so as not to leak out. Swallow is the typical name for using an otherwise unnamed, and uninteresting, type to apply something to each element of the tuple for a side-effect. The void cast is to make sure the variable is used, and is evaluated. 
 
  The next step is, instead of an application of a function for its side-effect, instead a mapping of the tuple, returning the transformed tuple. 
 
@@ -1084,7 +1084,7 @@ EXPECT_EQ(6, <span class="org-constant">std</span>::get&lt;1&gt;(t2));
 </pre>
 </div>
 
- The second test is there because I was about to write, "as you can see, we can tell the differece between variants holding the same type", except that wasn't true. The original version of to_ar 
+ The second test is there because I was about to write, "as you can see, we can tell the difference between variants holding the same type", except that wasn't true. The original version of to_ar 
 
 <div class="org-src-container">
 <pre class="src src-C++">    <span class="org-keyword">constexpr</span> <span class="org-constant">std</span>::<span class="org-type">tuple</span>&lt;<span class="org-type">int</span>, <span class="org-type">double</span>, <span class="org-type">long</span>&gt; <span class="org-variable-name">t</span> = <span class="org-constant">std</span>::make_tuple(1, 2.3, 1l);
@@ -1212,7 +1212,7 @@ EXPECT_EQ(6, <span class="org-constant">std</span>::get&lt;1&gt;(t2));
 <h3 id="orgd2b0594">
 <span class="section-number-2">1</span> Setting up Cross Compiling</h3>
 <div class="outline-text-2" id="text-1">
- In order to test out some of these multi-threaded tool properly, I really need to run them on a less strict platform than x86_64. X86_64 provides a lot of guarantees about sequential consistency and atomicity that hides problems that will happen on architectures that are not as strong, like power, sparc, and arm. Fortunately, one of the toys I have is a recent Raspberry Pi 3, which is based on a recent arm chip. Unfortunately, Raspbian, the normal linux distro for the Raspberry Pi is also based on a fairly old debian distro, with a fairly old compiler. Linaro is back porting their arm code genaration fixes to the old releases, but I'm more interested in the recent C++ language features. So I could attempt to compile GCC 6 on the RPi, or I can cross compile from my normal machine. I decided to cross compile, since if that worked, it would be considerably easier. It turnd out to be pretty straightfoward. 
+ In order to test out some of these multi-threaded tool properly, I really need to run them on a less strict platform than x86_64. X86_64 provides a lot of guarantees about sequential consistency and atomicity that hides problems that will happen on architectures that are not as strong, like power, sparc, and arm. Fortunately, one of the toys I have is a recent Raspberry Pi 3, which is based on a recent arm chip. Unfortunately, Raspbian, the normal linux distro for the Raspberry Pi is also based on a fairly old debian distro, with a fairly old compiler. Linaro is back porting their arm code generation fixes to the old releases, but I'm more interested in the recent C++ language features. So I could attempt to compile GCC 6 on the RPi, or I can cross compile from my normal machine. I decided to cross compile, since if that worked, it would be considerably easier. It turnd out to be pretty straightforward. 
 
 <div class="org-src-container">
 <pre class="src src-shell">sudo apt-get install g++-6-arm-linux-gnueabihf
@@ -1229,7 +1229,7 @@ EXPECT_EQ(6, <span class="org-constant">std</span>::get&lt;1&gt;(t2));
 <h3 id="org0578f92">
 <span class="section-number-2">2</span> Sysroot</h3>
 <div class="outline-text-2" id="text-2">
- When cross compiling, a sysroot is a system that looks just like the root file system of the target platform. It will have /lib, /usr/lib, etc, with the versions of the libraries that you want. You can either use a disk image, mounted somewhere convienent, or you can just mount the target computer's root filesystem somewhere convienent. If you do that, you'll have access to all of the libraries available, not just the minimal set typically available on a prepackaged sysroot. So that's what I did. 
+ When cross compiling, a sysroot is a system that looks just like the root file system of the target platform. It will have /lib, /usr/lib, etc, with the versions of the libraries that you want. You can either use a disk image, mounted somewhere convenient, or you can just mount the target computer's root filesystem somewhere convenient. If you do that, you'll have access to all of the libraries available, not just the minimal set typically available on a prepackaged sysroot. So that's what I did. 
 
 <div class="org-src-container">
 <pre class="src src-shell">sshfs sdowney@cobweb.local:/ /home/sdowney/mnt/rpi/ -o transform_symlinks -o allow_other
@@ -1498,7 +1498,7 @@ COLLECT_GCC_OPTIONS='-v' '-o' 'hello' '-shared-libgcc' '-march=armv7-a' '-mfloat
 </pre>
 </div>
 
- I don't actually expect to find runtime errors with these tests. They exercise ths component just enough that I'm not generating compile errors in expected use cases. Template code can be tricky that way. Templates that aren't instantiated can have horrible errors, but the compiler is willing to let them pass, if they mostly parse. 
+ I don't actually expect to find runtime errors with these tests. They exercise this component just enough that I'm not generating compile errors in expected use cases. Template code can be tricky that way. Templates that aren't instantiated can have horrible errors, but the compiler is willing to let them pass, if they mostly parse. 
 
  SFINAE may not be your friend. 
 </div>
@@ -1597,7 +1597,7 @@ COLLECT_GCC_OPTIONS='-v' '-o' 'hello' '-shared-libgcc' '-march=armv7-a' '-mfloat
 <h3 id="org3e3344d">
 <span class="section-number-2">1</span> Building a simple spin gate in C++</h3>
 <div class="outline-text-2" id="text-1">
- This is a very simplified latch which allows several threads to block and busywait until they are released to begin work in parallel. I'm using this to do some multi-thread stress testing, where I want to maximize the overlapping work in order to check for suprising non-deterministic behavior. There's no count associated with the gate, nor is it reuseable. All we need is the one bit of information, weather the gate is open or closed. 
+ This is a very simplified latch which allows several threads to block and busywait until they are released to begin work in parallel. I'm using this to do some multi-thread stress testing, where I want to maximize the overlapping work in order to check for surprising non-deterministic behavior. There's no count associated with the gate, nor is it reuseable. All we need is the one bit of information, weather the gate is open or closed. 
 
  The simplest atomic boolean is the std::atomic_flag. It's guaranteed by standard to be lock free. Unfortunately, to provide that guarantee, it provides no way to do an atomic read or write to the flag, just a clear, and a set and return prior value. This isn't rich enough for multiple threads to wait, although it is enough to implement a spinlock. 
 
@@ -1653,7 +1653,7 @@ COLLECT_GCC_OPTIONS='-v' '-o' 'hello' '-shared-libgcc' '-march=armv7-a' '-mfloat
 </div>
 
 
- Using a SpinGate is fairly straightfoward. Create an instance of SpinGate and wait() on it in each of the worker threads. Once all of the threads are created, open the gate to let them run. In this example, I sleep for one second in order to check that none of the worker threads get past the gate before it is opened. 
+ Using a SpinGate is fairly straightforward. Create an instance of SpinGate and wait() on it in each of the worker threads. Once all of the threads are created, open the gate to let them run. In this example, I sleep for one second in order to check that none of the worker threads get past the gate before it is opened. 
 
  The synchronization is on the SpingGate's std::atomic_bool, flag_. The flag_ is set to true in the constructor, with release memory ordering. The function wait() spins on loading the flag_ with acquire memory ordering, until open() is called, which sets the flag_ to false with release semantics. The other threads that were spinning may now proceed. The release-acquires ordering ensures that happens-before writes by the thread setting up the work and calling open will be read by the threads that were spin waiting. 
 </div>

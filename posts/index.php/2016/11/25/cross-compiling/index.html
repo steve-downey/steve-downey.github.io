@@ -163,7 +163,7 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
 <h3 id="orgd2b0594">
 <span class="section-number-2">1</span> Setting up Cross Compiling</h3>
 <div class="outline-text-2" id="text-1">
- In order to test out some of these multi-threaded tool properly, I really need to run them on a less strict platform than x86_64. X86_64 provides a lot of guarantees about sequential consistency and atomicity that hides problems that will happen on architectures that are not as strong, like power, sparc, and arm. Fortunately, one of the toys I have is a recent Raspberry Pi 3, which is based on a recent arm chip. Unfortunately, Raspbian, the normal linux distro for the Raspberry Pi is also based on a fairly old debian distro, with a fairly old compiler. Linaro is back porting their arm code genaration fixes to the old releases, but I'm more interested in the recent C++ language features. So I could attempt to compile GCC 6 on the RPi, or I can cross compile from my normal machine. I decided to cross compile, since if that worked, it would be considerably easier. It turnd out to be pretty straightfoward. 
+ In order to test out some of these multi-threaded tool properly, I really need to run them on a less strict platform than x86_64. X86_64 provides a lot of guarantees about sequential consistency and atomicity that hides problems that will happen on architectures that are not as strong, like power, sparc, and arm. Fortunately, one of the toys I have is a recent Raspberry Pi 3, which is based on a recent arm chip. Unfortunately, Raspbian, the normal linux distro for the Raspberry Pi is also based on a fairly old debian distro, with a fairly old compiler. Linaro is back porting their arm code generation fixes to the old releases, but I'm more interested in the recent C++ language features. So I could attempt to compile GCC 6 on the RPi, or I can cross compile from my normal machine. I decided to cross compile, since if that worked, it would be considerably easier. It turnd out to be pretty straightforward. 
 
 <div class="org-src-container">
 <pre class="src src-shell">sudo apt-get install g++-6-arm-linux-gnueabihf
@@ -180,7 +180,7 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
 <h3 id="org0578f92">
 <span class="section-number-2">2</span> Sysroot</h3>
 <div class="outline-text-2" id="text-2">
- When cross compiling, a sysroot is a system that looks just like the root file system of the target platform. It will have /lib, /usr/lib, etc, with the versions of the libraries that you want. You can either use a disk image, mounted somewhere convienent, or you can just mount the target computer's root filesystem somewhere convienent. If you do that, you'll have access to all of the libraries available, not just the minimal set typically available on a prepackaged sysroot. So that's what I did. 
+ When cross compiling, a sysroot is a system that looks just like the root file system of the target platform. It will have /lib, /usr/lib, etc, with the versions of the libraries that you want. You can either use a disk image, mounted somewhere convenient, or you can just mount the target computer's root filesystem somewhere convenient. If you do that, you'll have access to all of the libraries available, not just the minimal set typically available on a prepackaged sysroot. So that's what I did. 
 
 <div class="org-src-container">
 <pre class="src src-shell">sshfs sdowney@cobweb.local:/ /home/sdowney/mnt/rpi/ -o transform_symlinks -o allow_other
