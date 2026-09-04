@@ -109,7 +109,7 @@ In C++ that looks something like the following, using the test framework I'm wri
 
 </pre>
 </div>
-Here, x_ and y_ are atomic&lt;int&gt;s, and we're using the lowest possible atomic guarantee in C++, relaxed. Relaxed guarantees that the operation happens atomically. but there are no synchronization properties with anything else. This usally corresponds to the basic int type. Unless you're using a really insane processor that might let an int be partially written and observable. Like you might get the top half of the int, or the middle byte. The commercial processors that allowed this have pretty much died out.
+Here, x_ and y_ are atomic&lt;int&gt;s, and we're using the lowest possible atomic guarantee in C++, relaxed. Relaxed guarantees that the operation happens atomically. but there are no synchronization properties with anything else. This usually corresponds to the basic int type. Unless you're using a really insane processor that might let an int be partially written and observable. Like you might get the top half of the int, or the middle byte. The commercial processors that allowed this have pretty much died out.
 
 The test spins on seeing the load of y to be complete. It loads the value of x_ into a result tuple. The tuple is used as the key to a map which accumulates how many times each result has been seen.
 Running the above on my x86 laptop:
@@ -176,7 +176,7 @@ Initially x = y = 0
 
 r1 = 0 and r2 ==0 is allowed
 
-Note, in particular, there is no interleaving of M1 - 4 that could result in r1 and r2 being 0. Not without interupting an instruction in the middle. But the instructions themselves are atomic, and indivisible. If they were actually operating on shared memory, this would not be possible. However, it does happen.
+Note, in particular, there is no interleaving of M1 - 4 that could result in r1 and r2 being 0. Not without interrupting an instruction in the middle. But the instructions themselves are atomic, and indivisible. If they were actually operating on shared memory, this would not be possible. However, it does happen.
 <div class="org-src-container">
 <pre class="src src-c++"><span class="org-constant">SB</span>::<span class="org-function-name">SB</span>() : x_(0), y_(0) {}
 <span class="org-type">void</span> <span class="org-constant">SB</span>::<span class="org-function-name">t1</span>(<span class="org-type">Result</span>&amp; <span class="org-variable-name">read</span>) {

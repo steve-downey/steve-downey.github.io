@@ -42,7 +42,7 @@
 
 <p> However, there's also a typeclass, or concept, that allows you to convert regular functions into continuation passing style, automatically. It's then rather straightforward to involve concerns like where work is being run for something that wraps up the entire work. Even being able to switch back and forth between contexts. That's the continuation monad. </p>
 
-<p> And unfortunately monads became an organizing principle in programming language theory one or two decades after most CS programs were standardized. So it's all complicated and involves things we weren't trained on. Fitting it into C++ has been an ongoing challenge, and until we had generic lambda was neither reasonbly concise nor idiomatic. </p>
+<p> And unfortunately monads became an organizing principle in programming language theory one or two decades after most CS programs were standardized. So it's all complicated and involves things we weren't trained on. Fitting it into C++ has been an ongoing challenge, and until we had generic lambda was neither reasonably concise nor idiomatic. </p>
 
 <p> See, however, the new monadic interface additions for std::optional for why you want this. Or Ranges, which are solidly based in the 'list' or non-deterministic monad. </p>
 </div>

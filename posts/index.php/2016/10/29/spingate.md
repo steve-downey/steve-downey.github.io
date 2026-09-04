@@ -1,7 +1,7 @@
 <html><body><div id="outline-container-org3e3344d" class="outline-2">
 <h2 id="org3e3344d"><span class="section-number-2">1</span> Building a simple spin gate in C++</h2>
 <div class="outline-text-2" id="text-1">
- This is a very simplified latch which allows several threads to block and busywait until they are released to begin work in parallel. I'm using this to do some multi-thread stress testing, where I want to maximize the overlapping work in order to check for suprising non-deterministic behavior. There's no count associated with the gate, nor is it reuseable. All we need is the one bit of information, weather the gate is open or closed. 
+ This is a very simplified latch which allows several threads to block and busywait until they are released to begin work in parallel. I'm using this to do some multi-thread stress testing, where I want to maximize the overlapping work in order to check for surprising non-deterministic behavior. There's no count associated with the gate, nor is it reuseable. All we need is the one bit of information, weather the gate is open or closed. 
 
  The simplest atomic boolean is the std::atomic_flag. It's guaranteed by standard to be lock free. Unfortunately, to provide that guarantee, it provides no way to do an atomic read or write to the flag, just a clear, and a set and return prior value. This isn't rich enough for multiple threads to wait, although it is enough to implement a spinlock. 
 
@@ -57,7 +57,7 @@
 </div>
 
 
- Using a SpinGate is fairly straightfoward. Create an instance of SpinGate and wait() on it in each of the worker threads. Once all of the threads are created, open the gate to let them run. In this example, I sleep for one second in order to check that none of the worker threads get past the gate before it is opened. 
+ Using a SpinGate is fairly straightforward. Create an instance of SpinGate and wait() on it in each of the worker threads. Once all of the threads are created, open the gate to let them run. In this example, I sleep for one second in order to check that none of the worker threads get past the gate before it is opened. 
 
  The synchronization is on the SpingGate's std::atomic_bool, flag_. The flag_ is set to true in the constructor, with release memory ordering. The function wait() spins on loading the flag_ with acquire memory ordering, until open() is called, which sets the flag_ to false with release semantics. The other threads that were spinning may now proceed. The release-acquires ordering ensures that happens-before writes by the thread setting up the work and calling open will be read by the threads that were spin waiting. 
 </div>

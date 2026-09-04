@@ -45,9 +45,13 @@ repos:
       - id: codespell
         args: ['-I', '.codespell_ignore', '--uri-ignore-words-list', '*']
         exclude: >
-          (?x)^(
-            (papers|latex)/.*
-          )$
+          (?x)(
+            ^(papers|latex)/.*
+            # Citation databases: verbatim titles, and BibTeX's own field names.
+            |\.(bib|bibtex|ris|enl|csl)$
+            # Bikeshed output vendored into an inactive theme.
+            |^themes/sdowney-bootblog4/assets/css/.*
+          )
 
         # checkmake is a linter for Makefiles.
   - repo: https://github.com/checkmake/checkmake.git

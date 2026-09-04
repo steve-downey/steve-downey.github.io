@@ -89,7 +89,7 @@
 </pre>
 </div>
 
- I don't actually expect to find runtime errors with these tests. They exercise ths component just enough that I'm not generating compile errors in expected use cases. Template code can be tricky that way. Templates that aren't instantiated can have horrible errors, but the compiler is willing to let them pass, if they mostly parse. 
+ I don't actually expect to find runtime errors with these tests. They exercise this component just enough that I'm not generating compile errors in expected use cases. Template code can be tricky that way. Templates that aren't instantiated can have horrible errors, but the compiler is willing to let them pass, if they mostly parse. 
 
  SFINAE may not be your friend. 
 </div>

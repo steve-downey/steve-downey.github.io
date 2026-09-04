@@ -13,7 +13,7 @@
 <br>Agyar has taken up residence. The ghost, Jim, acts as a foil and
 <br>confidant for Jack, allowing us to discover Jacks background through
 <br>the narrative, rather than having the information dumped on us.
-<br><br>Brust follows all of the coventions of a modern Vampire story, but
+<br><br>Brust follows all of the conventions of a modern Vampire story, but
 <br>never bothers to explain them, trusting the reader to be aware of them
 <br>and identify them from being shown their effects. He starts by never
 <br>permitting Agyar to enter a building except when invited. He slowly

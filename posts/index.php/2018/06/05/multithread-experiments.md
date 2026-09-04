@@ -49,7 +49,7 @@
 
  Two variables are initialized to 0. One thread stores 1 to x first, then to 1 to y. The other thread loops until it reads a non-zero in y, and then reads x. The value in x is the message being passed between threads. 
 
- In an actual test, the variables would be atomics, specifiying load and store strength, and the variables might have constraints on layout to help sharing cache line updates. 
+ In an actual test, the variables would be atomics, specifying load and store strength, and the variables might have constraints on layout to help sharing cache line updates. 
 </div>
 </div>
 

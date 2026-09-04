@@ -80,7 +80,7 @@ This allowed for customizing how the various requirements for a concept were imp
 
 This was lost in Concepts Lite, a.k.a C++20 Concepts.
 
-Other generic type systems have implemented something like this feature, as well as definition checking. In particular, Rust Traits are an analagous feature.
+Other generic type systems have implemented something like this feature, as well as definition checking. In particular, Rust Traits are an analogous feature.
 
 </div>
 </div>
@@ -116,7 +116,7 @@ Giving up on that is key to a way forward in C++.
 <h2 id="org9dd42da">A trait object</h2>
 <div class="outline-text-2" id="text-org9dd42da">
 
- The technique I'm considering and describing here is modeled loosly after the implementation of Haskell typeclasses in GHC. For a particular instance of a typeclass, a record holding the operations based on the actual type in use is created and made available, and the named operations are lifted into scope and the functions in the record called when used. It is as if a virtual function table was implemented with name lookup rather than index.
+ The technique I'm considering and describing here is modeled loosely after the implementation of Haskell typeclasses in GHC. For a particular instance of a typeclass, a record holding the operations based on the actual type in use is created and made available, and the named operations are lifted into scope and the functions in the record called when used. It is as if a virtual function table was implemented with name lookup rather than index.
 
 In C++, particularly in current post-C++20 C++, we can look up an object via a template variable. The implementations of different specializations of a template variable do not need to be connected in any way. We have to provide a definition, since to make it look like a declaration it's necessary to provide some type such as false_type. Alternatively, we could declare it as an int, but mark it as <code>extern</code> and not define it. I'm still researching alternatives.
 <div class="org-src-container">

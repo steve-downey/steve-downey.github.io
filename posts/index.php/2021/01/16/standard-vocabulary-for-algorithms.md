@@ -27,7 +27,7 @@ The important thing, for programmers, is that moving up the ladder of abstractio
 
 Naming is therefore critical.
 
-As are chosing the algorithms that are primitive, that is, the ones that compose into others in useful ways.
+As are choosing the algorithms that are primitive, that is, the ones that compose into others in useful ways.
 
 I have some concerns about providing fused algorithms that a sufficiently smart compiler could optimize. On the other hand, I doubt how imminent sufficiently smart compilers are.
 
@@ -87,7 +87,7 @@ Right or left evaluation of the terms.
 
 Folding right is strictly more general, at least in the lambda calculus. Left fold can be implemented as a right fold, but not vice-versa.
 
-However, in C++, the normal implementation of folds is not as general as it might be, because C++ is strict in evaluating function arguments. This means that even though a fold whose operation might not need to evaluate one of its arguments in order to return a value, will still do so, because the argument is evaluated before being passed to the operation. This mean, in particular, that we can't simply undo fold by using a `cons` operation, reconstructing the list. The entire, indeterminate and possibly infinite, list must be evaluated even though all that is necesary is the first element.
+However, in C++, the normal implementation of folds is not as general as it might be, because C++ is strict in evaluating function arguments. This means that even though a fold whose operation might not need to evaluate one of its arguments in order to return a value, will still do so, because the argument is evaluated before being passed to the operation. This mean, in particular, that we can't simply undo fold by using a `cons` operation, reconstructing the list. The entire, indeterminate and possibly infinite, list must be evaluated even though all that is necessary is the first element.
 
 Left folding is tail recursive, and so can be converted to a loop. This is why it seems natural in C++.
 <div class="org-src-container">

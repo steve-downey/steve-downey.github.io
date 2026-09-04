@@ -1,7 +1,7 @@
 <html><body><div id="outline-container-org9373ade" class="outline-2">
 <h2 id="org9373ade">A Constrained Duck Typed Value Type</h2>
 <div class="outline-text-2" id="text-org9373ade">
- For yak shaving reasons, I need a type able to hold any type conforming to a particular interface. I'd like this to act as a (Semi)Regular value type. That is, I'd like it to be copyable, assignable, and so forth, and not be sliced or otherwise mangeled in the process. I want it to be reasonably efficient, not significantly worse than traditional virtual function overhead. I also don't want to be terribly creative in implementing, using existing std library types.
+ For yak shaving reasons, I need a type able to hold any type conforming to a particular interface. I'd like this to act as a (Semi)Regular value type. That is, I'd like it to be copyable, assignable, and so forth, and not be sliced or otherwise mangled in the process. I want it to be reasonably efficient, not significantly worse than traditional virtual function overhead. I also don't want to be terribly creative in implementing, using existing std library types.
 
 The overall pattern I've settled on for now is to hold the type in a <code>std::any</code> and dispatch to the held type through function pointers referring to lambdas. The lambda allows me to capture the type being stored into the <code>AnyDuck</code> and safely recover it. There's some boilerplate to write to dispatch to the lambda. Perhaps one day, when we have reflection, that can be automated.
 

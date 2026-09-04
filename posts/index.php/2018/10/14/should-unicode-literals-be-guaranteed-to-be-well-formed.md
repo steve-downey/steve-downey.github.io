@@ -23,12 +23,12 @@
 </div>
 
 <div id="outline-container-org636cf76" class="outline-2">
-<h2 id="org636cf76">Suprises</h2>
+<h2 id="org636cf76">Surprises</h2>
 <div class="outline-text-2" id="text-org636cf76">
  This is due to Zach Laine, an actual expert, and sorting out what happened took several other experts, so the rest of us have little hope. 
 
 <div class="org-src-container">
-<pre class="src src-C++"><span class="org-type">char8_t</span> <span class="org-variable-name">suprise</span>[] = <span class="org-constant">u8</span><span class="org-string">"ς"</span>;
+<pre class="src src-C++"><span class="org-type">char8_t</span> <span class="org-variable-name">surprise</span>[] = <span class="org-constant">u8</span><span class="org-string">"ς"</span>;
 assert(strlen(surprise) == 5);
 </pre>
 </div>

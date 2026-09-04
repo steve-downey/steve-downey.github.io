@@ -160,7 +160,7 @@ The int is 55
 </div>
 </div>
 <div id="outline-container-orgd5015b3" class="outline-4">
-<h4 id="orgd5015b3">When All - Concurent Async</h4>
+<h4 id="orgd5015b3">When All - Concurrent Async</h4>
 <div class="outline-text-4" id="text-orgd5015b3">
 <div class="org-src-container">
 <label class="org-src-name"><em></em></label>
@@ -196,7 +196,7 @@ The int is 55
 </div>
 </div>
 <div id="outline-container-org8c3d7d7" class="outline-4">
-<h4 id="org8c3d7d7">When All - Concurent Async - Results</h4>
+<h4 id="org8c3d7d7">When All - Concurrent Async - Results</h4>
 <div class="outline-text-4" id="text-org8c3d7d7">
 <em></em>
 <pre class="example" id="nil">
@@ -370,7 +370,7 @@ The int is 55
 </div>
 </div>
 <div id="outline-container-org9562d05" class="outline-4">
-<h4 id="org9562d05">Delimted Continuations</h4>
+<h4 id="org9562d05">Delimited Continuations</h4>
 <div class="outline-text-4" id="text-org9562d05">
 <p> General continuations reified as a function. </p>
 
@@ -381,7 +381,7 @@ The int is 55
 <p> Oleg Kiselyov <a href="https://okmij.org/ftp/continuations/Fest2008-talk-notes.pdf">Fest2008-talk-notes.pdf</a> </p>
 
 <div class="notes" id="orgf6e78f9">
-<p> If this qoute reminds you of coroutines, you are paying attention. </p>
+<p> If this quote reminds you of coroutines, you are paying attention. </p>
 
 </div>
 </div>
@@ -395,7 +395,7 @@ The int is 55
 </pre>
 </div>
 
-<p> This is <u>roughly</u> equivalent to the sender value channel. A Cont takes a reciever, a function that consumes the value being sent, and produces an r, the result type. </p>
+<p> This is <u>roughly</u> equivalent to the sender value channel. A Cont takes a receiver, a function that consumes the value being sent, and produces an r, the result type. </p>
 
 <p> The <code>identity</code> function is often used. </p>
 </div>
@@ -405,7 +405,7 @@ The int is 55
 <div class="outline-text-4" id="text-org172f559">
 <p> The plumbing is hidden. </p>
 
-<p> Senders "send" to their continuations, delimted by the Reciever. </p>
+<p> Senders "send" to their continuations, delimited by the Receiver. </p>
 
 <div class="notes" id="orgd311a42">
 <p>  </p>
@@ -470,7 +470,7 @@ The int is 55
 </div>
 </div>
 <div id="outline-container-org2621484" class="outline-4">
-<h4 id="org2621484">Reciever Is The Transform to Result</h4>
+<h4 id="org2621484">Receiver Is The Transform to Result</h4>
 <div class="outline-text-4" id="text-org2621484">
 <p style="text-align:center"> $latex   ( B \rightarrow R ) \rightarrow R   $ </p>
 </div>
@@ -760,7 +760,7 @@ true branch 7
 </pre>
 
 <div class="notes" id="org6433988">
-<p> Control what sender is sent at rentime depending on the state of the program when the work is executing rather than in the structure of the senders. </p>
+<p> Control what sender is sent at runtime depending on the state of the program when the work is executing rather than in the structure of the senders. </p>
 
 </div>
 </div>
@@ -1035,7 +1035,7 @@ work  = 500
 <div class="outline-text-3" id="text-orgbea3c89">
 <ul class="org-ul">
 <li>Throughput</li>
-<li>Interruptable</li>
+<li>Interruptible</li>
 </ul>
 
 
