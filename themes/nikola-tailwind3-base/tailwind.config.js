@@ -1,10 +1,14 @@
 const heading = ['"Open Sans"', 'Roboto', 'Arial', 'sans-serif'];
 
 module.exports = {
+    // Scan only the templates for utility classes. Post/page bodies are org /
+    // Markdown prose (styled via the typography plugin), not authored with
+    // Tailwind utilities -- scanning them only fed org-mode export class names
+    // into the generator. In particular org's section wrappers
+    // .outline-2/.outline-3 collide with Tailwind's outline-<width> utilities,
+    // which draw a stray outline box around every heading section.
     content: [
         './themes/**/*.tmpl',
-        './posts/**/*.{md,html}',
-        './pages/**/*.{md,rst,html}',
     ],
     darkMode: 'class',
     plugins: [require('@tailwindcss/typography')],

@@ -1,11 +1,19 @@
-@import "tailwindcss";
+/* source(none) disables Tailwind v4's automatic project-wide content
+ * detection, which otherwise scans output/, cache/, and posts/ -- picking up
+ * org-mode export class names from generated HTML. We list the real source of
+ * utility classes (the templates) explicitly below instead. */
+@import "tailwindcss" source(none);
 
 @plugin "@tailwindcss/typography";
 
+/* Scan only the templates for utility classes. Post and page bodies are org /
+ * Markdown prose (styled via the typography plugin), not authored with Tailwind
+ * utilities -- scanning them only fed org-mode export class names into the
+ * generator. In particular org's section wrappers .outline-2/.outline-3 collide
+ * with Tailwind's outline-<width> utilities, which drew a stray outline box
+ * around every heading section. If a post ever does need a literal utility,
+ * add its file (or a safelist) back here. */
 @source "../../themes/**/*.tmpl";
-@source "../../posts/**/*.md";
-@source "../../pages/**/*.md";
-@source "../../pages/**/*.rst";
 
 @variant dark (&:is(.dark, .dark *));
 
