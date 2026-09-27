@@ -23,6 +23,8 @@
 (setq orgit-file-transclusion-repo-alist
       '(("/expected/"            . "steve-downey/expected")
         ("/transpose/"           . "steve-downey/transpose")
-        ("/compile-time-scheme/" . "steve-downey/compile-time-scheme")))
+        ("/compile-time-scheme/" . "steve-downey/compile-time-scheme")
+        ("/tree_algorithms/"     . "steve-downey/tree_algorithms")
+        ("/fingertree/"          . "steve-downey/fingertree")))
 
 ;;; conf.el ends here
