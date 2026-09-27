@@ -4,6 +4,7 @@
 #+OPTIONS: toc:nil num:nil ^:nil
 
 "Standardize existing practice" was barely true of the first C++ standard, and it is the wrong rule now. It was already being stretched in 1998. The ARM was existing practice. Templates as specified in the ARM were not what got standardized; the STL had two years of use at HP and a handful of early adopters before it was voted in; namespaces, exceptions as shipped, and iostreams with locales were designed in committee and implemented afterward. The result was a standard that no compiler implemented for years. We call it a success because C++ survived it, not because the process was sound.
+{{{TEASER_END}}}
 
 Today the rule is not merely stretched. It is objectively wrong, for two reasons that are usually run together and should be kept apart.
 
