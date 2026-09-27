@@ -14,10 +14,6 @@
 </ul>
 
 
-<div class="notes" id="orgfd6f34c">
-<p>  </p>
-
-</div>
 </div>
 <div id="outline-container-org55a2fab" class="outline-3">
 <h3 id="org55a2fab">Lost with <code>Concepts-Lite</code></h3>
@@ -43,10 +39,6 @@
 <li>Need to know if you could first</li>
 </ul>
 
-<div class="notes" id="org00d3ad4">
-<p>  </p>
-
-</div>
 </div>
 <div id="outline-container-orgec4f485" class="outline-3">
 <h3 id="orgec4f485">Alternatives</h3>
@@ -56,19 +48,11 @@
 <li><p> Adapters </p></li>
 <li>Collection of CPOs</li>
 </ul>
-<div class="notes" id="org1416f27">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org63dbb2f" class="outline-3">
 <h3 id="org63dbb2f">Hard to Support</h3>
 <div class="outline-text-3" id="text-org63dbb2f">
-<div class="notes" id="org0c07886">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
@@ -92,10 +76,6 @@
 };
 </pre>
 </div>
-<div class="notes" id="org3e8c3d9">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgaaad96e" class="outline-3">
@@ -112,10 +92,6 @@
 </pre>
 </div>
 
-<div class="notes" id="orgc2f233f">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgd6557c8" class="outline-3">
@@ -133,10 +109,6 @@
 </div>
 
 
-<div class="notes" id="orgac26af1">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org5b19f13" class="outline-3">
@@ -144,10 +116,6 @@
 <div class="outline-text-3" id="text-org5b19f13">
 <p> Let's not go there right now. </p>
 
-<div class="notes" id="orgcd8e7be">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
@@ -170,10 +138,6 @@
 </pre>
 </div>
 
-<div class="notes" id="org84edbf7">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org0372946" class="outline-3">
@@ -222,10 +186,6 @@
 
 <p> See <u>Why tag_invoke is not the solution I want</u> by Barry Revzin <a href="https://brevzin.github.io/c++/2020/12/01/tag-invoke/">https://brevzin.github.io/c++/2020/12/01/tag-invoke/</a> </p>
 
-<div class="notes" id="org4ec3d03">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgd9440f0" class="outline-4">
@@ -251,10 +211,6 @@
 </div>
 <p> See <u>Why tag_invoke is not the solution I want</u> by Barry Revzin <a href="https://brevzin.github.io/c++/2020/12/01/tag-invoke/">https://brevzin.github.io/c++/2020/12/01/tag-invoke/</a> </p>
 
-<div class="notes" id="orgdecd5c0">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
@@ -273,10 +229,6 @@
 </ul></li>
 </ul>
 
-<div class="notes" id="orgc4034ba">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgad4da33" class="outline-2">
@@ -286,10 +238,6 @@
 
 <p> Can we do that? </p>
 
-<div class="notes" id="org585f6ee">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org3f6e803" class="outline-2">
@@ -297,10 +245,6 @@
 <div class="outline-text-2" id="text-org3f6e803">
 <p> Templates! </p>
 
-<div class="notes" id="org887d83a">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgcf837b9" class="outline-2">
@@ -310,10 +254,6 @@
 
 <p> Object Lookup rather than Overload Lookup </p>
 
-<div class="notes" id="orgc8f05ae">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org43e91b6" class="outline-2">
@@ -323,10 +263,6 @@
 
 <p> We can have entirely distinct specializations </p>
 
-<div class="notes" id="org9184e90">
-<p>  </p>
-
-</div>
 </div>
 <div id="outline-container-org9b64424" class="outline-3">
 <h3 id="org9b64424">A Step Towards Implementation</h3>
@@ -346,10 +282,6 @@
 </pre>
 </div>
 
-<div class="notes" id="org679feb5">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgf24cbc4" class="outline-3">
@@ -366,10 +298,6 @@
 </pre>
 </div>
 
-<div class="notes" id="org7617290">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgd69f366" class="outline-4">
@@ -392,10 +320,6 @@
 </pre>
 </div>
 
-<div class="notes" id="org73e4b81">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org07152f2" class="outline-4">
@@ -409,10 +333,6 @@
 };
 </pre>
 </div>
-<div class="notes" id="org40519d3">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
@@ -421,10 +341,6 @@
 <div class="outline-text-3" id="text-org33fa324">
 <p> In a bit </p>
 
-<div class="notes" id="orgd6431cd">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
@@ -443,10 +359,6 @@
 <div id="outline-container-orgb51a0c4" class="outline-3">
 <h3 id="orgb51a0c4">Maybe not a lot more</h3>
 <div class="outline-text-3" id="text-orgb51a0c4">
-<div class="notes" id="org0c44627">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org38e75f7" class="outline-3">
@@ -458,10 +370,6 @@
 <li>\(1_M \in M\) such that \(\forall m \in M : (1_M \oplus m) = m = (m \oplus 1_M)\)</li>
 </ul>
 
-<div class="notes" id="org17705e7">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org38a2fc2" class="outline-3">
@@ -475,10 +383,6 @@
 
 <p> The similarity to left and right fold is <b>NOT</b> an accident </p>
 
-<div class="notes" id="org87b2c28">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orge87a585" class="outline-3">
@@ -495,10 +399,6 @@
 
 <p> This is common </p>
 
-<div class="notes" id="orgbae6f76">
-<p>  </p>
-
-</div>
 </div>
 <div id="outline-container-org8204644" class="outline-4">
 <h4 id="org8204644">From Haskell Prelude</h4>
@@ -517,10 +417,6 @@
 </pre>
 </div>
 
-<div class="notes" id="org27faaae">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
@@ -529,10 +425,6 @@
 <div class="outline-text-3" id="text-org58ba1f2">
 <p> \(empty \, | \, concat\) </p>
 
-<div class="notes" id="orgc143f8b">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org7fab3d4" class="outline-3">
@@ -961,10 +853,6 @@ StringMonoid::op()
 <div id="outline-container-org3983c15" class="outline-2">
 <h2 id="org3983c15">Thank You</h2>
 <div class="outline-text-2" id="text-org3983c15">
-<div class="notes" id="org4db291f">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </body></html>

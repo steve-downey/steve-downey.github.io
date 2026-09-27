@@ -20,10 +20,6 @@
 
 <!-- TEASER_END -->
 
-<div class="notes" id="org36cf365">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org236dff5" class="outline-2">
@@ -37,10 +33,6 @@
 <p> A self-contained design for a Standard C++ framework for managing asynchronous execution on generic execution resources. </p>
 </blockquote>
 
-<div class="notes" id="org8339640">
-<p>  </p>
-
-</div>
 </div>
 <div id="outline-container-orgc5b1e38" class="outline-3">
 <h3 id="orgc5b1e38">Three Key Abstractions</h3>
@@ -60,10 +52,6 @@
 
 <p> Sends work to be done in a place. </p>
 
-<div class="notes" id="orga800408">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgf878c5c" class="outline-4">
@@ -71,10 +59,6 @@
 <div class="outline-text-4" id="text-orgf878c5c">
 <p> Senders describe work. </p>
 
-<div class="notes" id="org3d29294">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgf5c2ed9" class="outline-4">
@@ -138,10 +122,6 @@
 
 <p> <a href="https://godbolt.org/z/1M5enroaE">Compiler Explorer</a> </p>
 
-<div class="notes" id="org2eb3f3f">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgf7d68f0" class="outline-4">
@@ -153,10 +133,6 @@ Hello world! Have an int.
 The int is 55
 </pre>
 
-<div class="notes" id="orgbf13cfb">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgd5015b3" class="outline-4">
@@ -240,10 +216,6 @@ The int is 55
 
 <p> <a href="https://godbolt.org/z/7vx69cMj9">Compiler Explorer</a> </p>
 
-<div class="notes" id="org8b2f9b4">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgb681eb0" class="outline-4">
@@ -262,10 +234,6 @@ The int is 55
 
 <p> I will mostly ignore the error and stop channels </p>
 
-<div class="notes" id="orgd3933b4">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
@@ -279,10 +247,6 @@ The int is 55
 <div class="outline-text-3" id="text-orgaa994df">
 <p> Continuation Passing Style </p>
 
-<div class="notes" id="orgfcb288c">
-<p>  </p>
-
-</div>
 </div>
 <div id="outline-container-orgd5b64c5" class="outline-4">
 <h4 id="orgd5b64c5">Not At All New</h4>
@@ -291,10 +255,6 @@ The int is 55
 
 <p> <a href="https://dspace.mit.edu/bitstream/handle/1721.1/5794/AIM-349.pdf">AI Memo 349: "Scheme: An Interpreter for Extended Lambda Calculus"</a> </p>
 
-<div class="notes" id="org4fc8969">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org0871c6c" class="outline-4">
@@ -325,10 +285,6 @@ The int is 55
 </pre>
 </div>
 
-<div class="notes" id="org83586c7">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org0559af1" class="outline-4">
@@ -346,10 +302,6 @@ The int is 55
 
 <p> We keep the sender "thunks" live so we don't dangle references. </p>
 
-<div class="notes" id="org7ce856a">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org1e75715" class="outline-4">
@@ -363,10 +315,6 @@ The int is 55
 
 <p> Structured Programming can be converted to CPS. </p>
 
-<div class="notes" id="org6493700">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org9562d05" class="outline-4">
@@ -407,10 +355,6 @@ The int is 55
 
 <p> Senders "send" to their continuations, delimited by the Receiver. </p>
 
-<div class="notes" id="orgd311a42">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
@@ -425,10 +369,6 @@ The int is 55
 
 <p> At least </p>
 
-<div class="notes" id="orgb13c3fd">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orga29d66f" class="outline-4">
@@ -455,10 +395,6 @@ The int is 55
 </div>
 
 
-<div class="notes" id="orgde3c0e9">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orgaf9b3e1" class="outline-4">
@@ -536,10 +472,6 @@ The int is 55
 
 <p> (shock, dismay) </p>
 
-<div class="notes" id="orgdbe487b">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-org8b69996" class="outline-4">
@@ -551,10 +483,6 @@ The int is 55
 
 <p> The question is if the rules apply. </p>
 
-<div class="notes" id="org981c41e">
-<p>  </p>
-
-</div>
 </div>
 </div>
 <div id="outline-container-orge30880f" class="outline-4">
@@ -627,10 +555,6 @@ The int is 55
 <div id="outline-container-orgd26dd21" class="outline-3">
 <h3 id="orgd26dd21">The Three Monadic Parts</h3>
 <div class="outline-text-3" id="text-orgd26dd21">
-<div class="notes" id="org2736585">
-<p>  </p>
-
-</div>
 </div>
 <div id="outline-container-orgec26678" class="outline-4">
 <h4 id="orgec26678"><code>just</code></h4>
@@ -676,10 +600,6 @@ The int is 55
 <div class="outline-text-4" id="text-org65d75e4">
 <p> The monadic bind gives us the runtime choices we need. </p>
 
-<div class="notes" id="org3710183">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
@@ -692,10 +612,6 @@ The int is 55
 <li>Recursion</li>
 </ul>
 
-<div class="notes" id="org24383ab">
-<p>  </p>
-
-</div>
 </div>
 <div id="outline-container-org9ba54a2" class="outline-4">
 <h4 id="org9ba54a2">Sequence</h4>
@@ -788,10 +704,6 @@ true branch 7
 <div id="outline-container-org84e1bd6" class="outline-4">
 <h4 id="org84e1bd6">Recursion</h4>
 <div class="outline-text-4" id="text-org84e1bd6">
-<div class="notes" id="org5757047">
-<p>  </p>
-
-</div>
 </div>
 <div id="outline-container-org64da46e" class="outline-5">
 <h5 id="org64da46e">Simple Recursion</h5>
@@ -1039,20 +951,12 @@ work  = 500
 </ul>
 
 
-<div class="notes" id="orgd77b1a9">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </div>
 <div id="outline-container-org03d3e92" class="outline-2">
 <h2 id="org03d3e92">Thank You</h2>
 <div class="outline-text-2" id="text-org03d3e92">
-<div class="notes" id="org76ec745">
-<p>  </p>
-
-</div>
 </div>
 </div>
 </body></html>
