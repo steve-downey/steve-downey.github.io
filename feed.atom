@@ -3,7 +3,7 @@
 <feed xml:lang="en" xmlns="http://www.w3.org/2005/Atom">
   <title>What Comes to Mind</title>
   <id>https://sdowney.org/feed.atom</id>
-  <updated>2026-09-27T19:32:26Z</updated>
+  <updated>2026-09-27T21:28:07Z</updated>
   <author>
     <name>Steve Downey</name>
   </author>
@@ -121,7 +121,7 @@ The lesson from the history is not "demand deployment." It is "demand an impleme
       <name>Steve Downey</name>
     </author>
     <link rel="alternate" type="text/html" href="https://sdowney.org/posts/scrap-your-static_assert/"/>
-    <summary type="html">&lt;p&gt;
+    <summary type="html">&lt;div&gt;&lt;p&gt;
 The obvious way to test a compile-time fact is &lt;code&gt;static_assert&lt;/code&gt;. It's right
 there, it needs no framework, and for a fact that has to hold it's the right
 tool. As a &lt;i&gt;test&lt;/i&gt;, though, it has one bad property: a wrong answer is a
@@ -130,155 +130,7 @@ diagnostic instead of a test result, and every other test in the file goes
 unrun. The xUnit report is empty. You learn that something is wrong, once, and
 nothing about the rest.
 &lt;/p&gt;
-
-&lt;p&gt;
-There's a second, smaller problem. Even when you write the check as a runtime
-&lt;code&gt;CHECK&lt;/code&gt; so that it gets reported, a bare trait doesn't report anything you can
-use:
-&lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-C++"&gt;&lt;code&gt;CHECK(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(*e), &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;);  &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;FAILED: CHECK( false )&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-The expansion is the word &lt;code&gt;false&lt;/code&gt;. You already knew the two types differed; the
-framework won't tell you what either of them was.
-&lt;/p&gt;
-
-&lt;p&gt;
-Converting the &lt;code&gt;expected&lt;/code&gt; tests off &lt;code&gt;static_assert&lt;/code&gt; came down to two
-header-only components that fix these two problems. Neither is clever.
-(The title owes Lämmel and Peyton Jones; the debt stops at the title.)
-&lt;/p&gt;
-&lt;div id="ox-nikola-outline-container-org0d2c399" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org0d2c399"&gt;Type identity as a value&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org0d2c399"&gt;
-&lt;p&gt;
-The fix for the second problem is to compare type &lt;i&gt;identities&lt;/i&gt; that carry their
-spelling for diagnostics, instead of comparing a bool. See
-&lt;a href="https://github.com/steve-downey/expected/blob/blog/scrap-static-assert/tests/beman/expected/testing/type_name.hpp"&gt;&lt;code&gt;type_name.hpp&lt;/code&gt;&lt;/a&gt;. The
-comparison is still &lt;code&gt;std::is_same_v&lt;/code&gt;, so the verdict is exact and a false pass
-isn't possible:
-&lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-cpp"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-constant"&gt;beman&lt;/span&gt;::&lt;span class="org-constant"&gt;expected&lt;/span&gt;::&lt;span class="org-constant"&gt;testing&lt;/span&gt;::&lt;span class="org-keyword"&gt;operator&lt;/span&gt;==(&lt;span class="org-type"&gt;type_name_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;, &lt;span class="org-type"&gt;type_name_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;) {
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;T&lt;/span&gt;, &lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-The spelling is consulted only after a comparison has already failed and the
-framework needs to explain it. So a failing check explains itself:
-&lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-text"&gt;&lt;code&gt;FAILED: CHECK( type_name&amp;lt;decltype(*e)&amp;gt;() == type_name&amp;lt;int&amp;amp;&amp;gt;() )
-with expansion: const int&amp;amp; == int&amp;amp;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-And the tests read like the trait they replaced:
-&lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-cpp"&gt;&lt;code&gt;TEST_CASE(&lt;span class="org-string"&gt;"expected: operator* ref-qualification return types"&lt;/span&gt;, &lt;span class="org-string"&gt;"[ExpectedTest]"&lt;/span&gt;) {
-    &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;expected_t&lt;/span&gt; = &lt;span class="org-constant"&gt;expt&lt;/span&gt;::&lt;span class="org-type"&gt;expected&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;, &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt;;
-    CHECK(type_name&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(*&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;&lt;span class="org-type"&gt;expected_t&lt;/span&gt;&amp;amp;&amp;gt;())&amp;gt;() == type_name&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;());
-    CHECK(type_name&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(*&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;expected_t&lt;/span&gt;&amp;amp;&amp;gt;())&amp;gt;() == type_name&amp;lt;&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;());
-    CHECK(type_name&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(*&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;&lt;span class="org-type"&gt;expected_t&lt;/span&gt;&amp;amp;&amp;amp;&amp;gt;())&amp;gt;() == type_name&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;amp;&amp;gt;());
-    CHECK(type_name&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(*&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;expected_t&lt;/span&gt;&amp;amp;&amp;amp;&amp;gt;())&amp;gt;() == type_name&amp;lt;&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;amp;&amp;gt;());
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org859888e" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org859888e"&gt;Reporting a compile-time value at runtime&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org859888e"&gt;
-&lt;p&gt;
-The fix for the first problem is to split the two questions a constexpr test
-actually asks. "Can this be constant-evaluated at all?" is a property of the
-code; it stays a hard translation failure, which is correct, because that's a
-fact that has to hold. "Does it produce the right answer?" is a property of a
-value, and there's no reason a wrong value should stop the build.
-&lt;/p&gt;
-
-&lt;p&gt;
-&lt;a href="https://github.com/steve-downey/expected/blob/blog/scrap-static-assert/tests/beman/expected/testing/constant_eval.hpp"&gt;&lt;code&gt;constant_eval.hpp&lt;/code&gt;&lt;/a&gt;
-is &lt;code&gt;consteval&lt;/code&gt;, so a call to it is evaluated during translation. If the probe
-body isn't usable in a constant expression the program is ill-formed, and the
-first question is answered by the call itself, with no &lt;code&gt;static_assert&lt;/code&gt; needed.
-The result then behaves as an ordinary prvalue, free to be handed to &lt;code&gt;CHECK&lt;/code&gt;.
-The whole thing is a one-line wrapper:
-&lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-cpp"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;Probe&lt;/span&gt;&amp;gt;
-&lt;span class="org-keyword"&gt;consteval&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-constant"&gt;beman&lt;/span&gt;::&lt;span class="org-constant"&gt;expected&lt;/span&gt;::&lt;span class="org-constant"&gt;testing&lt;/span&gt;::&lt;span class="org-function-name"&gt;constant_eval&lt;/span&gt;(&lt;span class="org-type"&gt;Probe&lt;/span&gt; &lt;span class="org-variable-name"&gt;probe&lt;/span&gt;) {
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; probe();
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-A probe is a plain lambda that reduces what it observes to a literal aggregate:
-&lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-cpp"&gt;&lt;code&gt;TEST_CASE(&lt;span class="org-string"&gt;"expected: constexpr default construction"&lt;/span&gt;, &lt;span class="org-string"&gt;"[ExpectedTest]"&lt;/span&gt;) {
-    &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;probe&lt;/span&gt; = [] {
-        &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-constant"&gt;expt&lt;/span&gt;::&lt;span class="org-type"&gt;expected&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;int&lt;/span&gt;, &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;gt; &lt;span class="org-variable-name"&gt;e&lt;/span&gt;;
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; int_state{e.has_value(), *e};
-    };
-    CHECK(constant_eval(probe) == int_state{&lt;span class="org-constant"&gt;true&lt;/span&gt;, 0});
-    CHECK(probe() == int_state{&lt;span class="org-constant"&gt;true&lt;/span&gt;, 0});
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-Because the probe is a plain lambda and not a &lt;code&gt;consteval&lt;/code&gt; one, the same body
-runs in both evaluation modes. Constant evaluation and ordinary evaluation can
-take different paths through a union-based type like &lt;code&gt;expected&lt;/code&gt;, so running both
-earns its second line:
-&lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-C++"&gt;&lt;code&gt;CHECK(&lt;span class="org-type"&gt;constant_eval&lt;/span&gt;(&lt;span class="org-variable-name"&gt;probe&lt;/span&gt;) == expect);  &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;constant evaluation
-&lt;/span&gt;CHECK(probe() == expect);               &lt;span class="org-comment-delimiter"&gt;// &lt;/span&gt;&lt;span class="org-comment"&gt;ordinary evaluation&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-Give the returned aggregate an &lt;code&gt;operator&amp;lt;&amp;lt;&lt;/code&gt;. Without one, Catch2 prints &lt;code&gt;{?} ==
-{?}&lt;/code&gt; and you're back where &lt;code&gt;static_assert&lt;/code&gt; left you.
-&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org09c5a2c" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org09c5a2c"&gt;What it buys&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org09c5a2c"&gt;
-&lt;p&gt;
-Two things. The reporting is better: a mismatch names both types, or prints both
-states, instead of expanding to &lt;code&gt;false&lt;/code&gt; or stopping at a diagnostic before it
-can say anything. And a wrong answer is no longer a compile failure that blocks
-everything behind it. The suite builds, runs, and reports every case; a broken
-trait shows up as one red line among the green, with the rest of the run intact.
-&lt;/p&gt;
-
-&lt;p&gt;
-None of this abolishes &lt;code&gt;static_assert&lt;/code&gt;. The genuinely ill-formed cases stay
-ill-formed, checked in their own negative-compilation files. What moved to
-runtime is only the part that was a test wearing an assertion's clothes.
-&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;</summary>
+&lt;p&gt;&lt;a href="https://sdowney.org/posts/scrap-your-static_assert/"&gt;Read more…&lt;/a&gt; (3 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
     <content type="html">&lt;p&gt;
 The obvious way to test a compile-time fact is &lt;code&gt;static_assert&lt;/code&gt;. It's right
 there, it needs no framework, and for a fact that has to hold it's the right
@@ -288,6 +140,7 @@ diagnostic instead of a test result, and every other test in the file goes
 unrun. The xUnit report is empty. You learn that something is wrong, once, and
 nothing about the rest.
 &lt;/p&gt;
+&lt;!-- TEASER_END --&gt;
 
 &lt;p&gt;
 There's a second, smaller problem. Even when you write the check as a runtime
@@ -310,9 +163,9 @@ Converting the &lt;code&gt;expected&lt;/code&gt; tests off &lt;code&gt;static_as
 header-only components that fix these two problems. Neither is clever.
 (The title owes Lämmel and Peyton Jones; the debt stops at the title.)
 &lt;/p&gt;
-&lt;div id="ox-nikola-outline-container-org0d2c399" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org0d2c399"&gt;Type identity as a value&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org0d2c399"&gt;
+&lt;div id="ox-nikola-outline-container-orgd6d2d59" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgd6d2d59"&gt;Type identity as a value&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orgd6d2d59"&gt;
 &lt;p&gt;
 The fix for the second problem is to compare type &lt;i&gt;identities&lt;/i&gt; that carry their
 spelling for diagnostics, instead of comparing a bool. See
@@ -356,9 +209,9 @@ And the tests read like the trait they replaced:
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org859888e" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org859888e"&gt;Reporting a compile-time value at runtime&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org859888e"&gt;
+&lt;div id="ox-nikola-outline-container-orgb0efe2f" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgb0efe2f"&gt;Reporting a compile-time value at runtime&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orgb0efe2f"&gt;
 &lt;p&gt;
 The fix for the first problem is to split the two questions a constexpr test
 actually asks. "Can this be constant-evaluated at all?" is a property of the
@@ -419,9 +272,9 @@ Give the returned aggregate an &lt;code&gt;operator&amp;lt;&amp;lt;&lt;/code&gt;
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org09c5a2c" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org09c5a2c"&gt;What it buys&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org09c5a2c"&gt;
+&lt;div id="ox-nikola-outline-container-orgcb94b8e" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgcb94b8e"&gt;What it buys&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orgcb94b8e"&gt;
 &lt;p&gt;
 Two things. The reporting is better: a mismatch names both types, or prints both
 states, instead of expanding to &lt;code&gt;false&lt;/code&gt; or stopping at a diagnostic before it
@@ -1786,36 +1639,6 @@ two-place edit: the Google Fonts &lt;code&gt;&amp;lt;link&amp;gt;&lt;/code&gt; t
     <category term="tailwind" label="tailwind"/>
   </entry>
   <entry>
-    <title>Surround With UUID</title>
-    <id>https://sdowney.org/posts/surround-with-uuid/</id>
-    <updated>2026-04-09T17:41:26-04:00</updated>
-    <published>2026-04-09T17:41:26-04:00</published>
-    <author>
-      <name>Steve Downey</name>
-    </author>
-    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/surround-with-uuid/"/>
-    <summary type="html">&lt;div class="abstract" id="org224de6b"&gt;
-&lt;p&gt;
-The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
-&lt;/p&gt;
-
-&lt;p&gt;
-It's a radically oversimplified too long elevator pitch.
-&lt;/p&gt;
-
-&lt;/div&gt;</summary>
-    <content type="html">&lt;div class="abstract" id="org224de6b"&gt;
-&lt;p&gt;
-The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
-&lt;/p&gt;
-
-&lt;p&gt;
-It's a radically oversimplified too long elevator pitch.
-&lt;/p&gt;
-
-&lt;/div&gt;</content>
-  </entry>
-  <entry>
     <title>Why Standard Organizations</title>
     <id>https://sdowney.org/posts/why-standard-organizations/</id>
     <updated>2026-03-07T10:21:36-05:00</updated>
@@ -2447,6 +2270,284 @@ Setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project or on the &lt;code&gt;cma
 
 &lt;p&gt;
 You must set a custom &lt;code&gt;triple&lt;/code&gt; file that sets VCPKG_CHAINLOAD_TOOLCHAIN_FILE in order to use that CMake toolchain with &lt;code&gt;vcpkg&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;</content>
+  </entry>
+  <entry>
+    <title>Substitution is Sometimes a Failure</title>
+    <id>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</id>
+    <updated>2025-11-28T12:06:58-05:00</updated>
+    <published>2025-11-28T12:06:58-05:00</published>
+    <author>
+      <name>Steve Downey</name>
+    </author>
+    <link rel="alternate" type="text/html" href="https://sdowney.org/posts/substitution-is-sometimes-a-failure/"/>
+    <summary type="html">&lt;div&gt;&lt;div class="abstract" id="org0d3d289"&gt;
+&lt;p&gt;
+Why are optional::transform and optional::and_then not constrained by &lt;code&gt;invocable&lt;/code&gt;?
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;p&gt;&lt;a href="https://sdowney.org/posts/substitution-is-sometimes-a-failure/"&gt;Read more…&lt;/a&gt; (4 min remaining to read)&lt;/p&gt;&lt;/div&gt;</summary>
+    <content type="html">&lt;div class="abstract" id="org0d3d289"&gt;
+&lt;p&gt;
+Why are optional::transform and optional::and_then not constrained by &lt;code&gt;invocable&lt;/code&gt;?
+&lt;/p&gt;
+
+&lt;/div&gt;
+
+&lt;!-- TEASER_END --&gt;
+&lt;div id="ox-nikola-outline-container-org0ebd90d" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org0ebd90d"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Optional "Monadic" Interface&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-1"&gt;
+&lt;p&gt;
+&lt;a href="http://wg21.link/P0798"&gt;Monadic operations for std::optional&lt;/a&gt;
+&lt;/p&gt;
+&lt;ul class="org-ul"&gt;
+&lt;li&gt;&lt;code&gt;transform&lt;/code&gt; is the c++ spelling for &lt;code&gt;map&lt;/code&gt; or &lt;code&gt;fmap&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;and_then&lt;/code&gt; is monadic &lt;code&gt;bind&lt;/code&gt; for optional&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;or_else&lt;/code&gt; is dual to &lt;code&gt;and_then&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;
+&lt;code&gt;or_else&lt;/code&gt; also has:
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+Constraints: &lt;code&gt;F&lt;/code&gt; models &lt;code&gt;invocable&lt;/code&gt; and &lt;code&gt;T&lt;/code&gt; models &lt;code&gt;{move,copy}_constructible&lt;/code&gt;.
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;code&gt;transform&lt;/code&gt; and &lt;code&gt;and_then&lt;/code&gt; do not.
+&lt;/p&gt;
+
+&lt;p&gt;
+They don't work if you don't give them invocables, and rely on &lt;code&gt;invoke_result_t&lt;/code&gt; to compute the result. So why not constrain them?
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org0d51455" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org0d51455"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; SFINAE is shallow&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-2"&gt;
+&lt;p&gt;
+The problem is if another template has to be instantiated in order to evaluate the template of interest, and that template has an error, you get an error, not a substitution failure. And, it turns out, lambdas are a common source of the problem and a common case in real use.
+&lt;/p&gt;
+
+&lt;p&gt;
+Consider the code:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-type"&gt;void&lt;/span&gt; &lt;span class="org-function-name"&gt;f&lt;/span&gt;(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;);
+
+&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;l&lt;/span&gt; = [](&lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;y&lt;/span&gt;) {
+    f(y);
+    &lt;span class="org-keyword"&gt;return&lt;/span&gt; 42;
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+The two important parts are the &lt;code&gt;auto&amp;amp;&lt;/code&gt; parameter and the implicit deduced return type.
+&lt;/p&gt;
+
+&lt;p&gt;
+We can rewrite it, to make things possibly more obvious:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;Func&lt;/span&gt; {
+    &lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
+    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-keyword"&gt;operator&lt;/span&gt;&lt;span class="org-function-name"&gt;()&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;t&lt;/span&gt;) {
+        f(t);
+        &lt;span class="org-keyword"&gt;return&lt;/span&gt; 42;
+    }
+};
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+and to slightly spoil things, the problem code is effectively:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invocable&lt;/span&gt;&amp;lt;Func, &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp;&amp;gt;);
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+which produces:
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&amp;lt;source&amp;gt;: In instantiation of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-constant"&gt;Func&lt;/span&gt;::&lt;span class="org-keyword"&gt;operator&lt;/span&gt;()(&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;amp;) [with T = &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;]&lt;span class="org-warning"&gt;'&lt;/span&gt;:
+type_traits:2565:26:   required by substitution of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Fn&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; ... &lt;span class="org-type"&gt;_Args&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;static&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__result_of_success&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt; (declval&amp;lt;&lt;span class="org-type"&gt;_Fn&lt;/span&gt;&amp;gt;()((&lt;span class="org-type"&gt;declval&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;_Args&lt;/span&gt;&amp;gt;)()...)), &lt;span class="org-constant"&gt;std&lt;/span&gt;::__invoke_other&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;__result_of_other_impl&lt;/span&gt;::_S_test(&lt;span class="org-type"&gt;int&lt;/span&gt;) [with _Fn = Func; _Args = {&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;}]&lt;span class="org-warning"&gt;'&lt;/span&gt;
+type_traits:2576:55:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__result_of_impl&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;false&lt;/span&gt;, &lt;span class="org-constant"&gt;false&lt;/span&gt;, Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
+type_traits:3038:12:   recursively required by substitution of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Result&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Ret&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__is_invocable_impl&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;_Result&lt;/span&gt;, &lt;span class="org-type"&gt;_Ret&lt;/span&gt;, &lt;span class="org-constant"&gt;true&lt;/span&gt;, &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__void_t&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-constant"&gt;_CTp&lt;/span&gt;::&lt;span class="org-type"&gt;type&lt;/span&gt;&amp;gt; &amp;gt; [&lt;span class="org-constant"&gt;with&lt;/span&gt; _Result = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__invoke_result&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;; _Ret = &lt;span class="org-type"&gt;void&lt;/span&gt;]&lt;span class="org-warning"&gt;'&lt;/span&gt;
+type_traits:3038:12:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_invocable&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
+type_traits:3286:71:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_invocable_v&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
+concepts:336:25:   required from &lt;span class="org-type"&gt;here&lt;/span&gt;
+&amp;lt;source&amp;gt;:12:10: error: binding reference of type &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&lt;span class="org-warning"&gt;'&lt;/span&gt; to &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&lt;span class="org-warning"&gt;'&lt;/span&gt; discards qualifiers
+   12 |         f(t);
+      |         ~^~~
+&amp;lt;source&amp;gt;:2:12: note:   initializing argument 1 of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-type"&gt;void&lt;/span&gt; f(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;)&lt;span class="org-warning"&gt;'&lt;/span&gt;
+    2 |     &lt;span class="org-type"&gt;void&lt;/span&gt; f(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;);
+      |            ^~~~
+Compiler returned: 1
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;
+&lt;a href="https://compiler-explorer.com/z/W1jT6bxrf"&gt;Compiler Explorer&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+as the compiler is unhappy about trying to call the function &lt;code&gt;f&lt;/code&gt; with a &lt;code&gt;const int&amp;amp;&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+If the lambda or &lt;code&gt;Func&lt;/code&gt; is changed to have a non-deduced return type, the instantiation errors from the check to &lt;code&gt;invocable&lt;/code&gt; go away, although you still get an error calling either with a &lt;code&gt;const int&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+So why do we run into this with &lt;code&gt;transform&lt;/code&gt; if we were to constrain it with &lt;code&gt;invocable&lt;/code&gt; ?
+&lt;/p&gt;
+
+&lt;p&gt;
+The compiler needs to figure out the overload set in order to resolve which one to use from the set. There are four of them two for the l- and r- value category and two for the const overloads.
+&lt;/p&gt;
+
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &amp;amp;;
+&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; &amp;amp;;
+&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &amp;amp;&amp;amp;;
+&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; &amp;amp;&amp;amp;;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+&lt;p&gt;
+with differing computations of the resulting &lt;code&gt;optional&lt;/code&gt; being returned.
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;F, &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;​::​move(*val))&amp;gt;;
+&lt;span class="org-comment-delimiter"&gt;//&lt;/span&gt;&lt;span class="org-comment"&gt;or
+&lt;/span&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-type"&gt;remove_cv_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;F, &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(*val)&amp;gt;&amp;gt;;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+So, in order to work out what the templated &lt;code&gt;transform&lt;/code&gt;'s signature really is, it has to compute what the invocable returns, and since the invocable has deduced return type, it needs to instantiate it, and instantiating with &lt;code&gt;const int&lt;/code&gt; causes an error.
+&lt;/p&gt;
+
+&lt;p&gt;
+This is unfortunate.
+&lt;/p&gt;
+
+&lt;p&gt;
+If we constrain &lt;code&gt;transform&lt;/code&gt; we get the same errors as above. &lt;a href="https://compiler-explorer.com/z/r1qbjx4zG"&gt;See here,&lt;/a&gt; with just enough of an &lt;code&gt;optional&lt;/code&gt; to compile.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org98b6f33" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org98b6f33"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Constraints, what are they good for&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-3"&gt;
+&lt;p&gt;
+Not absolutely nothing.
+&lt;/p&gt;
+
+&lt;p&gt;
+Constraints in the library:
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+Constraints: the conditions for the function's participation in overload resolution ([over.match]).
+&lt;/p&gt;
+
+&lt;p&gt;
+[Note 1: Failure to meet such a condition results in the function's silent non-viability. — end note]
+&lt;/p&gt;
+
+&lt;p&gt;
+[Example 1: An implementation can express such a condition via a constraint-expression ([temp.constr.decl]). — end example]
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;a href="https://eel.is/c++draft/description#structure.specifications-3.1"&gt;[structure.specifications] 3.1&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+Constraints are for making an overload not exist if the constraint isn't met. It's not a way of signaling an error. Those are &lt;code&gt;Mandates&lt;/code&gt;:
+&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;
+Mandates: the conditions that, if not met, render the program ill-formed.
+&lt;/p&gt;
+
+&lt;p&gt;
+[Example 2: An implementation can express such a condition via the constant-expression in a static_assert-declaration ([dcl.pre]). If the diagnostic is to be emitted only after the function has been selected by overload resolution, an implementation can express such a condition via a constraint-expression ([temp.constr.decl]) and also define the function as deleted. — end example]
+&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;
+&lt;a href="https://eel.is/c++draft/description#structure.specifications-3.2"&gt;[structure.specifications] 3.2&lt;/a&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+Asking to run &lt;code&gt;and_then&lt;/code&gt; on a non-invocable probably ought not to say there is no such function, but instead tell you it can't be invoked. I'm now not convinced that &lt;code&gt;or_else&lt;/code&gt; should be constrained this way. It's not significantly better for &lt;code&gt;o.or_else(5)&lt;/code&gt; to fail to resolve, mentioning &lt;code&gt;invocable&lt;/code&gt;, than produce an error that &lt;code&gt;invoke_result_t&lt;/code&gt; doesn't work, or that &lt;code&gt;f&lt;/code&gt; can't be invoked. The kind of error is a minor detail.
+&lt;/p&gt;
+
+&lt;p&gt;
+Constraints that let you control the choice of alternatives are wonderful, and requires clauses are normal programmer accessible, unlike SFINAE, or even &lt;code&gt;enable_if&lt;/code&gt;. But without an overload set to constrain, there possibly should not be a constraint.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org666f0f3" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org666f0f3"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Can we do better?&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-4"&gt;
+&lt;p&gt;
+There are some notes in &lt;a href="https://wg21.link/P0798"&gt;P0798&lt;/a&gt; that suggest that Deducing This might help, &lt;a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0847r7.html"&gt;P0847&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+The idea would to be to NOT have all the value category overloads that need to be checked, but to just have a single one that deduces what &lt;code&gt;this&lt;/code&gt; is and provide it as a template parameter for further use. The contained parameter could be forwarded using &lt;code&gt;forward_like&amp;lt;Self&amp;gt;&lt;/code&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+P0847 has discussion about how deducing this might be applied to optional. There's also discussion of deducing this and the SFINAE-unfriendly auto at &lt;a href="https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/"&gt;C++23’s Deducing this: what it is, why it is, how to use it&lt;/a&gt;.
+&lt;/p&gt;
+
+&lt;p&gt;
+With the tools we have today, it looks possible, but still slightly messy. I managed to get my implementation of optional to compile and pass its own tests with.
+&lt;/p&gt;
+&lt;div class="org-src-container"&gt;
+&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;
+    &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(
+        &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invocable&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;,
+                       &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;)
+&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;transform&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; Self&amp;amp;&amp;amp; self, &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;)
+    -&amp;gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;
+        &lt;span class="org-type"&gt;F&lt;/span&gt;,
+        &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;&amp;gt; {
+    &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;,
+                                   &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(
+                                       &lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;;
+    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_array_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
+    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;in_place_t&lt;/span&gt;&amp;gt;);
+    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;nullopt_t&lt;/span&gt;&amp;gt;);
+    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_object_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt; || &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_reference_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
+    &lt;span class="org-keyword"&gt;if&lt;/span&gt; (self.has_value()) {
+        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;{&lt;span class="org-constant"&gt;detail&lt;/span&gt;::from_function,
+                           &lt;span class="org-constant"&gt;std&lt;/span&gt;::forward&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt;(f),
+                           &lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(self.value_)};
+    }
+    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;;
+}
+&lt;/code&gt;&lt;/pre&gt;
+&lt;/div&gt;
+
+&lt;p&gt;
+If there were a &lt;code&gt;std::forward_like_t&lt;/code&gt;, it might be possible to reduce some of the noise in computing the value category used for the &lt;code&gt;T&lt;/code&gt;. I also have not thought extensively about if the requires clause is truly needed in light of the &lt;code&gt;invoke_result_&lt;/code&gt; that can now be used in the trailing return type.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;</content>

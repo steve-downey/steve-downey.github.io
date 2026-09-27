@@ -142,6 +142,7 @@ diagnostic instead of a test result, and every other test in the file goes
 unrun. The xUnit report is empty. You learn that something is wrong, once, and
 nothing about the rest.
 </p>
+<!-- TEASER_END -->
 
 <p>
 There's a second, smaller problem. Even when you write the check as a runtime
@@ -164,9 +165,9 @@ Converting the <code>expected</code> tests off <code>static_assert</code> came d
 header-only components that fix these two problems. Neither is clever.
 (The title owes Lämmel and Peyton Jones; the debt stops at the title.)
 </p>
-<div id="ox-nikola-outline-container-org0d2c399" class="ox-nikola-outline-2">
-<h2 id="org0d2c399">Type identity as a value</h2>
-<div class="outline-text-2" id="text-org0d2c399">
+<div id="ox-nikola-outline-container-orgd6d2d59" class="ox-nikola-outline-2">
+<h2 id="orgd6d2d59">Type identity as a value</h2>
+<div class="outline-text-2" id="text-orgd6d2d59">
 <p>
 The fix for the second problem is to compare type <i>identities</i> that carry their
 spelling for diagnostics, instead of comparing a bool. See
@@ -210,9 +211,9 @@ And the tests read like the trait they replaced:
 </div>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org859888e" class="ox-nikola-outline-2">
-<h2 id="org859888e">Reporting a compile-time value at runtime</h2>
-<div class="outline-text-2" id="text-org859888e">
+<div id="ox-nikola-outline-container-orgb0efe2f" class="ox-nikola-outline-2">
+<h2 id="orgb0efe2f">Reporting a compile-time value at runtime</h2>
+<div class="outline-text-2" id="text-orgb0efe2f">
 <p>
 The fix for the first problem is to split the two questions a constexpr test
 actually asks. "Can this be constant-evaluated at all?" is a property of the
@@ -273,9 +274,9 @@ Give the returned aggregate an <code>operator&lt;&lt;</code>. Without one, Catch
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-org09c5a2c" class="ox-nikola-outline-2">
-<h2 id="org09c5a2c">What it buys</h2>
-<div class="outline-text-2" id="text-org09c5a2c">
+<div id="ox-nikola-outline-container-orgcb94b8e" class="ox-nikola-outline-2">
+<h2 id="orgcb94b8e">What it buys</h2>
+<div class="outline-text-2" id="text-orgcb94b8e">
 <p>
 Two things. The reporting is better: a mismatch names both types, or prints both
 states, instead of expanding to <code>false</code> or stopping at a diagnostic before it
@@ -357,10 +358,6 @@ delimiters: [
                 <time class="text-xs text-gray-400" datetime="2026-05-10T18:00:00-04:00">2026-05-10 18:00</time>
 </li>
             <li>
-                <a href="../surround-with-uuid/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Surround With UUID</a>
-                <time class="text-xs text-gray-400" datetime="2026-04-09T17:41:26-04:00">2026-04-09 17:41</time>
-</li>
-            <li>
                 <a href="../why-standard-organizations/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Why Standard Organizations</a>
                 <time class="text-xs text-gray-400" datetime="2026-03-07T10:21:36-05:00">2026-03-07 10:21</time>
 </li>
@@ -371,6 +368,10 @@ delimiters: [
             <li>
                 <a href="../building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
                 <time class="text-xs text-gray-400" datetime="2025-12-27T12:03:15-05:00">2025-12-27 12:03</time>
+</li>
+            <li>
+                <a href="../substitution-is-sometimes-a-failure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Substitution is Sometimes a Failure</a>
+                <time class="text-xs text-gray-400" datetime="2025-11-28T12:06:58-05:00">2025-11-28 12:06</time>
 </li>
         </ul></section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Archives</h2>
         <a href="../../archive.html" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">All posts →</a>
