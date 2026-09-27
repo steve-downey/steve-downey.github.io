@@ -10,6 +10,7 @@ translation failure. The build stops at the first one, you get a compiler
 diagnostic instead of a test result, and every other test in the file goes
 unrun. The xUnit report is empty. You learn that something is wrong, once, and
 nothing about the rest.
+{{{TEASER_END}}}
 
 There's a second, smaller problem. Even when you write the check as a runtime
 ~CHECK~ so that it gets reported, a bare trait doesn't report anything you can
