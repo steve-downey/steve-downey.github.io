@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quote File | What Comes to Mind</title>
+<title>✌Existing Practice✌ | What Comes to Mind</title>
 <script>
     (function () {
         var s = localStorage.getItem('theme');
@@ -45,22 +45,15 @@
 <meta name="generator" content="Nikola (getnikola.com)">
 <link rel="alternate" type="application/rss+xml" title="RSS" hreflang="en" href="../../rss.xml">
 <link rel="alternate" type="application/atom+xml" title="Atom" hreflang="en" href="../../feed.atom">
-<link rel="canonical" href="https://sdowney.org/pages/quote-file/">
+<link rel="canonical" href="https://sdowney.org/posts/existing-practice/">
 <meta name="author" content="Steve Downey">
+<link rel="prev" href="../scrap-your-static_assert/" title="Scrap Your static_assert" type="text/html">
 <meta property="og:site_name" content="What Comes to Mind">
-<meta property="og:title" content="Quote File">
-<meta property="og:url" content="https://sdowney.org/pages/quote-file/">
-<meta property="og:description" content="Gerry Weinberg
-
-
-
-Three Laws of Consulting
-
-
-The Second Law of ConsultingNo matter how it looks at first, it’s always a people problem.
-The First Law of ConsultingIn spite of what your client may tell">
+<meta property="og:title" content="✌Existing Practice✌">
+<meta property="og:url" content="https://sdowney.org/posts/existing-practice/">
+<meta property="og:description" content='"Standardize existing practice" was barely true of the first C++ standard, and it is the wrong rule now. It was already being stretched in 1998. The ARM was existing practice. Templates as specified i'>
 <meta property="og:type" content="article">
-<meta property="article:published_time" content="2026-03-07T10:49:04-05:00">
+<meta property="article:published_time" content="2026-09-22T17:36:56-04:00">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:site" content="@sdowney.org">
 <meta name="twitter:creator" content="@sdowney">
@@ -125,10 +118,10 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
         <div class="absolute inset-0 bg-black/40"></div>
         <div class="relative z-10">
         
-    <h1 class="text-4xl font-bold">Quote File</h1>
+    <h1 class="text-4xl font-bold">✌Existing Practice✌</h1>
     <p class="mt-2 text-indigo-200">
-        <time class="published dt-published" datetime="2026-03-07T10:49:04-05:00">2026-03-07 10:49</time><span class="mx-2 opacity-50">·</span>
-            <span>1 min read</span>
+        <time class="published dt-published" datetime="2026-09-22T17:36:56-04:00">2026-09-22 17:36</time><span class="mx-2 opacity-50">·</span>
+            <span>6 min read</span>
     </p>
 
         </div>
@@ -136,36 +129,126 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
     <main id="content" class="max-w-6xl mx-auto px-4 py-8"><div class="lg:flex lg:gap-10">
             <div class="prose prose-lg max-w-none prose-indigo dark:prose-invert lg:flex-1 lg:min-w-0">
             
-<article class="post-text storypage" itemscope="itemscope" itemtype="http://schema.org/Article"><header><h1 class="p-name entry-title" itemprop="headline name"><a href="." class="u-url">Quote File</a></h1>
+<article class="blog-post h-entry"><div class="e-content entry-content">
+        <p>
+"Standardize existing practice" was barely true of the first C++ standard, and it is the wrong rule now. It was already being stretched in 1998. The ARM was existing practice. Templates as specified in the ARM were not what got standardized; the STL had two years of use at HP and a handful of early adopters before it was voted in; namespaces, exceptions as shipped, and iostreams with locales were designed in committee and implemented afterward. The result was a standard that no compiler implemented for years. We call it a success because C++ survived it, not because the process was sound.
+</p>
+<!-- TEASER_END -->
 
-        
-
-    </header><div class="e-content entry-content" itemprop="articleBody text">
-    <div id="ox-nikola-outline-container-orgb218519" class="ox-nikola-outline-2">
-<h2 id="orgb218519">Gerry Weinberg</h2>
-<div class="outline-text-2" id="text-orgb218519">
-</div>
-<div id="ox-nikola-outline-container-org2895774" class="ox-nikola-outline-3">
-<h3 id="org2895774">Three Laws of Consulting</h3>
-<div class="outline-text-3" id="text-org2895774">
-<dl class="org-dl">
-<dt>The Second Law of Consulting</dt>
-<dd>No matter how it looks at first, it’s always a people problem.</dd>
-<dt>The First Law of Consulting</dt>
-<dd>In spite of what your client may tell you, there’s always a problem.</dd>
-<dt>The Third Law of Consulting</dt>
-<dd>Never forget they’re paying you by the hour, not by the solution.</dd>
-</dl>
 <p>
-—  Weinberg, Gerald M. 1985. <i>The Secrets of Consulting</i>. New York, NY: Dorset House Publishing.
+Today the rule is not merely stretched. It is objectively wrong, for two reasons that are usually run together and should be kept apart.
+</p>
+<div id="ox-nikola-outline-container-org9bd79c6" class="ox-nikola-outline-2">
+<h2 id="org9bd79c6">No library can be brought in as-is</h2>
+<div class="outline-text-2" id="text-org9bd79c6">
+<p>
+The ecosystem is too fragmented. There is no library that everyone uses, built the way everyone builds, with the error handling everyone wants, that could be dropped into <code>namespace std</code> untouched. And even if there were, LEWG would not do it. The correctness bar applied to current proposals guarantees significant changes to any library that comes through. Lifetime, constexpr, exception safety, allocator awareness, freestanding, ABI. A library with real users has made choices on all of those that the committee will unmake.
+</p>
+
+<p>
+That is not a complaint. It is a description of what the process is for. The library that gets standardized is a new thing with the proposal as its ancestor.
 </p>
 </div>
 </div>
+<div id="ox-nikola-outline-container-orgee50bf4" class="ox-nikola-outline-2">
+<h2 id="orgee50bf4">Wide deployment experience is never coming back</h2>
+<div class="outline-text-2" id="text-orgee50bf4">
+<p>
+For a language feature, deployment experience is not going to happen again. No one is going to commit experimental language code to a production code base. The risk of being wrong, of having to strip syntax out of a million lines when the design changes, is too high for any engineering organization to accept. For a vendor library extension it is unlikely for the same reason, with the added problem that vendors have learned that shipping something under <code>std::experimental</code> means supporting it forever.
+</p>
+
+<p>
+This does not relieve a proposal of the obligation to implement. If anything it makes the implementation more important. But the purpose of the implementation has changed. It is there so that other people can gain intuition about the feature, and so that the implementer can confirm the lack of breakage. Those are the two things a reference implementation is for. Adoption numbers are not one of them.
+</p>
+</div>
+</div>
+<div id="ox-nikola-outline-container-org1300a3a" class="ox-nikola-outline-2">
+<h2 id="org1300a3a">How are we doing?</h2>
+<div class="outline-text-2" id="text-org1300a3a">
+<p>
+The evidence for this is the last three standards.
+</p>
+
+<p>
+<code>fmt</code> is the closest thing we have to the old model. Victor Zverovich had a library with wide deployment, a settled API, and years of bug reports. <code>std::format</code> is still not <code>fmt</code>. Compile-time format string checking went in late through a separate paper. <code>std::print</code> waited for C++23. The escape and width rules for Unicode were rewritten in SG16. It is a success because the library kept living alongside the standard, absorbing the committee's changes and feeding back what broke. The deployment experience that mattered was the experience of tracking the delta.
+</p>
+
+<p>
+Ranges is the same story with a larger delta. range-v3 was widely used. <code>std::ranges</code> diverges from it on borrowed ranges, on dangling, on the view semantics, and on what got left out. C++20 shipped without <code>zip</code>, <code>enumerate</code>, <code>chunk</code>, or <code>to</code>. C++23 filled the holes. That is a success on a six-year timeline, and it worked because Casey Carter and Eric Niebler treated range-v3 as the experiment, not the product.
+</p>
+
+<p>
+Senders and receivers look like a success, and it is the case that best fits the new rule. There was no existing practice. P0443 Executors was an attempt to standardize existing practice, three existing practices in fact, and it failed because they could not be reconciled. P2300 started over. libunifex and stdexec were implementations built to let people gain intuition and find breakage. The design changed enormously between R0 and adoption, and it changed because people wrote code against the implementation and reported what was wrong. Nobody deployed it to production in the meantime. That was not the point.
+</p>
+
+<p>
+Coroutines, before S/R, were marginal. The language feature shipped in C++20 with a working MSVC implementation and no library, and <code>std::generator</code> did not arrive until C++23. Everyone wrote their own task type and their own scheduler, which is what the design intended, and the result was that nobody's coroutine code interoperated with anyone else's. The feature only becomes useful now that S/R supplies the library half. The implementation existed. The intuition did not, because there was no shared thing to build intuition on.
+</p>
+
+<p>
+Modules are not a success; they are the case that should have taught us. Two implementations existed, Microsoft's and Clang's, with different designs. The merged design that was voted into C++20 was implemented by nobody at the time of the vote. No build system understood it, and there was no way for anyone to gain intuition about how the merged thing behaved or to confirm it did not break existing code, because it did not exist. Six years later <code>import std;</code> works on some toolchains, header units are a partial implementation almost everywhere, and the amount of production C++ that has moved to named modules is a rounding error. This was a paper design standardized on the strength of experience with two things that were not it.
+</p>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orgb6abda3" class="ox-nikola-outline-2">
+<h2 id="orgb6abda3">Contracts</h2>
+<div class="outline-text-2" id="text-orgb6abda3">
+<p>
+Contracts are the current disaster. Pulled from C++20 in Cologne because the design was not settled, they came back as P2900, a minimal viable product, and were adopted into C++26. The final vote in Croydon was 114 to 12 with 3 abstaining, which by committee standards is a fight, and it is still not over. More than twenty national body comments came in against the design. A paper to defer to C++29 circulated three weeks before the vote. The opposition has not gone quiet since, and the DIS ballot is still open. Stroustrup's line is that it is not minimal and not viable.
+</p>
+
+<p>
+The stated objection, when you strip the specifics about evaluation semantics and ignorability, is that there is not enough deployment experience. That is the impossible standard. We are never going to get deployment experience for a language feature that might change. There is a GCC implementation in trunk and a Clang branch. People have written code against them, found the sharp edges, and filed papers. The evaluation semantics debate happened because people could try the thing, which is the system working.
+</p>
+
+<p>
+If Contracts derail C++26, or derail themselves into C++29, it will not be because the feature failed to meet a reasonable bar. It will be because the bar being demanded is one no language feature can meet, and one that Modules, with far less implementation behind it, was never held to.
+</p>
+</div>
+</div>
+<div id="ox-nikola-outline-container-orga8a6532" class="ox-nikola-outline-2">
+<h2 id="orga8a6532">Profiles</h2>
+<div class="outline-text-2" id="text-orga8a6532">
+<p>
+And then there are Profiles, targeting C++29, from many of the same people who gave us Modules. The pitch is safety, and the claimed existing practice is the Core Guidelines checkers. Those checkers are not Profiles. Profiles as proposed are a language mechanism with enforcement semantics that no compiler implements and no code base has been compiled against. It is the Modules shape exactly: a design with adjacent experience being presented as the experience.
+</p>
+
+<p>
+The lesson from the history is not "demand deployment." It is "demand an implementation that other people can use to find out whether the design is wrong, and then listen when they do." <code>fmt</code> and ranges had that and survived heavy revision. S/R had that and was revised almost completely. Coroutines had half of it. Modules had none of it. Contracts have it and are being held to a standard they cannot meet, while Profiles are heading toward the standard Modules were held to, which was none.
+</p>
+</div>
 </div>
     </div>
+
+    <div class="not-prose mt-8 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+<li>Author: Steve Downey</li>
+        </ul>
+</div>
+
     
 
-</article>
+    
+        <nav class="not-prose mt-8 flex justify-between items-center" aria-label="Post navigation"><a href="../scrap-your-static_assert/" rel="prev" class="text-indigo-600 hover:underline" title="Scrap Your static_assert">
+                « <span class="hidden sm:inline">Previous post</span>
+            </a>
+            <span></span>
+        </nav></article><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
+                renderMathInElement(document.body,
+                    {
+                        
+delimiters: [
+    {left: "$$", right: "$$", display: true},
+    {left: "\\[", right: "\\]", display: true},
+    {left: "\\begin{equation*}", right: "\\end{equation*}", display: true},
+    {left: "$latex ", right: "$", display: false},
+    {left: "$", right: "$", display: false},
+    {left: "\\(", right: "\\)", display: false}
+]
+
+                    }
+                );
+            </script>
 </div>
             
 <aside class="not-prose mt-10 lg:mt-0 lg:w-64 lg:shrink-0 lg:sticky lg:top-6 lg:self-start space-y-8"><section><button id="theme-toggle" class="flex items-center gap-2 text-sm text-gray-500 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400 transition-colors" aria-label="Toggle dark mode">
@@ -175,43 +258,43 @@ document.getElementById('nav-toggle').addEventListener('click', function() {
     </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Recent Posts</h2>
         <ul class="space-y-3">
 <li>
-                <a href="../../posts/existing-practice/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">✌Existing Practice✌</a>
+                <a href="." class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">✌Existing Practice✌</a>
                 <time class="text-xs text-gray-400" datetime="2026-09-22T17:36:56-04:00">2026-09-22 17:36</time>
 </li>
             <li>
-                <a href="../../posts/scrap-your-static_assert/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Scrap Your static_assert</a>
+                <a href="../scrap-your-static_assert/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Scrap Your static_assert</a>
                 <time class="text-xs text-gray-400" datetime="2026-08-10T18:12:21-04:00">2026-08-10 18:12</time>
 </li>
             <li>
-                <a href="../../posts/infix-backtick-operator/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">An Infix Backtick Operator for C++</a>
+                <a href="../infix-backtick-operator/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">An Infix Backtick Operator for C++</a>
                 <time class="text-xs text-gray-400" datetime="2026-06-29T08:00:00-04:00">2026-06-29 08:00</time>
 </li>
             <li>
-                <a href="../../posts/migrating-wg21-subtree/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Refreshing a Stale Git Subtree</a>
+                <a href="../migrating-wg21-subtree/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Refreshing a Stale Git Subtree</a>
                 <time class="text-xs text-gray-400" datetime="2026-06-28T23:37:51-04:00">2026-06-28 23:37</time>
 </li>
             <li>
-                <a href="../../posts/moving-forward-with-legacy-encodings/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Moving Forward With Legacy Encodings</a>
+                <a href="../moving-forward-with-legacy-encodings/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Moving Forward With Legacy Encodings</a>
                 <time class="text-xs text-gray-400" datetime="2026-05-24T13:11:21-04:00">2026-05-24 13:11</time>
 </li>
             <li>
-                <a href="../../posts/tailwind-theme-workflow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Tailwind, Modus Themes, and the Blog Theming Workflow</a>
+                <a href="../tailwind-theme-workflow/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Tailwind, Modus Themes, and the Blog Theming Workflow</a>
                 <time class="text-xs text-gray-400" datetime="2026-05-10T18:00:00-04:00">2026-05-10 18:00</time>
 </li>
             <li>
-                <a href="../../posts/surround-with-uuid/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Surround With UUID</a>
+                <a href="../surround-with-uuid/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Surround With UUID</a>
                 <time class="text-xs text-gray-400" datetime="2026-04-09T17:41:26-04:00">2026-04-09 17:41</time>
 </li>
             <li>
-                <a href="../../posts/why-standard-organizations/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Why Standard Organizations</a>
+                <a href="../why-standard-organizations/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Why Standard Organizations</a>
                 <time class="text-xs text-gray-400" datetime="2026-03-07T10:21:36-05:00">2026-03-07 10:21</time>
 </li>
             <li>
-                <a href="../../posts/the-sender-sub-language/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">The Sender Sub-Language</a>
+                <a href="../the-sender-sub-language/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">The Sender Sub-Language</a>
                 <time class="text-xs text-gray-400" datetime="2026-02-28T18:40:21-05:00">2026-02-28 18:40</time>
 </li>
             <li>
-                <a href="../../posts/building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
+                <a href="../building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
                 <time class="text-xs text-gray-400" datetime="2025-12-27T12:03:15-05:00">2025-12-27 12:03</time>
 </li>
         </ul></section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Archives</h2>

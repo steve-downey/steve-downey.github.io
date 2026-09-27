@@ -157,6 +157,36 @@ pre.example code {
     margin: 0;
 }
 
+/* --- Reveal.js speaker notes ------------------------------------------- */
+/* Presentation speaker notes (org reveal export's .notes) are published as
+   asides: flagged with a small label and a light accent rule, but kept close
+   to body text -- deliberately lighter than a blockquote. */
+.prose .notes {
+    margin: 1.5rem 0;
+    padding-left: 1rem;
+    border-left: 2px solid color-mix(in srgb, var(--tw-prose-links) 35%, transparent);
+    color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+.prose .notes::before {
+    content: "Note";
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--tw-prose-links);
+}
+
+.prose .notes > p:first-of-type {
+    margin-top: 0;
+}
+
+.prose .notes > p:last-of-type {
+    margin-bottom: 0;
+}
+
 /* Respect reduced-motion preference — suppress decorative transitions */
 @media (prefers-reduced-motion: reduce) {
     .transition-colors,

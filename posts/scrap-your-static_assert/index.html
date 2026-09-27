@@ -48,6 +48,7 @@
 <link rel="canonical" href="https://sdowney.org/posts/scrap-your-static_assert/">
 <meta name="author" content="Steve Downey">
 <link rel="prev" href="../infix-backtick-operator/" title="An Infix Backtick Operator for C++" type="text/html">
+<link rel="next" href="../existing-practice/" title="✌Existing Practice✌" type="text/html">
 <meta property="og:site_name" content="What Comes to Mind">
 <meta property="og:title" content="Scrap Your static_assert">
 <meta property="og:url" content="https://sdowney.org/posts/scrap-your-static_assert/">
@@ -163,9 +164,9 @@ Converting the <code>expected</code> tests off <code>static_assert</code> came d
 header-only components that fix these two problems. Neither is clever.
 (The title owes Lämmel and Peyton Jones; the debt stops at the title.)
 </p>
-<div id="ox-nikola-outline-container-org279f4ed" class="ox-nikola-outline-2">
-<h2 id="org279f4ed">Type identity as a value</h2>
-<div class="outline-text-2" id="text-org279f4ed">
+<div id="ox-nikola-outline-container-org0d2c399" class="ox-nikola-outline-2">
+<h2 id="org0d2c399">Type identity as a value</h2>
+<div class="outline-text-2" id="text-org0d2c399">
 <p>
 The fix for the second problem is to compare type <i>identities</i> that carry their
 spelling for diagnostics, instead of comparing a bool. See
@@ -209,9 +210,9 @@ And the tests read like the trait they replaced:
 </div>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orge1542a0" class="ox-nikola-outline-2">
-<h2 id="orge1542a0">Reporting a compile-time value at runtime</h2>
-<div class="outline-text-2" id="text-orge1542a0">
+<div id="ox-nikola-outline-container-org859888e" class="ox-nikola-outline-2">
+<h2 id="org859888e">Reporting a compile-time value at runtime</h2>
+<div class="outline-text-2" id="text-org859888e">
 <p>
 The fix for the first problem is to split the two questions a constexpr test
 actually asks. "Can this be constant-evaluated at all?" is a property of the
@@ -272,9 +273,9 @@ Give the returned aggregate an <code>operator&lt;&lt;</code>. Without one, Catch
 </p>
 </div>
 </div>
-<div id="ox-nikola-outline-container-orgc676f10" class="ox-nikola-outline-2">
-<h2 id="orgc676f10">What it buys</h2>
-<div class="outline-text-2" id="text-orgc676f10">
+<div id="ox-nikola-outline-container-org09c5a2c" class="ox-nikola-outline-2">
+<h2 id="org09c5a2c">What it buys</h2>
+<div class="outline-text-2" id="text-org09c5a2c">
 <p>
 Two things. The reporting is better: a mismatch names both types, or prints both
 states, instead of expanding to <code>false</code> or stopping at a diagnostic before it
@@ -304,7 +305,9 @@ runtime is only the part that was a test wearing an assertion's clothes.
         <nav class="not-prose mt-8 flex justify-between items-center" aria-label="Post navigation"><a href="../infix-backtick-operator/" rel="prev" class="text-indigo-600 hover:underline" title="An Infix Backtick Operator for C++">
                 « <span class="hidden sm:inline">Previous post</span>
             </a>
-            <span></span>
+            <a href="../existing-practice/" rel="next" class="text-indigo-600 hover:underline" title="✌Existing Practice✌">
+                <span class="hidden sm:inline">Next post</span> »
+            </a>
         </nav></article><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"></script><script>
                 renderMathInElement(document.body,
                     {
@@ -330,6 +333,10 @@ delimiters: [
     </section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Recent Posts</h2>
         <ul class="space-y-3">
 <li>
+                <a href="../existing-practice/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">✌Existing Practice✌</a>
+                <time class="text-xs text-gray-400" datetime="2026-09-22T17:36:56-04:00">2026-09-22 17:36</time>
+</li>
+            <li>
                 <a href="." class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Scrap Your static_assert</a>
                 <time class="text-xs text-gray-400" datetime="2026-08-10T18:12:21-04:00">2026-08-10 18:12</time>
 </li>
@@ -364,10 +371,6 @@ delimiters: [
             <li>
                 <a href="../building-vcpkg-dependencies-with-project-toolchain/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Building vcpkg dependencies with project toolchain</a>
                 <time class="text-xs text-gray-400" datetime="2025-12-27T12:03:15-05:00">2025-12-27 12:03</time>
-</li>
-            <li>
-                <a href="../substitution-is-sometimes-a-failure/" class="text-sm text-gray-700 hover:text-indigo-600 transition-colors leading-snug block">Substitution is Sometimes a Failure</a>
-                <time class="text-xs text-gray-400" datetime="2025-11-28T12:06:58-05:00">2025-11-28 12:06</time>
 </li>
         </ul></section><section><h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-3">Archives</h2>
         <a href="../../archive.html" class="text-sm text-indigo-600 hover:text-indigo-800 transition-colors">All posts →</a>

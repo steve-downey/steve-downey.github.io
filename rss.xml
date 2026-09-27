@@ -3,7 +3,94 @@
  &lt;a rel="license" href="https://creativecommons.org/licenses/by-nc-sa/4.0/"&gt;
  &lt;img alt="Creative Commons License BY-NC-SA"
  style="border-width:0; margin-bottom:12px;"
- src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Fri, 04 Sep 2026 17:16:04 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>Scrap Your static_assert</title><link>https://sdowney.org/posts/scrap-your-static_assert/</link><dc:creator>Steve Downey</dc:creator><description>&lt;p&gt;
+ src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png"&gt;&lt;/a&gt;</copyright><lastBuildDate>Sun, 27 Sep 2026 20:40:09 GMT</lastBuildDate><generator>Nikola (getnikola.com)</generator><docs>http://blogs.law.harvard.edu/tech/rss</docs><item><title>✌Existing Practice✌</title><link>https://sdowney.org/posts/existing-practice/</link><dc:creator>Steve Downey</dc:creator><description>&lt;p&gt;
+"Standardize existing practice" was barely true of the first C++ standard, and it is the wrong rule now. It was already being stretched in 1998. The ARM was existing practice. Templates as specified in the ARM were not what got standardized; the STL had two years of use at HP and a handful of early adopters before it was voted in; namespaces, exceptions as shipped, and iostreams with locales were designed in committee and implemented afterward. The result was a standard that no compiler implemented for years. We call it a success because C++ survived it, not because the process was sound.
+&lt;/p&gt;
+&lt;!-- TEASER_END --&gt;
+
+&lt;p&gt;
+Today the rule is not merely stretched. It is objectively wrong, for two reasons that are usually run together and should be kept apart.
+&lt;/p&gt;
+&lt;div id="ox-nikola-outline-container-org9bd79c6" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org9bd79c6"&gt;No library can be brought in as-is&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org9bd79c6"&gt;
+&lt;p&gt;
+The ecosystem is too fragmented. There is no library that everyone uses, built the way everyone builds, with the error handling everyone wants, that could be dropped into &lt;code&gt;namespace std&lt;/code&gt; untouched. And even if there were, LEWG would not do it. The correctness bar applied to current proposals guarantees significant changes to any library that comes through. Lifetime, constexpr, exception safety, allocator awareness, freestanding, ABI. A library with real users has made choices on all of those that the committee will unmake.
+&lt;/p&gt;
+
+&lt;p&gt;
+That is not a complaint. It is a description of what the process is for. The library that gets standardized is a new thing with the proposal as its ancestor.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgee50bf4" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgee50bf4"&gt;Wide deployment experience is never coming back&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orgee50bf4"&gt;
+&lt;p&gt;
+For a language feature, deployment experience is not going to happen again. No one is going to commit experimental language code to a production code base. The risk of being wrong, of having to strip syntax out of a million lines when the design changes, is too high for any engineering organization to accept. For a vendor library extension it is unlikely for the same reason, with the added problem that vendors have learned that shipping something under &lt;code&gt;std::experimental&lt;/code&gt; means supporting it forever.
+&lt;/p&gt;
+
+&lt;p&gt;
+This does not relieve a proposal of the obligation to implement. If anything it makes the implementation more important. But the purpose of the implementation has changed. It is there so that other people can gain intuition about the feature, and so that the implementer can confirm the lack of breakage. Those are the two things a reference implementation is for. Adoption numbers are not one of them.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-org1300a3a" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org1300a3a"&gt;How are we doing?&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org1300a3a"&gt;
+&lt;p&gt;
+The evidence for this is the last three standards.
+&lt;/p&gt;
+
+&lt;p&gt;
+&lt;code&gt;fmt&lt;/code&gt; is the closest thing we have to the old model. Victor Zverovich had a library with wide deployment, a settled API, and years of bug reports. &lt;code&gt;std::format&lt;/code&gt; is still not &lt;code&gt;fmt&lt;/code&gt;. Compile-time format string checking went in late through a separate paper. &lt;code&gt;std::print&lt;/code&gt; waited for C++23. The escape and width rules for Unicode were rewritten in SG16. It is a success because the library kept living alongside the standard, absorbing the committee's changes and feeding back what broke. The deployment experience that mattered was the experience of tracking the delta.
+&lt;/p&gt;
+
+&lt;p&gt;
+Ranges is the same story with a larger delta. range-v3 was widely used. &lt;code&gt;std::ranges&lt;/code&gt; diverges from it on borrowed ranges, on dangling, on the view semantics, and on what got left out. C++20 shipped without &lt;code&gt;zip&lt;/code&gt;, &lt;code&gt;enumerate&lt;/code&gt;, &lt;code&gt;chunk&lt;/code&gt;, or &lt;code&gt;to&lt;/code&gt;. C++23 filled the holes. That is a success on a six-year timeline, and it worked because Casey Carter and Eric Niebler treated range-v3 as the experiment, not the product.
+&lt;/p&gt;
+
+&lt;p&gt;
+Senders and receivers look like a success, and it is the case that best fits the new rule. There was no existing practice. P0443 Executors was an attempt to standardize existing practice, three existing practices in fact, and it failed because they could not be reconciled. P2300 started over. libunifex and stdexec were implementations built to let people gain intuition and find breakage. The design changed enormously between R0 and adoption, and it changed because people wrote code against the implementation and reported what was wrong. Nobody deployed it to production in the meantime. That was not the point.
+&lt;/p&gt;
+
+&lt;p&gt;
+Coroutines, before S/R, were marginal. The language feature shipped in C++20 with a working MSVC implementation and no library, and &lt;code&gt;std::generator&lt;/code&gt; did not arrive until C++23. Everyone wrote their own task type and their own scheduler, which is what the design intended, and the result was that nobody's coroutine code interoperated with anyone else's. The feature only becomes useful now that S/R supplies the library half. The implementation existed. The intuition did not, because there was no shared thing to build intuition on.
+&lt;/p&gt;
+
+&lt;p&gt;
+Modules are not a success; they are the case that should have taught us. Two implementations existed, Microsoft's and Clang's, with different designs. The merged design that was voted into C++20 was implemented by nobody at the time of the vote. No build system understood it, and there was no way for anyone to gain intuition about how the merged thing behaved or to confirm it did not break existing code, because it did not exist. Six years later &lt;code&gt;import std;&lt;/code&gt; works on some toolchains, header units are a partial implementation almost everywhere, and the amount of production C++ that has moved to named modules is a rounding error. This was a paper design standardized on the strength of experience with two things that were not it.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orgb6abda3" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgb6abda3"&gt;Contracts&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orgb6abda3"&gt;
+&lt;p&gt;
+Contracts are the current disaster. Pulled from C++20 in Cologne because the design was not settled, they came back as P2900, a minimal viable product, and were adopted into C++26. The final vote in Croydon was 114 to 12 with 3 abstaining, which by committee standards is a fight, and it is still not over. More than twenty national body comments came in against the design. A paper to defer to C++29 circulated three weeks before the vote. The opposition has not gone quiet since, and the DIS ballot is still open. Stroustrup's line is that it is not minimal and not viable.
+&lt;/p&gt;
+
+&lt;p&gt;
+The stated objection, when you strip the specifics about evaluation semantics and ignorability, is that there is not enough deployment experience. That is the impossible standard. We are never going to get deployment experience for a language feature that might change. There is a GCC implementation in trunk and a Clang branch. People have written code against them, found the sharp edges, and filed papers. The evaluation semantics debate happened because people could try the thing, which is the system working.
+&lt;/p&gt;
+
+&lt;p&gt;
+If Contracts derail C++26, or derail themselves into C++29, it will not be because the feature failed to meet a reasonable bar. It will be because the bar being demanded is one no language feature can meet, and one that Modules, with far less implementation behind it, was never held to.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;
+&lt;div id="ox-nikola-outline-container-orga8a6532" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orga8a6532"&gt;Profiles&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orga8a6532"&gt;
+&lt;p&gt;
+And then there are Profiles, targeting C++29, from many of the same people who gave us Modules. The pitch is safety, and the claimed existing practice is the Core Guidelines checkers. Those checkers are not Profiles. Profiles as proposed are a language mechanism with enforcement semantics that no compiler implements and no code base has been compiled against. It is the Modules shape exactly: a design with adjacent experience being presented as the experience.
+&lt;/p&gt;
+
+&lt;p&gt;
+The lesson from the history is not "demand deployment." It is "demand an implementation that other people can use to find out whether the design is wrong, and then listen when they do." &lt;code&gt;fmt&lt;/code&gt; and ranges had that and survived heavy revision. S/R had that and was revised almost completely. Coroutines had half of it. Modules had none of it. Contracts have it and are being held to a standard they cannot meet, while Profiles are heading toward the standard Modules were held to, which was none.
+&lt;/p&gt;
+&lt;/div&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/existing-practice/</guid><pubDate>Tue, 22 Sep 2026 21:36:56 GMT</pubDate></item><item><title>Scrap Your static_assert</title><link>https://sdowney.org/posts/scrap-your-static_assert/</link><dc:creator>Steve Downey</dc:creator><description>&lt;p&gt;
 The obvious way to test a compile-time fact is &lt;code&gt;static_assert&lt;/code&gt;. It's right
 there, it needs no framework, and for a fact that has to hold it's the right
 tool. As a &lt;i&gt;test&lt;/i&gt;, though, it has one bad property: a wrong answer is a
@@ -34,9 +121,9 @@ Converting the &lt;code&gt;expected&lt;/code&gt; tests off &lt;code&gt;static_as
 header-only components that fix these two problems. Neither is clever.
 (The title owes Lämmel and Peyton Jones; the debt stops at the title.)
 &lt;/p&gt;
-&lt;div id="ox-nikola-outline-container-org279f4ed" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org279f4ed"&gt;Type identity as a value&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org279f4ed"&gt;
+&lt;div id="ox-nikola-outline-container-org0d2c399" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org0d2c399"&gt;Type identity as a value&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org0d2c399"&gt;
 &lt;p&gt;
 The fix for the second problem is to compare type &lt;i&gt;identities&lt;/i&gt; that carry their
 spelling for diagnostics, instead of comparing a bool. See
@@ -80,9 +167,9 @@ And the tests read like the trait they replaced:
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orge1542a0" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orge1542a0"&gt;Reporting a compile-time value at runtime&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-orge1542a0"&gt;
+&lt;div id="ox-nikola-outline-container-org859888e" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org859888e"&gt;Reporting a compile-time value at runtime&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org859888e"&gt;
 &lt;p&gt;
 The fix for the first problem is to split the two questions a constexpr test
 actually asks. "Can this be constant-evaluated at all?" is a property of the
@@ -143,9 +230,9 @@ Give the returned aggregate an &lt;code&gt;operator&amp;lt;&amp;lt;&lt;/code&gt;
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgc676f10" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgc676f10"&gt;What it buys&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-orgc676f10"&gt;
+&lt;div id="ox-nikola-outline-container-org09c5a2c" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org09c5a2c"&gt;What it buys&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org09c5a2c"&gt;
 &lt;p&gt;
 Two things. The reporting is better: a mismatch names both types, or prints both
 states, instead of expanding to &lt;code&gt;false&lt;/code&gt; or stopping at a diagnostic before it
@@ -160,7 +247,7 @@ ill-formed, checked in their own negative-compilation files. What moved to
 runtime is only the part that was a test wearing an assertion's clothes.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/scrap-your-static_assert/</guid><pubDate>Mon, 10 Aug 2026 22:12:21 GMT</pubDate></item><item><title>An Infix Backtick Operator for C++</title><link>https://sdowney.org/posts/infix-backtick-operator/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orge6551d2"&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/scrap-your-static_assert/</guid><pubDate>Mon, 10 Aug 2026 22:12:21 GMT</pubDate></item><item><title>An Infix Backtick Operator for C++</title><link>https://sdowney.org/posts/infix-backtick-operator/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgc884882"&gt;
 &lt;p&gt;
 I am working on a proposal to let any callable be written between two backticks
 as an infix binary operator: &lt;code&gt;x `f` y&lt;/code&gt; means exactly &lt;code&gt;f(x, y)&lt;/code&gt;. It is borrowed
@@ -171,8 +258,8 @@ Clang and GCC. This post is the announcement and the design tour.
 &lt;/div&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="ox-nikola-outline-container-org01c5cf6" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org01c5cf6"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; The pitch in one line&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orga07200c" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orga07200c"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; The pitch in one line&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 C++ lets you spell a handful of binary operations infix — &lt;code&gt;a + b&lt;/code&gt;, &lt;code&gt;a &amp;lt; b&lt;/code&gt;,
@@ -207,8 +294,8 @@ are lexed before the punctuator stage and are therefore untouched.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org8393f10" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org8393f10"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; It desugars to a call, and that is the whole point&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgfb7bf58" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgfb7bf58"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; It desugars to a call, and that is the whole point&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 The single most important design decision is that the operator lowers to a
@@ -257,8 +344,8 @@ know how a call behaves, you know how this behaves.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org882ade3" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org882ade3"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; How it parses&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgaae7ad0" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgaae7ad0"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; How it parses&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 Two questions decide how an infix operator feels: how tightly it binds, and how
@@ -302,8 +389,8 @@ lambda, are all fine.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org148e130" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org148e130"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; The one genuinely tricky part&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org6e49b53" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org6e49b53"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; The one genuinely tricky part&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-4"&gt;
 &lt;p&gt;
 The open and close delimiter are the same token. A naive parser, having read
@@ -340,8 +427,8 @@ asymmetric and then omits the parentheses on purpose.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org4e73816" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org4e73816"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; A second use for the same token: escaping keywords&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgc14bd55" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgc14bd55"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; A second use for the same token: escaping keywords&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-5"&gt;
 &lt;p&gt;
 Because the proposal claims the backtick as a punctuator, it is worth asking
@@ -376,8 +463,8 @@ contradiction.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org75e6d3c" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org75e6d3c"&gt;&lt;span class="section-number-2"&gt;6.&lt;/span&gt; What it is good for&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org3638b52" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org3638b52"&gt;&lt;span class="section-number-2"&gt;6.&lt;/span&gt; What it is good for&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-6"&gt;
 &lt;p&gt;
 The shallow answer is readability for binary operations that read better infix:
@@ -449,8 +536,8 @@ earn a place in a library.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgef4ce6c" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgef4ce6c"&gt;&lt;span class="section-number-2"&gt;7.&lt;/span&gt; It is not the pipeline operator, and does not want to be&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org635e535" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org635e535"&gt;&lt;span class="section-number-2"&gt;7.&lt;/span&gt; It is not the pipeline operator, and does not want to be&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-7"&gt;
 &lt;p&gt;
 The obvious neighbour is Barry Revzin's &lt;code&gt;|&amp;gt;&lt;/code&gt; (P2011, the "pizza" operator). Both
@@ -485,8 +572,8 @@ in one program.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org4310aea" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org4310aea"&gt;&lt;span class="section-number-2"&gt;8.&lt;/span&gt; Implementation status&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgd39cb08" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgd39cb08"&gt;&lt;span class="section-number-2"&gt;8.&lt;/span&gt; Implementation status&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-8"&gt;
 &lt;p&gt;
 This is not a paper design with a hand-wave at implementability. The operator
@@ -516,8 +603,8 @@ for" claims are implementation experience, not assertion.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org6c74ec4" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org6c74ec4"&gt;&lt;span class="section-number-2"&gt;9.&lt;/span&gt; What I am proposing, and what comes next&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org80c7e4d" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org80c7e4d"&gt;&lt;span class="section-number-2"&gt;9.&lt;/span&gt; What I am proposing, and what comes next&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-9"&gt;
 &lt;p&gt;
 A pure core-language feature, targeting C++29: the infix backtick operator plus
@@ -535,7 +622,7 @@ motivating examples are all welcome — reach me at &lt;a href="mailto:sdowney@g
 goes in front of the committee.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/infix-backtick-operator/</guid><pubDate>Mon, 29 Jun 2026 12:00:00 GMT</pubDate></item><item><title>Refreshing a Stale Git Subtree</title><link>https://sdowney.org/posts/migrating-wg21-subtree/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgfffc9d6"&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/infix-backtick-operator/</guid><pubDate>Mon, 29 Jun 2026 12:00:00 GMT</pubDate></item><item><title>Refreshing a Stale Git Subtree</title><link>https://sdowney.org/posts/migrating-wg21-subtree/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgca3d96d"&gt;
 &lt;p&gt;
 I write my WG21 papers with &lt;a href="https://github.com/mpark/wg21"&gt;MPark/WG21&lt;/a&gt;, a Pandoc-based framework I vendor into the paper repo as a git subtree. The framework had a major overhaul–the build system split apart, and Pandoc jumped from 2.18 to 3.9–and my copy was 98 commits behind. Worse, the subtree had drifted in two directions at once: real local patches for a TLS-intercepting corporate network, and a pile of pointless autoformatter churn from my own pre-commit hooks. This is how I dragged it back to a verbatim copy of upstream, moved to the new &lt;code&gt;flat.mk&lt;/code&gt; include, and pushed every local change back &lt;i&gt;out&lt;/i&gt; of the subtree so the next update is a one-liner.
 &lt;/p&gt;
@@ -543,8 +630,8 @@ I write my WG21 papers with &lt;a href="https://github.com/mpark/wg21"&gt;MPark/
 &lt;/div&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="ox-nikola-outline-container-org08f1ba7" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org08f1ba7"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; What the overhaul changed&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgb14d4fa" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgb14d4fa"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; What the overhaul changed&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 A few things upstream matter to anyone who integrates MPark/WG21.
@@ -563,14 +650,14 @@ And a few behaviors shifted. Bare &lt;code&gt;make&lt;/code&gt; now builds HTML,
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org3897f53" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org3897f53"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Where I started, and why it was a mess&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org181771f" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org181771f"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Where I started, and why it was a mess&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 The layout was an ordinary flat one.
 &lt;/p&gt;
 
-&lt;pre class="example" id="orgba13a74"&gt;
+&lt;pre class="example" id="org91f1b8b"&gt;
 transcode/
 `-- papers/
     |-- Makefile           # one line: include wg21/Makefile
@@ -592,8 +679,8 @@ One pile I wanted to throw away. The other I needed to keep. Neither belonged in
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgee8bc85" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgee8bc85"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Branch, and a baseline to diff against&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org246e3b7" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org246e3b7"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Branch, and a baseline to diff against&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;div class="org-src-container"&gt;
 &lt;pre class="src src-shell"&gt;&lt;code&gt;git switch -c chore/update-wg21-subtree
@@ -609,8 +696,8 @@ Crossing a Pandoc major version, I want to &lt;i&gt;see&lt;/i&gt; what moved, no
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org41a989f" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org41a989f"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Refreshing the subtree&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org63ca48d" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org63ca48d"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Refreshing the subtree&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-4"&gt;
 &lt;p&gt;
 &lt;code&gt;git subtree pull&lt;/code&gt; refuses to run with a dirty tree, so stash anything unrelated first, then pull from upstream master, squashed, the same way the subtree was originally adopted.
@@ -643,8 +730,8 @@ git add papers/wg21/...   &lt;span class="org-comment-delimiter"&gt;# &lt;/span&
 &lt;/code&gt;&lt;/pre&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org7017200" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org7017200"&gt;&lt;span class="section-number-3"&gt;4.1.&lt;/span&gt; The merge conflict you don't get&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orgc19edeb" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgc19edeb"&gt;&lt;span class="section-number-3"&gt;4.1.&lt;/span&gt; The merge conflict you don't get&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-4-1"&gt;
 &lt;p&gt;
 Here is the part that a casual "resolve and commit" walks straight past. A three-way merge only raises a conflict when &lt;i&gt;both&lt;/i&gt; sides changed the same file. For a file I had churned but upstream hadn't touched since the squash base, Git auto-merges by silently keeping my version. No conflict. No prompt. The reformatted file just survives.
@@ -690,8 +777,8 @@ The squashed merge keeps the subtree metadata intact, so the next refresh is jus
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org0633788" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org0633788"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; One line to &lt;code&gt;flat.mk&lt;/code&gt;&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org1e311bb" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org1e311bb"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; One line to &lt;code&gt;flat.mk&lt;/code&gt;&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-5"&gt;
 &lt;p&gt;
 The migration proper is a single line in &lt;i&gt;my&lt;/i&gt; Makefile, not the subtree's.
@@ -707,15 +794,15 @@ While I was in there I folded the environment handling into the same file, becau
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org131bc8c" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org131bc8c"&gt;&lt;span class="section-number-2"&gt;6.&lt;/span&gt; Keeping the subtree pristine&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org322cbc9" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org322cbc9"&gt;&lt;span class="section-number-2"&gt;6.&lt;/span&gt; Keeping the subtree pristine&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-6"&gt;
 &lt;p&gt;
 This is the whole philosophy, so I'll say it plainly: never patch a file inside the subtree. Every line you change there is a line you re-fight on every pull. Both kinds of drift get pushed back out.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org33ba9ad" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org33ba9ad"&gt;&lt;span class="section-number-3"&gt;6.1.&lt;/span&gt; Environment patches go in my Makefile&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orgbf8c3ea" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgbf8c3ea"&gt;&lt;span class="section-number-3"&gt;6.1.&lt;/span&gt; Environment patches go in my Makefile&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-6-1"&gt;
 &lt;p&gt;
 The framework fetches &lt;code&gt;wg21.link&lt;/code&gt; with Python &lt;code&gt;requests&lt;/code&gt; and builds a venv with &lt;code&gt;pip&lt;/code&gt;. On a TLS-intercepting network both have to trust the intercepting root CA. Instead of editing &lt;code&gt;refs.py&lt;/code&gt; to pass &lt;code&gt;verify=False&lt;/code&gt;, or swapping &lt;code&gt;uv&lt;/code&gt; into the install script, I point everything at the system CA bundle from &lt;code&gt;papers/Makefile&lt;/code&gt;.
@@ -738,8 +825,8 @@ The reward is that the stock upstream &lt;code&gt;refs.py&lt;/code&gt; now fetch
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org24c6c5c" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org24c6c5c"&gt;&lt;span class="section-number-3"&gt;6.2.&lt;/span&gt; Churn gets fenced out of pre-commit&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orge500aad" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orge500aad"&gt;&lt;span class="section-number-3"&gt;6.2.&lt;/span&gt; Churn gets fenced out of pre-commit&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-6-2"&gt;
 &lt;p&gt;
 To stop my hooks reformatting the subtree forever, I excluded it.
@@ -755,8 +842,8 @@ exclude: 'template/|copier/|infra/|port/|papers/wg21/'
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgde00835" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgde00835"&gt;&lt;span class="section-number-2"&gt;7.&lt;/span&gt; Verifying, because Pandoc moved a major version&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org61c0fdd" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org61c0fdd"&gt;&lt;span class="section-number-2"&gt;7.&lt;/span&gt; Verifying, because Pandoc moved a major version&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-7"&gt;
 &lt;p&gt;
 I built every format and compared against the baseline.
@@ -778,8 +865,8 @@ The build also surfaced three problems that were already there in the 2.18 basel
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org9939621" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org9939621"&gt;&lt;span class="section-number-2"&gt;8.&lt;/span&gt; Living with it&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org2d3210d" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org2d3210d"&gt;&lt;span class="section-number-2"&gt;8.&lt;/span&gt; Living with it&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-8"&gt;
 &lt;p&gt;
 The flat layout is pleasant once it's in place. From &lt;code&gt;papers/&lt;/code&gt;:
@@ -802,8 +889,8 @@ Two things to remember. Bare &lt;code&gt;make&lt;/code&gt; now builds three form
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org90ed5c0" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org90ed5c0"&gt;&lt;span class="section-number-2"&gt;9.&lt;/span&gt; Refreshing, next time&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org789d396" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org789d396"&gt;&lt;span class="section-number-2"&gt;9.&lt;/span&gt; Refreshing, next time&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-9"&gt;
 &lt;p&gt;
 Because the subtree is pristine and fenced off from the hooks, the next update is the one-liner the tool always promised.
@@ -820,8 +907,8 @@ If it ever conflicts again, the recipe is the same: resolve toward upstream, the
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org4cdd742" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org4cdd742"&gt;&lt;span class="section-number-2"&gt;10.&lt;/span&gt; What I'd tell myself&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org9647ab3" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org9647ab3"&gt;&lt;span class="section-number-2"&gt;10.&lt;/span&gt; What I'd tell myself&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-10"&gt;
 &lt;p&gt;
 Subtree versus submodule is a real choice, not a coin flip. A subtree vendors files into your tree, which means your repo-wide tooling will happily edit the vendored code. Decide that on purpose and fence it off.
@@ -835,8 +922,8 @@ Patches belong downstream. Anything you can say in your own Makefile or config�
 And the merge that silently keeps your side is the dangerous one, not the noisy conflict you can see. After any subtree refresh, diff against upstream. Trust the diff, not the conflict list.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/migrating-wg21-subtree/</guid><pubDate>Mon, 29 Jun 2026 03:37:51 GMT</pubDate></item><item><title>Moving Forward With Legacy Encodings</title><link>https://sdowney.org/posts/moving-forward-with-legacy-encodings/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div id="ox-nikola-outline-container-orgf12506c" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgf12506c"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Abstract&lt;/h2&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/migrating-wg21-subtree/</guid><pubDate>Mon, 29 Jun 2026 03:37:51 GMT</pubDate></item><item><title>Moving Forward With Legacy Encodings</title><link>https://sdowney.org/posts/moving-forward-with-legacy-encodings/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div id="ox-nikola-outline-container-orgddaa6ac" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgddaa6ac"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Abstract&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 Reverse-parsing legacy multibyte text encodings — such as Shift_JIS, Big5, or GB18030 — using only local context is an unsolvable problem. Unlike UTF-8, which guarantees \(O(1)\) self-synchronization, legacy encodings have heavily overlapping lead and trail byte ranges. Consequently, even if you begin at a known, valid character boundary, computing the byte-width of the preceding character requires an \(O(N)\) backward scan to the beginning of the string to resolve the parity of the sequence.
@@ -852,12 +939,12 @@ What follows is the story of attempting to find a way out, and why the math forc
 &lt;!-- TEASER_END --&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgeb1975f" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgeb1975f"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; The Story of Failing to Find a Way Out&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org639bbd2" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org639bbd2"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; The Story of Failing to Find a Way Out&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org05abbb0" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org05abbb0"&gt;&lt;span class="section-number-3"&gt;2.1.&lt;/span&gt; Act I: The Overlapping Abyss&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-org363e0c0" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org363e0c0"&gt;&lt;span class="section-number-3"&gt;2.1.&lt;/span&gt; Act I: The Overlapping Abyss&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-2-1"&gt;
 &lt;p&gt;
 If you are dropped into the middle of an arbitrary point in a string using a WHATWG legacy multibyte encoding, you cannot find the beginning of a character just by reading backward.
@@ -867,14 +954,14 @@ If you are dropped into the middle of an arbitrary point in a string using a WHA
 This happens because legacy encodings lack &lt;i&gt;self-synchronization&lt;/i&gt;. Let \(L\) be the set of valid lead bytes and \(T\) be the set of valid trail bytes. In UTF-8, these sets are strictly disjoint (\(L \cap T = \emptyset\)). In legacy encodings, the sets intersect aggressively. In Shift_JIS, the byte &lt;code&gt;0x81&lt;/code&gt; is valid as &lt;i&gt;both&lt;/i&gt; a lead byte and a trail byte.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgda31e47" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="orgda31e47"&gt;&lt;span class="section-number-4"&gt;2.1.1.&lt;/span&gt; The Specific Example&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-orgf70a46b" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="orgf70a46b"&gt;&lt;span class="section-number-4"&gt;2.1.1.&lt;/span&gt; The Specific Example&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-1-1"&gt;
 &lt;p&gt;
 Imagine you are handed a data buffer and dropped at index 3:
 &lt;/p&gt;
 
-&lt;pre class="example" id="org7f627f9"&gt;
+&lt;pre class="example" id="orgf0e9944"&gt;
 Buffer: [0x81, 0x81, 0x81, 0x81, 0x81]
 Index:    0     1     2     3     4
 &lt;/pre&gt;
@@ -894,8 +981,8 @@ Every single byte relies entirely on the even/odd parity established by the byte
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org75cb1cd" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org75cb1cd"&gt;&lt;span class="section-number-3"&gt;2.2.&lt;/span&gt; Act II: The Illusion of the Anchor&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-org5ccf95f" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org5ccf95f"&gt;&lt;span class="section-number-3"&gt;2.2.&lt;/span&gt; Act II: The Illusion of the Anchor&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-2-2"&gt;
 &lt;p&gt;
 Suppose your position is not random. You just parsed forward from the beginning of the string, so you know for an absolute fact you are sitting exactly at a valid character boundary.
@@ -905,14 +992,14 @@ Suppose your position is not random. You just parsed forward from the beginning 
 You still cannot reliably step backward. Knowing the &lt;i&gt;end&lt;/i&gt; of the previous character does not tell you its &lt;i&gt;length&lt;/i&gt;.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgfd8716f" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="orgfd8716f"&gt;&lt;span class="section-number-4"&gt;2.2.1.&lt;/span&gt; The Specific Example&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-org7bb013f" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org7bb013f"&gt;&lt;span class="section-number-4"&gt;2.2.1.&lt;/span&gt; The Specific Example&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-2-1"&gt;
 &lt;p&gt;
 Imagine looking backward from your known, forward-parsed cursor and seeing this sequence in Shift_JIS:
 &lt;/p&gt;
 
-&lt;pre class="example" id="org4e79df1"&gt;
+&lt;pre class="example" id="orgd44bc88"&gt;
 ... 0x81 0x81 0x81 0x40 | &amp;lt;CURSOR&amp;gt;
 &lt;/pre&gt;
 
@@ -933,8 +1020,8 @@ Even though you are sitting at a known boundary, you are forced into the exact s
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org49c0d65" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org49c0d65"&gt;&lt;span class="section-number-3"&gt;2.3.&lt;/span&gt; Act III: State Machine Amnesia&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orgf6edb18" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgf6edb18"&gt;&lt;span class="section-number-3"&gt;2.3.&lt;/span&gt; Act III: State Machine Amnesia&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-2-3"&gt;
 &lt;p&gt;
 Finally, you might think to capture the exact WHATWG parser state at your cursor position, rather than just the pointer.
@@ -944,8 +1031,8 @@ Finally, you might think to capture the exact WHATWG parser state at your cursor
 This is the final dead end. Having the parser state provides absolutely zero historical context because the WHATWG state machine suffers from "amnesia" at character boundaries. Decoders operate as forward-looking Mealy machines. When you reach a valid character boundary, the decoder finishes emitting the Unicode scalar value and immediately resets its internal state to the &lt;i&gt;Default&lt;/i&gt; state (waiting for a new ASCII character or a new multibyte lead byte).
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orga15f3dd" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="orga15f3dd"&gt;&lt;span class="section-number-4"&gt;2.3.1.&lt;/span&gt; The Specific Example&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-org5f5e506" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org5f5e506"&gt;&lt;span class="section-number-4"&gt;2.3.1.&lt;/span&gt; The Specific Example&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-3-1"&gt;
 &lt;p&gt;
 Let's track the exact parser state for the end of the two scenarios from Act II to see why it fails to help us read backwards.
@@ -973,20 +1060,20 @@ In both traces, you are left at the exact same byte position, looking at the exa
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org64df560" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org64df560"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Formal Definitions&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgf6acf15" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgf6acf15"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Formal Definitions&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orge779af2" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="orge779af2"&gt;&lt;span class="section-number-3"&gt;3.1.&lt;/span&gt; Self-Synchronizing Code&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-org4b3ae92" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org4b3ae92"&gt;&lt;span class="section-number-3"&gt;3.1.&lt;/span&gt; Self-Synchronizing Code&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-3-1"&gt;
 &lt;p&gt;
 A code is self-synchronizing if, given an arbitrary point in a bit stream, the decoder can determine the boundaries of the next encoded sequence within a bounded number of bits (\(O(1)\) scan). UTF-8 achieves this via distinct prefix bit-patterns (e.g., &lt;code&gt;110xxxxx&lt;/code&gt; for a 2-byte lead, &lt;code&gt;10xxxxxx&lt;/code&gt; for a trail).
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgc0fc03e" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="orgc0fc03e"&gt;&lt;span class="section-number-3"&gt;3.2.&lt;/span&gt; Decoder State Amnesia&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orga54e053" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orga54e053"&gt;&lt;span class="section-number-3"&gt;3.2.&lt;/span&gt; Decoder State Amnesia&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-3-2"&gt;
 &lt;p&gt;
 The property of WHATWG decoders where the internal state matrix transitions to the origin state upon the emission of any complete scalar value. Because the state maps purely to &lt;i&gt;pending&lt;/i&gt; bytes, no history of &lt;i&gt;completed&lt;/i&gt; byte widths is preserved.
@@ -994,8 +1081,8 @@ The property of WHATWG decoders where the internal state matrix transitions to t
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org76a3392" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org76a3392"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Tables and Proofs (For the Unbelieving)&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org774c558" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org774c558"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Tables and Proofs (For the Unbelieving)&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-4"&gt;
 &lt;p&gt;
 If you still suspect there might be a clever bitwise trick to differentiate a lead byte from a trail byte in Shift_JIS, observe the exact byte ranges defined by the standard.
@@ -1075,8 +1162,8 @@ If we compute the intersection (\(Lead \cap Trail\)), we find that the &lt;i&gt;
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org7bd793a" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org7bd793a"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; References&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org9578a72" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org9578a72"&gt;&lt;span class="section-number-2"&gt;5.&lt;/span&gt; References&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-5"&gt;
 &lt;ul class="org-ul"&gt;
 &lt;li&gt;&lt;b&gt;WHATWG Encoding Standard, Section 4 (Decoders):&lt;/b&gt; Explicitly defines the forward-looking architecture of legacy decoders and the mandatory &lt;i&gt;Shift_JIS lead&lt;/i&gt; to &lt;i&gt;Default&lt;/i&gt; state transitions. &lt;a href="https://encoding.spec.whatwg.org/#decoders"&gt;Link&lt;/a&gt;&lt;/li&gt;
@@ -1098,14 +1185,14 @@ configuration choices are.
 &lt;/p&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="ox-nikola-outline-container-org136025e" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org136025e"&gt;The Theme Stack&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org136025e"&gt;
+&lt;div id="ox-nikola-outline-container-orge72eb6b" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orge72eb6b"&gt;The Theme Stack&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-orge72eb6b"&gt;
 &lt;p&gt;
 The blog uses three Nikola themes stacked via the parent chain:
 &lt;/p&gt;
 
-&lt;pre class="example" id="orgdc7e75a"&gt;
+&lt;pre class="example" id="org37b2ef4"&gt;
 sdowney-tailwind → nikola-tailwind-blog → nikola-tailwind-base → base
 &lt;/pre&gt;
 
@@ -1133,9 +1220,9 @@ templates by walking the chain, so I only override what I actually change.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgc25af53" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgc25af53"&gt;How Tailwind Is Loaded&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-orgc25af53"&gt;
+&lt;div id="ox-nikola-outline-container-org8274fb0" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org8274fb0"&gt;How Tailwind Is Loaded&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org8274fb0"&gt;
 &lt;p&gt;
 The Tailwind Play CDN is a &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; tag that processes utility classes at
 runtime:
@@ -1189,9 +1276,9 @@ Font stacks are defined once.  The &lt;code&gt;heading&lt;/code&gt; array is reu
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org1f13290" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org1f13290"&gt;Source Block Rendering&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org1f13290"&gt;
+&lt;div id="ox-nikola-outline-container-org690e135" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org690e135"&gt;Source Block Rendering&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org690e135"&gt;
 &lt;p&gt;
 Org-mode's HTML exporter produces this structure:
 &lt;/p&gt;
@@ -1220,9 +1307,9 @@ label and button.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org4015ebc" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org4015ebc"&gt;Syntax Highlighting: The Modus Connection&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-org4015ebc"&gt;
+&lt;div id="ox-nikola-outline-container-org547651f" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org547651f"&gt;Syntax Highlighting: The Modus Connection&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org547651f"&gt;
 &lt;p&gt;
 Org-mode's HTML exporter uses &lt;code&gt;htmlize&lt;/code&gt; to apply face colors as CSS classes.
 When &lt;code&gt;org-html-htmlize-output-type&lt;/code&gt; is &lt;code&gt;'css&lt;/code&gt;, it produces &lt;code&gt;&amp;lt;span
@@ -1288,13 +1375,13 @@ Change the modus variant, regenerate, and code block backgrounds follow.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgd619b77" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgd619b77"&gt;Current Configuration&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-orgd619b77"&gt;
+&lt;div id="ox-nikola-outline-container-org4455d9e" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org4455d9e"&gt;Current Configuration&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org4455d9e"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org2caf31d" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org2caf31d"&gt;What's using the Play CDN&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org2caf31d"&gt;
+&lt;div id="ox-nikola-outline-container-org26f06e0" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org26f06e0"&gt;What's using the Play CDN&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org26f06e0"&gt;
 &lt;p&gt;
 The Tailwind Play CDN generates CSS client-side.  There is no &lt;code&gt;node_modules&lt;/code&gt;,
 no &lt;code&gt;package.json&lt;/code&gt;, no build step.  Page load includes a brief delay while
@@ -1309,9 +1396,9 @@ tailwind.css&lt;/code&gt;, replace the &lt;code&gt;&amp;lt;script&amp;gt;&lt;/co
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org8514c39" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org8514c39"&gt;Typography plugin via prose&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org8514c39"&gt;
+&lt;div id="ox-nikola-outline-container-org0f6f6e0" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org0f6f6e0"&gt;Typography plugin via prose&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org0f6f6e0"&gt;
 &lt;p&gt;
 The &lt;code&gt;prose prose-lg prose-indigo&lt;/code&gt; classes on the content &lt;code&gt;&amp;lt;div&amp;gt;&lt;/code&gt; provide:
 &lt;/p&gt;
@@ -1328,9 +1415,9 @@ lives outside the &lt;code&gt;prose&lt;/code&gt; wrapper.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org249a936" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org249a936"&gt;Fonts&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org249a936"&gt;
+&lt;div id="ox-nikola-outline-container-orgb5b2151" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgb5b2151"&gt;Fonts&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orgb5b2151"&gt;
 &lt;ul class="org-ul"&gt;
 &lt;li&gt;Body: Source Sans 3 (with Open Sans fallback)&lt;/li&gt;
 &lt;li&gt;Headings: Open Sans&lt;/li&gt;
@@ -1343,9 +1430,9 @@ reference these through the config.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org6307bf0" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org6307bf0"&gt;Accent color: indigo&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org6307bf0"&gt;
+&lt;div id="ox-nikola-outline-container-org0710fc8" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org0710fc8"&gt;Accent color: indigo&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org0710fc8"&gt;
 &lt;p&gt;
 Tailwind's &lt;code&gt;indigo&lt;/code&gt; palette provides the accent: &lt;code&gt;bg-indigo-700&lt;/code&gt; for the
 header banner, &lt;code&gt;text-indigo-600&lt;/code&gt; for links, &lt;code&gt;bg-indigo-100 text-indigo-700&lt;/code&gt;
@@ -1354,9 +1441,9 @@ across the blog tier templates.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org4403965" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org4403965"&gt;Icons: Font Awesome 7.0.1&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org4403965"&gt;
+&lt;div id="ox-nikola-outline-container-org7af0d3f" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="org7af0d3f"&gt;Icons: Font Awesome 7.0.1&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-org7af0d3f"&gt;
 &lt;p&gt;
 Loaded via CDN in the personal tier.  Navigation links in &lt;code&gt;conf.py&lt;/code&gt; include
 Font Awesome &lt;code&gt;&amp;lt;i&amp;gt;&lt;/code&gt; tags directly in the link text.
@@ -1364,13 +1451,13 @@ Font Awesome &lt;code&gt;&amp;lt;i&amp;gt;&lt;/code&gt; tags directly in the lin
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgf2a6883" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgf2a6883"&gt;What I Might Tweak Later&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-orgf2a6883"&gt;
+&lt;div id="ox-nikola-outline-container-org2f2ec4a" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org2f2ec4a"&gt;What I Might Tweak Later&lt;/h2&gt;
+&lt;div class="outline-text-2" id="text-org2f2ec4a"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgca38460" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="orgca38460"&gt;Dark mode&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-orgca38460"&gt;
+&lt;div id="ox-nikola-outline-container-orgfa05c49" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgfa05c49"&gt;Dark mode&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orgfa05c49"&gt;
 &lt;p&gt;
 The syntax highlighting is already dark (modus-vivendi).  The page chrome is
 light.  A proper dark mode would add &lt;code&gt;dark:&lt;/code&gt; variants to the templates and
@@ -1379,9 +1466,9 @@ this straightforward with &lt;code&gt;darkMode: 'media'&lt;/code&gt; in the conf
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org1378ad9" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org1378ad9"&gt;Production Tailwind&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org1378ad9"&gt;
+&lt;div id="ox-nikola-outline-container-orgc6fd45e" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgc6fd45e"&gt;Production Tailwind&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orgc6fd45e"&gt;
 &lt;p&gt;
 If page load times bother me, switching to a pre-built CSS file removes the
 Play CDN runtime cost.  The config is already defined inline; moving it to
@@ -1389,9 +1476,9 @@ Play CDN runtime cost.  The config is already defined inline; moving it to
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org079ed31" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org079ed31"&gt;Palette-aware CSS generation&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-org079ed31"&gt;
+&lt;div id="ox-nikola-outline-container-orga0d7d14" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orga0d7d14"&gt;Palette-aware CSS generation&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orga0d7d14"&gt;
 &lt;p&gt;
 &lt;code&gt;secretaire-css&lt;/code&gt; currently falls back to htmlize for the actual face scanning
 when the modus palette API isn't available.  The full palette-aware path (emitting
@@ -1400,9 +1487,9 @@ See &lt;code&gt;docs/secretaire-css-design.org&lt;/code&gt; for what the ideal o
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgff45120" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="orgff45120"&gt;Fonts&lt;/h3&gt;
-&lt;div class="outline-text-3" id="text-orgff45120"&gt;
+&lt;div id="ox-nikola-outline-container-orgab8d4b5" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgab8d4b5"&gt;Fonts&lt;/h3&gt;
+&lt;div class="outline-text-3" id="text-orgab8d4b5"&gt;
 &lt;p&gt;
 I'm eyeing &lt;a href="https://www.brailleinstitute.org/freefont/"&gt;Atkinson Hyperlegible Next&lt;/a&gt; for body text.  Changing fonts is a
 two-place edit: the Google Fonts &lt;code&gt;&amp;lt;link&amp;gt;&lt;/code&gt; tag and the Tailwind config in
@@ -1410,7 +1497,7 @@ two-place edit: the Google Fonts &lt;code&gt;&amp;lt;link&amp;gt;&lt;/code&gt; t
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><category>emacs</category><category>modus-themes</category><category>nikola</category><category>org-mode</category><category>tailwind</category><guid>https://sdowney.org/posts/tailwind-theme-workflow/</guid><pubDate>Sun, 10 May 2026 22:00:00 GMT</pubDate></item><item><title>Surround With UUID</title><link>https://sdowney.org/posts/surround-with-uuid/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org3ed2ca8"&gt;
+&lt;/div&gt;</description><category>emacs</category><category>modus-themes</category><category>nikola</category><category>org-mode</category><category>tailwind</category><guid>https://sdowney.org/posts/tailwind-theme-workflow/</guid><pubDate>Sun, 10 May 2026 22:00:00 GMT</pubDate></item><item><title>Surround With UUID</title><link>https://sdowney.org/posts/surround-with-uuid/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org224de6b"&gt;
 &lt;p&gt;
 The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
 &lt;/p&gt;
@@ -1419,7 +1506,7 @@ The question of why C++ is standardized through ISO comes up fairly often. This 
 It's a radically oversimplified too long elevator pitch.
 &lt;/p&gt;
 
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/surround-with-uuid/</guid><pubDate>Thu, 09 Apr 2026 21:41:26 GMT</pubDate></item><item><title>Why Standard Organizations</title><link>https://sdowney.org/posts/why-standard-organizations/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org64ddf2e"&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/surround-with-uuid/</guid><pubDate>Thu, 09 Apr 2026 21:41:26 GMT</pubDate></item><item><title>Why Standard Organizations</title><link>https://sdowney.org/posts/why-standard-organizations/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="org7e385e3"&gt;
 &lt;p&gt;
 The question of why C++ is standardized through ISO comes up fairly often. This is what I came up with as an explanation the last time I tried to answer that.
 &lt;/p&gt;
@@ -1490,7 +1577,7 @@ So, a moderate sized post, with a not terribly satisfying engineering answer, be
 
 &lt;p&gt;
 C++ stays at ISO because ISO has rights to the standard, and getting those rights to move it elsewhere is a hard problem, and would make everyone involved have to do some work just to continue to participate. Doing all that would have to be a massively clear win, and so no one is trying to take on the impossible task.
-&lt;/p&gt;</description><category>C++</category><guid>https://sdowney.org/posts/why-standard-organizations/</guid><pubDate>Sat, 07 Mar 2026 15:21:36 GMT</pubDate></item><item><title>The Sender Sub-Language</title><link>https://sdowney.org/posts/the-sender-sub-language/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgd0a0749"&gt;
+&lt;/p&gt;</description><category>C++</category><guid>https://sdowney.org/posts/why-standard-organizations/</guid><pubDate>Sat, 07 Mar 2026 15:21:36 GMT</pubDate></item><item><title>The Sender Sub-Language</title><link>https://sdowney.org/posts/the-sender-sub-language/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgc2679ba"&gt;
 &lt;p&gt;
 The paper &lt;a href="http://wg21.link/P4014R0"&gt;The Sender Sub-Language&lt;/a&gt; by Vinnie Falco &amp;lt;vinnie.falco@gmail.com&amp;gt; and Mungo Gill &amp;lt;mungo.gill@me.com&amp;gt; makes extensive use of my work at &lt;a href="https://github.com/steve-downey/sender-examples"&gt;https://github.com/steve-downey/sender-examples&lt;/a&gt;.  The code is also the basis for my talk at C++Now 2023, &lt;a href="https://youtu.be/xXncLUD-4bA?si=tFXFFYLUxia9WW-c"&gt;Using the C++ Sender/Receiver Framework: Implement Control Flow for Async Processing&lt;/a&gt;. They present the code accurately and fairly, and I am very happy they found it useful in describing and understanding the capabilities of Senders in the framework. There is no higher praise than someone finding your work useful to build upon.
 &lt;/p&gt;
@@ -1514,8 +1601,8 @@ This post, however, is not my consideration of the new papers.
 &lt;p&gt;
 I simply wish to put the work I did in 2022 and 2023 in context.
 &lt;/p&gt;
-&lt;div id="ox-nikola-outline-container-org7e149b1" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org7e149b1"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; The Papers&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgbb88b13" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgbb88b13"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; The Papers&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 The papers which I am looking at
@@ -1579,19 +1666,19 @@ The papers which I am looking at
 &lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org67f0896" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org67f0896"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Abstracts and Suggested Polls&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgb8c72c8" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgb8c72c8"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Abstracts and Suggested Polls&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 These quotes are drawn from their respective papers to provide context.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org5eb0fda" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org5eb0fda"&gt;&lt;span class="section-number-3"&gt;2.1.&lt;/span&gt; P2583R0: Symmetric Transfer and Sender Composition&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orged1de4a" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orged1de4a"&gt;&lt;span class="section-number-3"&gt;2.1.&lt;/span&gt; P2583R0: Symmetric Transfer and Sender Composition&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-2-1"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org9a12b44" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="org9a12b44"&gt;&lt;span class="section-number-4"&gt;2.1.1.&lt;/span&gt; Abstract&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-org89729c6" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org89729c6"&gt;&lt;span class="section-number-4"&gt;2.1.1.&lt;/span&gt; Abstract&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-1-1"&gt;
 &lt;p&gt;
 C++20 provides symmetric transfer (&lt;a href="https://wg21.link/P0913R1"&gt;P0913R1&lt;/a&gt;) - a mechanism where &lt;code&gt;await_suspend&lt;/code&gt; returns a &lt;code&gt;coroutine_handle&amp;lt;&amp;gt;&lt;/code&gt; and the compiler resumes the designated coroutine as a tail call. Coroutine chains execute in constant stack space. &lt;code&gt;std::execution&lt;/code&gt; (&lt;a href="https://wg21.link/P2300R10"&gt;P2300R10&lt;/a&gt;) composes asynchronous operations through sender algorithms. These algorithms create receivers that are structs, not coroutines. No &lt;code&gt;coroutine_handle&amp;lt;&amp;gt;&lt;/code&gt; exists at any intermediate point in a sender pipeline. When a coroutine &lt;code&gt;co_await&lt;/code&gt; s a sender that completes synchronously, the stack grows by one frame per completion. &lt;a href="https://wg21.link/P3552R3"&gt;P3552R3&lt;/a&gt;’s &lt;code&gt;std::execution::task&lt;/code&gt; inherits this property. The sender model’s zero-allocation composition property and symmetric transfer’s constant-stack property cannot both be satisfied. One requires structs. The other requires coroutines. This paper describes the mechanism, provides implementation experience, and documents the tradeoff.
@@ -1599,12 +1686,12 @@ C++20 provides symmetric transfer (&lt;a href="https://wg21.link/P0913R1"&gt;P09
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org2b47597" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org2b47597"&gt;&lt;span class="section-number-3"&gt;2.2.&lt;/span&gt; P4003R0: Coroutines for I/O&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orgd6f04c2" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgd6f04c2"&gt;&lt;span class="section-number-3"&gt;2.2.&lt;/span&gt; P4003R0: Coroutines for I/O&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-2-2"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org8374aaa" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="org8374aaa"&gt;&lt;span class="section-number-4"&gt;2.2.1.&lt;/span&gt; Abstract&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-org8017d5d" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org8017d5d"&gt;&lt;span class="section-number-4"&gt;2.2.1.&lt;/span&gt; Abstract&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-2-1"&gt;
 &lt;p&gt;
 C++20 coroutines have five properties that, taken together, make them uniquely suited to asynchronous I/O: type erasure through &lt;code&gt;coroutine_handle&amp;lt;&amp;gt;&lt;/code&gt; , customization through promise_type , stackless independently resumable frames, symmetric transfer through await_suspend , and compiler-managed state that persists across suspension points. Each was designed for generality. Their conjunction yields something no single property suggests: the optimal basis for byte-oriented I/O.
@@ -1615,8 +1702,8 @@ We used C++20 coroutines directly for I/O - timers, sockets, DNS, TLS, HTTP - an
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgf3805d3" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="orgf3805d3"&gt;&lt;span class="section-number-4"&gt;2.2.2.&lt;/span&gt; Suggested Straw Polls&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-orge0a23c2" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="orge0a23c2"&gt;&lt;span class="section-number-4"&gt;2.2.2.&lt;/span&gt; Suggested Straw Polls&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-2-2"&gt;
 &lt;p&gt;
 SG4 polled at Kona (November 2023) on &lt;a href="https://wg21.link/P2762R2"&gt;P2762R2&lt;/a&gt; “Sender/Receiver Interface For Networking”
@@ -1678,20 +1765,20 @@ Poll 2. New research into coroutine-native I/O, not available at the time of the
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgf4e8f0e" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="orgf4e8f0e"&gt;&lt;span class="section-number-3"&gt;2.3.&lt;/span&gt; P4007R0: Senders and Coroutines&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orgc8c7976" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgc8c7976"&gt;&lt;span class="section-number-3"&gt;2.3.&lt;/span&gt; P4007R0: Senders and Coroutines&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-2-3"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orga0c25df" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="orga0c25df"&gt;&lt;span class="section-number-4"&gt;2.3.1.&lt;/span&gt; Abstract&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-org9eafd02" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org9eafd02"&gt;&lt;span class="section-number-4"&gt;2.3.1.&lt;/span&gt; Abstract&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-3-1"&gt;
 &lt;p&gt;
 &lt;code&gt;std::execution&lt;/code&gt; serves its domain well. Different asynchronous domains have different costs, and a single model cannot minimize all of them simultaneously. This paper identifies four structural gaps where the sender model meets coroutines: three at the boundary - error reporting, error returns, and frame allocator propagation - and one inside the composition mechanism - the symmetric transfer gap documented in &lt;a href="https://wg21.link/P2583R0"&gt;P2583R0&lt;/a&gt;. Each gap is the cost of a property the sender model requires for compile-time analysis (&lt;a href="https://wg21.link/P2300R10"&gt;P2300R10&lt;/a&gt;, &lt;a href="https://wg21.link/P4014R0"&gt;P4014R0&lt;/a&gt; ). They are not design defects, they are tradeoffs. Mandating that standard networking be built on the sender model would force coroutine I/O users to pay these costs. A coroutine-native I/O research report (&lt;a href="https://wg21.link/P4003R0"&gt;P4003R0&lt;/a&gt;) made the gaps visible by showing that partial results, error returns, cancellation, and frame allocator propagation emerge naturally when I/O is designed for coroutines. The findings hold regardless of that report’s specific design. This paper recommends: ship &lt;code&gt;std::execution&lt;/code&gt; for C++26, defer task (&lt;a href="https://wg21.link/P3552R3"&gt;P3552R3&lt;/a&gt;, “Add a Coroutine Task Type”) to C++29, and explore coroutine-native I/O designs alongside sender-based designs.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org491e6a7" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="org491e6a7"&gt;&lt;span class="section-number-4"&gt;2.3.2.&lt;/span&gt; Suggested Straw Polls&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-org60b7fa7" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org60b7fa7"&gt;&lt;span class="section-number-4"&gt;2.3.2.&lt;/span&gt; Suggested Straw Polls&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-3-2"&gt;
 &lt;ol class="org-ol"&gt;
 &lt;li&gt;“I/O completions that carry both an error code and a byte count present a design challenge for the three-channel completion model.”&lt;/li&gt;
@@ -1701,20 +1788,20 @@ Poll 2. New research into coroutine-native I/O, not available at the time of the
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org6c5238a" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org6c5238a"&gt;&lt;span class="section-number-3"&gt;2.4.&lt;/span&gt; P4014R0: The Sender Sub-Language&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orgd4da416" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orgd4da416"&gt;&lt;span class="section-number-3"&gt;2.4.&lt;/span&gt; P4014R0: The Sender Sub-Language&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-2-4"&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org53fdb67" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="org53fdb67"&gt;&lt;span class="section-number-4"&gt;2.4.1.&lt;/span&gt; Abstract&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-org1b31a78" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org1b31a78"&gt;&lt;span class="section-number-4"&gt;2.4.1.&lt;/span&gt; Abstract&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-4-1"&gt;
 &lt;p&gt;
 C++26 introduces a rich sub-language for asynchronous programming through &lt;code&gt;std::execution&lt;/code&gt; (P2300R10) . Sender pipelines replace C++’s control flow, variable binding, error handling, and iteration with library-level equivalents rooted in continuation-passing style and monadic composition. This paper is a guide to the Sender SubLanguage: its theoretical foundations, the programming model it provides, and the engineering trade-offs it makes. The trade-offs serve specific domains well. The question is whether other domains deserve the same freedom to choose the model that serves them.
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org40c2595" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="org40c2595"&gt;&lt;span class="section-number-4"&gt;2.4.2.&lt;/span&gt; Suggested Straw Polls&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-org715756d" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org715756d"&gt;&lt;span class="section-number-4"&gt;2.4.2.&lt;/span&gt; Suggested Straw Polls&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-4-2"&gt;
 &lt;ol class="org-ol"&gt;
 &lt;li&gt;“ std::execution serves coroutine-driven async I/O less ideally than heterogeneous compute.”&lt;/li&gt;
@@ -1723,15 +1810,15 @@ C++26 introduces a rich sub-language for asynchronous programming through &lt;co
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org8d8b9a2" class="ox-nikola-outline-3"&gt;
-&lt;h3 id="org8d8b9a2"&gt;&lt;span class="section-number-3"&gt;2.5.&lt;/span&gt; P4029R0: The SG14 Priority List for C++29/32&lt;/h3&gt;
+&lt;div id="ox-nikola-outline-container-orga8cf9ff" class="ox-nikola-outline-3"&gt;
+&lt;h3 id="orga8cf9ff"&gt;&lt;span class="section-number-3"&gt;2.5.&lt;/span&gt; P4029R0: The SG14 Priority List for C++29/32&lt;/h3&gt;
 &lt;div class="outline-text-3" id="text-2-5"&gt;
 &lt;p&gt;
 This paper is a forward looking priority list for SG14 Low Latency. It has overlapping concerns about the sender / receiver model with the other papers.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org011ec7b" class="ox-nikola-outline-4"&gt;
-&lt;h4 id="org011ec7b"&gt;&lt;span class="section-number-4"&gt;2.5.1.&lt;/span&gt; Executors/coroutine backward flow + lazy execution vs direct forward flow model for CPU-bound I/O and Networking.&lt;/h4&gt;
+&lt;div id="ox-nikola-outline-container-org90fc014" class="ox-nikola-outline-4"&gt;
+&lt;h4 id="org90fc014"&gt;&lt;span class="section-number-4"&gt;2.5.1.&lt;/span&gt; Executors/coroutine backward flow + lazy execution vs direct forward flow model for CPU-bound I/O and Networking.&lt;/h4&gt;
 &lt;div class="outline-text-4" id="text-2-5-1"&gt;
 &lt;ol class="org-ol"&gt;
 &lt;li&gt;Decouple Networking from std::execution SG14 advise that Networking (SG4) should not be built on top of &lt;a href="https://wg21.link/P2300"&gt;P2300&lt;/a&gt;. The allocation patterns required by &lt;a href="https://wg21.link/P2300"&gt;P2300&lt;/a&gt; are incompatible with low-latency networking requirements.&lt;/li&gt;
@@ -1741,8 +1828,8 @@ This paper is a forward looking priority list for SG14 Low Latency. It has overl
 &lt;/div&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgc522f92" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgc522f92"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; The Sender Model&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-orgfd50f59" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="orgfd50f59"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; The Sender Model&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 As described in my earlier papers and talks, and accurately summarized by &lt;a href="https://wg21.link/P4014R0"&gt;P4014R0: The Sender Sub-Language&lt;/a&gt;, senders are a framework for working with continuations and for supporting &lt;a href="https://en.wikipedia.org/wiki/Continuation-passing_style"&gt;Continuation Passing Style&lt;/a&gt;, or CPS. The CPS formalism is a full model of computation, Turing complete, and equivalent in expressiveness to Single Static Assignment, the current, common, model that compilers use for lowering programming languages. CPS used to be far more common, and is still in use in some language implementations today. The reasons for choosing one over the other is entirely out of scope for this discussion.
@@ -1790,10 +1877,10 @@ That was, and is, clearly, to me, yes.
 
 
 &lt;p&gt;
-Exported: 2026-09-03 06:54:37
+Exported: 2026-09-27 15:32:16
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/the-sender-sub-language/</guid><pubDate>Sat, 28 Feb 2026 23:40:21 GMT</pubDate></item><item><title>Building vcpkg dependencies with project toolchain</title><link>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgc06bdc9"&gt;
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/the-sender-sub-language/</guid><pubDate>Sat, 28 Feb 2026 23:40:21 GMT</pubDate></item><item><title>Building vcpkg dependencies with project toolchain</title><link>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orge503359"&gt;
 &lt;p&gt;
 Making sure vcpkg delivers packages built with your toolchain is not hard, but much of the advice on the internet is flat wrong. You need to specify your toolchain both in your project and in the the vcpkg &lt;code&gt;triplet&lt;/code&gt;. There's an airgap between your project and the dependency in &lt;code&gt;vcpkg install&lt;/code&gt;. The CMake settings can't just flow through.
 &lt;/p&gt;
@@ -1801,8 +1888,8 @@ Making sure vcpkg delivers packages built with your toolchain is not hard, but m
 &lt;/div&gt;
 
 &lt;!-- TEASER_END --&gt;
-&lt;div id="ox-nikola-outline-container-org0b3fb04" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org0b3fb04"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Toolchain is more than just the compiler&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org7ded91b" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org7ded91b"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Toolchain is more than just the compiler&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-1"&gt;
 &lt;p&gt;
 Inside a link context everything needs to use the same definitions for everything or your program breaks. If you are lucky it will fail to link. If you are unlucky it will link and explode at runtime. Or you might have the worst kind of undefined behavior–working the way you expect it to. For now.
@@ -1817,8 +1904,8 @@ The toolchain should encompass all of the ABI affecting flags, and most flags af
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgd9dce87" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgd9dce87"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Using a toolchain with &lt;code&gt;vcpkg&lt;/code&gt; in-project&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org5728043" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org5728043"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; Using a toolchain with &lt;code&gt;vcpkg&lt;/code&gt; in-project&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-2"&gt;
 &lt;p&gt;
 There are several techniques for using vcpkg for dependency management and specifying a toolchain to use for compilation of the artifacts in a project. For an open source project, the problem is generally how to do so without locking everyone into &lt;code&gt;vcpkg&lt;/code&gt;. The current theory for CMake is to provide dependency provider hooks via CMAKE_PROJECT_TOP_LEVEL_INCLUDES, which are a list of files cmake will process before anything else, and in particular before the &lt;code&gt;project&lt;/code&gt; statement. The Beman Project has a primitive dependency provider, &lt;a href="https://github.com/bemanproject/infra/blob/main/cmake/use-fetch-content.cmake"&gt;use-fetch-content.cmake&lt;/a&gt;, that converts &lt;code&gt;find_package&lt;/code&gt; into &lt;code&gt;FetchContent&lt;/code&gt; and downloads and builds from Git URLs. This is an alternative to vendoring dependencies in-tree directly using git submodules or git subtrees.
@@ -1924,8 +2011,8 @@ Building with the &lt;code&gt;cmake&lt;/code&gt; command line flags above will e
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgbb4efd4" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgbb4efd4"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Building Dependencies with your Toolchain.&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org8d1ba00" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org8d1ba00"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Building Dependencies with your Toolchain.&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-3"&gt;
 &lt;p&gt;
 The mechanism &lt;code&gt;vcpkg&lt;/code&gt; provides for injecting a toolchain into a dependency is a custom &lt;code&gt;triple&lt;/code&gt; that provides a VCPKG_CHAINLOAD_TOOLCHAIN_FILE. Because of the intermediate invocation of &lt;code&gt;vcpkg&lt;/code&gt;, setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project does not affect how &lt;code&gt;vcpkg&lt;/code&gt; builds or provides anything.
@@ -1970,8 +2057,8 @@ With this, &lt;code&gt;vcpkg&lt;/code&gt; will use the toolchain I specify to bu
 &lt;/p&gt;
 &lt;/div&gt;
 &lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org55f171a" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org55f171a"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Someone is Wrong on the Internet&lt;/h2&gt;
+&lt;div id="ox-nikola-outline-container-org8626cee" class="ox-nikola-outline-2"&gt;
+&lt;h2 id="org8626cee"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Someone is Wrong on the Internet&lt;/h2&gt;
 &lt;div class="outline-text-2" id="text-4"&gt;
 &lt;p&gt;
 This took far longer to work out than it should because there is much advice that is flat out wrong.
@@ -1989,263 +2076,4 @@ Setting VCPKG_CHAINLOAD_TOOLCHAIN_FILE in your project or on the &lt;code&gt;cma
 You must set a custom &lt;code&gt;triple&lt;/code&gt; file that sets VCPKG_CHAINLOAD_TOOLCHAIN_FILE in order to use that CMake toolchain with &lt;code&gt;vcpkg&lt;/code&gt;.
 &lt;/p&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</guid><pubDate>Sat, 27 Dec 2025 17:03:15 GMT</pubDate></item><item><title>Substitution is Sometimes a Failure</title><link>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</link><dc:creator>Steve Downey</dc:creator><description>&lt;div class="abstract" id="orgfaa159a"&gt;
-&lt;p&gt;
-Why are optional::transform and optional::and_then not constrained by &lt;code&gt;invocable&lt;/code&gt;?
-&lt;/p&gt;
-
-&lt;/div&gt;
-
-&lt;!-- TEASER_END --&gt;
-&lt;div id="ox-nikola-outline-container-orgcd9ac67" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgcd9ac67"&gt;&lt;span class="section-number-2"&gt;1.&lt;/span&gt; Optional "Monadic" Interface&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-1"&gt;
-&lt;p&gt;
-&lt;a href="http://wg21.link/P0798"&gt;Monadic operations for std::optional&lt;/a&gt;
-&lt;/p&gt;
-&lt;ul class="org-ul"&gt;
-&lt;li&gt;&lt;code&gt;transform&lt;/code&gt; is the c++ spelling for &lt;code&gt;map&lt;/code&gt; or &lt;code&gt;fmap&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;and_then&lt;/code&gt; is monadic &lt;code&gt;bind&lt;/code&gt; for optional&lt;/li&gt;
-&lt;li&gt;&lt;code&gt;or_else&lt;/code&gt; is dual to &lt;code&gt;and_then&lt;/code&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;
-&lt;code&gt;or_else&lt;/code&gt; also has:
-&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-Constraints: &lt;code&gt;F&lt;/code&gt; models &lt;code&gt;invocable&lt;/code&gt; and &lt;code&gt;T&lt;/code&gt; models &lt;code&gt;{move,copy}_constructible&lt;/code&gt;.
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;code&gt;transform&lt;/code&gt; and &lt;code&gt;and_then&lt;/code&gt; do not.
-&lt;/p&gt;
-
-&lt;p&gt;
-They don't work if you don't give them invocables, and rely on &lt;code&gt;invoke_result_t&lt;/code&gt; to compute the result. So why not constrain them?
-&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org8efc8df" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org8efc8df"&gt;&lt;span class="section-number-2"&gt;2.&lt;/span&gt; SFINAE is shallow&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-2"&gt;
-&lt;p&gt;
-The problem is if another template has to be instantiated in order to evaluate the template of interest, and that template has an error, you get an error, not a substitution failure. And, it turns out, lambdas are a common source of the problem and a common case in real use.
-&lt;/p&gt;
-
-&lt;p&gt;
-Consider the code:
-&lt;/p&gt;
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-type"&gt;void&lt;/span&gt; &lt;span class="org-function-name"&gt;f&lt;/span&gt;(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;);
-
-&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;l&lt;/span&gt; = [](&lt;span class="org-keyword"&gt;auto&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;y&lt;/span&gt;) {
-    f(y);
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; 42;
-};
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-The two important parts are the &lt;code&gt;auto&amp;amp;&lt;/code&gt; parameter and the implicit deduced return type.
-&lt;/p&gt;
-
-&lt;p&gt;
-We can rewrite it, to make things possibly more obvious:
-&lt;/p&gt;
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-type"&gt;Func&lt;/span&gt; {
-    &lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-type"&gt;T&lt;/span&gt;&amp;gt;
-    &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-keyword"&gt;operator&lt;/span&gt;&lt;span class="org-function-name"&gt;()&lt;/span&gt;(&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;amp; &lt;span class="org-variable-name"&gt;t&lt;/span&gt;) {
-        f(t);
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; 42;
-    }
-};
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-and to slightly spoil things, the problem code is effectively:
-&lt;/p&gt;
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invocable&lt;/span&gt;&amp;lt;Func, &lt;span class="org-type"&gt;int&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt;&amp;amp;&amp;gt;);
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-which produces:
-&lt;/p&gt;
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;code&gt;&amp;lt;source&amp;gt;: In instantiation of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-constant"&gt;Func&lt;/span&gt;::&lt;span class="org-keyword"&gt;operator&lt;/span&gt;()(&lt;span class="org-type"&gt;T&lt;/span&gt;&amp;amp;) [with T = &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;]&lt;span class="org-warning"&gt;'&lt;/span&gt;:
-type_traits:2565:26:   required by substitution of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Fn&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; ... &lt;span class="org-type"&gt;_Args&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;static&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__result_of_success&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;decltype&lt;/span&gt; (declval&amp;lt;&lt;span class="org-type"&gt;_Fn&lt;/span&gt;&amp;gt;()((&lt;span class="org-type"&gt;declval&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;_Args&lt;/span&gt;&amp;gt;)()...)), &lt;span class="org-constant"&gt;std&lt;/span&gt;::__invoke_other&amp;gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-constant"&gt;__result_of_other_impl&lt;/span&gt;::_S_test(&lt;span class="org-type"&gt;int&lt;/span&gt;) [with _Fn = Func; _Args = {&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;}]&lt;span class="org-warning"&gt;'&lt;/span&gt;
-type_traits:2576:55:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__result_of_impl&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;false&lt;/span&gt;, &lt;span class="org-constant"&gt;false&lt;/span&gt;, Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
-type_traits:3038:12:   recursively required by substitution of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Result&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;_Ret&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__is_invocable_impl&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;_Result&lt;/span&gt;, &lt;span class="org-type"&gt;_Ret&lt;/span&gt;, &lt;span class="org-constant"&gt;true&lt;/span&gt;, &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__void_t&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;typename&lt;/span&gt; &lt;span class="org-constant"&gt;_CTp&lt;/span&gt;::&lt;span class="org-type"&gt;type&lt;/span&gt;&amp;gt; &amp;gt; [&lt;span class="org-constant"&gt;with&lt;/span&gt; _Result = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;__invoke_result&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;; _Ret = &lt;span class="org-type"&gt;void&lt;/span&gt;]&lt;span class="org-warning"&gt;'&lt;/span&gt;
-type_traits:3038:12:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;struct&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_invocable&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
-type_traits:3286:71:   required from &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;bool&lt;/span&gt; &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_invocable_v&lt;/span&gt;&amp;lt;Func, &lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&amp;gt;&lt;span class="org-warning"&gt;'&lt;/span&gt;
-concepts:336:25:   required from &lt;span class="org-type"&gt;here&lt;/span&gt;
-&amp;lt;source&amp;gt;:12:10: error: binding reference of type &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;&lt;span class="org-warning"&gt;'&lt;/span&gt; to &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-keyword"&gt;const&lt;/span&gt; &lt;span class="org-type"&gt;int&lt;/span&gt;&lt;span class="org-warning"&gt;'&lt;/span&gt; discards qualifiers
-   12 |         f(t);
-      |         ~^~~
-&amp;lt;source&amp;gt;:2:12: note:   initializing argument 1 of &lt;span class="org-warning"&gt;'&lt;/span&gt;&lt;span class="org-type"&gt;void&lt;/span&gt; f(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;)&lt;span class="org-warning"&gt;'&lt;/span&gt;
-    2 |     &lt;span class="org-type"&gt;void&lt;/span&gt; f(&lt;span class="org-type"&gt;int&lt;/span&gt;&amp;amp;);
-      |            ^~~~
-Compiler returned: 1
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;p&gt;
-&lt;a href="https://compiler-explorer.com/z/W1jT6bxrf"&gt;Compiler Explorer&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-as the compiler is unhappy about trying to call the function &lt;code&gt;f&lt;/code&gt; with a &lt;code&gt;const int&amp;amp;&lt;/code&gt;.
-&lt;/p&gt;
-
-&lt;p&gt;
-If the lambda or &lt;code&gt;Func&lt;/code&gt; is changed to have a non-deduced return type, the instantiation errors from the check to &lt;code&gt;invocable&lt;/code&gt; go away, although you still get an error calling either with a &lt;code&gt;const int&lt;/code&gt;.
-&lt;/p&gt;
-
-&lt;p&gt;
-So why do we run into this with &lt;code&gt;transform&lt;/code&gt; if we were to constrain it with &lt;code&gt;invocable&lt;/code&gt; ?
-&lt;/p&gt;
-
-&lt;p&gt;
-The compiler needs to figure out the overload set in order to resolve which one to use from the set. There are four of them two for the l- and r- value category and two for the const overloads.
-&lt;/p&gt;
-
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &amp;amp;;
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; &amp;amp;;
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &amp;amp;&amp;amp;;
-&lt;span class="org-keyword"&gt;template&lt;/span&gt;&amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt; &lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-function-name"&gt;transform&lt;/span&gt;(&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;) &lt;span class="org-keyword"&gt;const&lt;/span&gt; &amp;amp;&amp;amp;;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-&lt;p&gt;
-with differing computations of the resulting &lt;code&gt;optional&lt;/code&gt; being returned.
-&lt;/p&gt;
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;F, &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;​::​move(*val))&amp;gt;;
-&lt;span class="org-comment-delimiter"&gt;//&lt;/span&gt;&lt;span class="org-comment"&gt;or
-&lt;/span&gt;&lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-type"&gt;remove_cv_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;F, &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(*val)&amp;gt;&amp;gt;;
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-So, in order to work out what the templated &lt;code&gt;transform&lt;/code&gt;'s signature really is, it has to compute what the invocable returns, and since the invocable has deduced return type, it needs to instantiate it, and instantiating with &lt;code&gt;const int&lt;/code&gt; causes an error.
-&lt;/p&gt;
-
-&lt;p&gt;
-This is unfortunate.
-&lt;/p&gt;
-
-&lt;p&gt;
-If we constrain &lt;code&gt;transform&lt;/code&gt; we get the same errors as above. &lt;a href="https://compiler-explorer.com/z/r1qbjx4zG"&gt;See here,&lt;/a&gt; with just enough of an &lt;code&gt;optional&lt;/code&gt; to compile.
-&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-orgd5b9e0f" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="orgd5b9e0f"&gt;&lt;span class="section-number-2"&gt;3.&lt;/span&gt; Constraints, what are they good for&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-3"&gt;
-&lt;p&gt;
-Not absolutely nothing.
-&lt;/p&gt;
-
-&lt;p&gt;
-Constraints in the library:
-&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-Constraints: the conditions for the function's participation in overload resolution ([over.match]).
-&lt;/p&gt;
-
-&lt;p&gt;
-[Note 1: Failure to meet such a condition results in the function's silent non-viability. — end note]
-&lt;/p&gt;
-
-&lt;p&gt;
-[Example 1: An implementation can express such a condition via a constraint-expression ([temp.constr.decl]). — end example]
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;a href="https://eel.is/c++draft/description#structure.specifications-3.1"&gt;[structure.specifications] 3.1&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-Constraints are for making an overload not exist if the constraint isn't met. It's not a way of signaling an error. Those are &lt;code&gt;Mandates&lt;/code&gt;:
-&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;
-Mandates: the conditions that, if not met, render the program ill-formed.
-&lt;/p&gt;
-
-&lt;p&gt;
-[Example 2: An implementation can express such a condition via the constant-expression in a static_assert-declaration ([dcl.pre]). If the diagnostic is to be emitted only after the function has been selected by overload resolution, an implementation can express such a condition via a constraint-expression ([temp.constr.decl]) and also define the function as deleted. — end example]
-&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;
-&lt;a href="https://eel.is/c++draft/description#structure.specifications-3.2"&gt;[structure.specifications] 3.2&lt;/a&gt;
-&lt;/p&gt;
-
-&lt;p&gt;
-Asking to run &lt;code&gt;and_then&lt;/code&gt; on a non-invocable probably ought not to say there is no such function, but instead tell you it can't be invoked. I'm now not convinced that &lt;code&gt;or_else&lt;/code&gt; should be constrained this way. It's not significantly better for &lt;code&gt;o.or_else(5)&lt;/code&gt; to fail to resolve, mentioning &lt;code&gt;invocable&lt;/code&gt;, than produce an error that &lt;code&gt;invoke_result_t&lt;/code&gt; doesn't work, or that &lt;code&gt;f&lt;/code&gt; can't be invoked. The kind of error is a minor detail.
-&lt;/p&gt;
-
-&lt;p&gt;
-Constraints that let you control the choice of alternatives are wonderful, and requires clauses are normal programmer accessible, unlike SFINAE, or even &lt;code&gt;enable_if&lt;/code&gt;. But without an overload set to constrain, there possibly should not be a constraint.
-&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;
-&lt;div id="ox-nikola-outline-container-org8bed802" class="ox-nikola-outline-2"&gt;
-&lt;h2 id="org8bed802"&gt;&lt;span class="section-number-2"&gt;4.&lt;/span&gt; Can we do better?&lt;/h2&gt;
-&lt;div class="outline-text-2" id="text-4"&gt;
-&lt;p&gt;
-There are some notes in &lt;a href="https://wg21.link/P0798"&gt;P0798&lt;/a&gt; that suggest that Deducing This might help, &lt;a href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2021/p0847r7.html"&gt;P0847&lt;/a&gt;.
-&lt;/p&gt;
-
-&lt;p&gt;
-The idea would to be to NOT have all the value category overloads that need to be checked, but to just have a single one that deduces what &lt;code&gt;this&lt;/code&gt; is and provide it as a template parameter for further use. The contained parameter could be forwarded using &lt;code&gt;forward_like&amp;lt;Self&amp;gt;&lt;/code&gt;.
-&lt;/p&gt;
-
-&lt;p&gt;
-P0847 has discussion about how deducing this might be applied to optional. There's also discussion of deducing this and the SFINAE-unfriendly auto at &lt;a href="https://devblogs.microsoft.com/cppblog/cpp23-deducing-this/"&gt;C++23’s Deducing this: what it is, why it is, how to use it&lt;/a&gt;.
-&lt;/p&gt;
-
-&lt;p&gt;
-With the tools we have today, it looks possible, but still slightly messy. I managed to get my implementation of optional to compile and pass its own tests with.
-&lt;/p&gt;
-&lt;div class="org-src-container"&gt;
-&lt;pre class="src src-c++"&gt;&lt;code&gt;&lt;span class="org-keyword"&gt;template&lt;/span&gt; &amp;lt;&lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;F&lt;/span&gt;, &lt;span class="org-keyword"&gt;class&lt;/span&gt; &lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;
-    &lt;span class="org-keyword"&gt;requires&lt;/span&gt;(
-        &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invocable&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;,
-                       &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;)
-&lt;span class="org-keyword"&gt;constexpr&lt;/span&gt; &lt;span class="org-keyword"&gt;auto&lt;/span&gt; &lt;span class="org-variable-name"&gt;transform&lt;/span&gt;(&lt;span class="org-keyword"&gt;this&lt;/span&gt; Self&amp;amp;&amp;amp; self, &lt;span class="org-type"&gt;F&lt;/span&gt;&amp;amp;&amp;amp; &lt;span class="org-variable-name"&gt;f&lt;/span&gt;)
-    -&amp;gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;
-        &lt;span class="org-type"&gt;F&lt;/span&gt;,
-        &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;&amp;gt; {
-    &lt;span class="org-keyword"&gt;using&lt;/span&gt; &lt;span class="org-type"&gt;U&lt;/span&gt; = &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;invoke_result_t&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;,
-                                   &lt;span class="org-keyword"&gt;decltype&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(
-                                       &lt;span class="org-constant"&gt;std&lt;/span&gt;::declval&amp;lt;T&amp;gt;()))&amp;gt;;
-    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_array_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
-    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;in_place_t&lt;/span&gt;&amp;gt;);
-    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-negation-char"&gt;!&lt;/span&gt;&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_same_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;, &lt;span class="org-type"&gt;nullopt_t&lt;/span&gt;&amp;gt;);
-    &lt;span class="org-keyword"&gt;static_assert&lt;/span&gt;(&lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_object_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt; || &lt;span class="org-constant"&gt;std&lt;/span&gt;::&lt;span class="org-type"&gt;is_reference_v&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;);
-    &lt;span class="org-keyword"&gt;if&lt;/span&gt; (self.has_value()) {
-        &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;{&lt;span class="org-constant"&gt;detail&lt;/span&gt;::from_function,
-                           &lt;span class="org-constant"&gt;std&lt;/span&gt;::forward&amp;lt;&lt;span class="org-type"&gt;F&lt;/span&gt;&amp;gt;(f),
-                           &lt;span class="org-constant"&gt;std&lt;/span&gt;::forward_like&amp;lt;&lt;span class="org-type"&gt;Self&lt;/span&gt;&amp;gt;(self.value_)};
-    }
-    &lt;span class="org-keyword"&gt;return&lt;/span&gt; &lt;span class="org-type"&gt;optional&lt;/span&gt;&amp;lt;&lt;span class="org-type"&gt;U&lt;/span&gt;&amp;gt;;
-}
-&lt;/code&gt;&lt;/pre&gt;
-&lt;/div&gt;
-
-&lt;p&gt;
-If there were a &lt;code&gt;std::forward_like_t&lt;/code&gt;, it might be possible to reduce some of the noise in computing the value category used for the &lt;code&gt;T&lt;/code&gt;. I also have not thought extensively about if the requires clause is truly needed in light of the &lt;code&gt;invoke_result_&lt;/code&gt; that can now be used in the trailing return type.
-&lt;/p&gt;
-&lt;/div&gt;
-&lt;/div&gt;</description><guid>https://sdowney.org/posts/substitution-is-sometimes-a-failure/</guid><pubDate>Fri, 28 Nov 2025 17:06:58 GMT</pubDate></item></channel></rss>
+&lt;/div&gt;</description><guid>https://sdowney.org/posts/building-vcpkg-dependencies-with-project-toolchain/</guid><pubDate>Sat, 27 Dec 2025 17:03:15 GMT</pubDate></item></channel></rss>
