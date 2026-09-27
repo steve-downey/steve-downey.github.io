@@ -1,0 +1,48 @@
+#+title: ✌Existing Practice✌
+#+date: <2026-09-22>
+#+author: Steve Downey
+#+OPTIONS: toc:nil num:nil ^:nil
+
+"Standardize existing practice" was barely true of the first C++ standard, and it is the wrong rule now. It was already being stretched in 1998. The ARM was existing practice. Templates as specified in the ARM were not what got standardized; the STL had two years of use at HP and a handful of early adopters before it was voted in; namespaces, exceptions as shipped, and iostreams with locales were designed in committee and implemented afterward. The result was a standard that no compiler implemented for years. We call it a success because C++ survived it, not because the process was sound.
+
+Today the rule is not merely stretched. It is objectively wrong, for two reasons that are usually run together and should be kept apart.
+
+* No library can be brought in as-is
+
+The ecosystem is too fragmented. There is no library that everyone uses, built the way everyone builds, with the error handling everyone wants, that could be dropped into ~namespace std~ untouched. And even if there were, LEWG would not do it. The correctness bar applied to current proposals guarantees significant changes to any library that comes through. Lifetime, constexpr, exception safety, allocator awareness, freestanding, ABI. A library with real users has made choices on all of those that the committee will unmake.
+
+That is not a complaint. It is a description of what the process is for. The library that gets standardized is a new thing with the proposal as its ancestor.
+
+* Wide deployment experience is never coming back
+
+For a language feature, deployment experience is not going to happen again. No one is going to commit experimental language code to a production code base. The risk of being wrong, of having to strip syntax out of a million lines when the design changes, is too high for any engineering organization to accept. For a vendor library extension it is unlikely for the same reason, with the added problem that vendors have learned that shipping something under ~std::experimental~ means supporting it forever.
+
+This does not relieve a proposal of the obligation to implement. If anything it makes the implementation more important. But the purpose of the implementation has changed. It is there so that other people can gain intuition about the feature, and so that the implementer can confirm the lack of breakage. Those are the two things a reference implementation is for. Adoption numbers are not one of them.
+
+* How are we doing?
+
+The evidence for this is the last three standards.
+
+~fmt~ is the closest thing we have to the old model. Victor Zverovich had a library with wide deployment, a settled API, and years of bug reports. ~std::format~ is still not ~fmt~. Compile-time format string checking went in late through a separate paper. ~std::print~ waited for C++23. The escape and width rules for Unicode were rewritten in SG16. It is a success because the library kept living alongside the standard, absorbing the committee's changes and feeding back what broke. The deployment experience that mattered was the experience of tracking the delta.
+
+Ranges is the same story with a larger delta. range-v3 was widely used. ~std::ranges~ diverges from it on borrowed ranges, on dangling, on the view semantics, and on what got left out. C++20 shipped without ~zip~, ~enumerate~, ~chunk~, or ~to~. C++23 filled the holes. That is a success on a six-year timeline, and it worked because Casey Carter and Eric Niebler treated range-v3 as the experiment, not the product.
+
+Senders and receivers look like a success, and it is the case that best fits the new rule. There was no existing practice. P0443 Executors was an attempt to standardize existing practice, three existing practices in fact, and it failed because they could not be reconciled. P2300 started over. libunifex and stdexec were implementations built to let people gain intuition and find breakage. The design changed enormously between R0 and adoption, and it changed because people wrote code against the implementation and reported what was wrong. Nobody deployed it to production in the meantime. That was not the point.
+
+Coroutines, before S/R, were marginal. The language feature shipped in C++20 with a working MSVC implementation and no library, and ~std::generator~ did not arrive until C++23. Everyone wrote their own task type and their own scheduler, which is what the design intended, and the result was that nobody's coroutine code interoperated with anyone else's. The feature only becomes useful now that S/R supplies the library half. The implementation existed. The intuition did not, because there was no shared thing to build intuition on.
+
+Modules are not a success; they are the case that should have taught us. Two implementations existed, Microsoft's and Clang's, with different designs. The merged design that was voted into C++20 was implemented by nobody at the time of the vote. No build system understood it, and there was no way for anyone to gain intuition about how the merged thing behaved or to confirm it did not break existing code, because it did not exist. Six years later ~import std;~ works on some toolchains, header units are a partial implementation almost everywhere, and the amount of production C++ that has moved to named modules is a rounding error. This was a paper design standardized on the strength of experience with two things that were not it.
+
+* Contracts
+
+Contracts are the current disaster. Pulled from C++20 in Cologne because the design was not settled, they came back as P2900, a minimal viable product, and were adopted into C++26. The final vote in Croydon was 114 to 12 with 3 abstaining, which by committee standards is a fight, and it is still not over. More than twenty national body comments came in against the design. A paper to defer to C++29 circulated three weeks before the vote. The opposition has not gone quiet since, and the DIS ballot is still open. Stroustrup's line is that it is not minimal and not viable.
+
+The stated objection, when you strip the specifics about evaluation semantics and ignorability, is that there is not enough deployment experience. That is the impossible standard. We are never going to get deployment experience for a language feature that might change. There is a GCC implementation in trunk and a Clang branch. People have written code against them, found the sharp edges, and filed papers. The evaluation semantics debate happened because people could try the thing, which is the system working.
+
+If Contracts derail C++26, or derail themselves into C++29, it will not be because the feature failed to meet a reasonable bar. It will be because the bar being demanded is one no language feature can meet, and one that Modules, with far less implementation behind it, was never held to.
+
+* Profiles
+
+And then there are Profiles, targeting C++29, from many of the same people who gave us Modules. The pitch is safety, and the claimed existing practice is the Core Guidelines checkers. Those checkers are not Profiles. Profiles as proposed are a language mechanism with enforcement semantics that no compiler implements and no code base has been compiled against. It is the Modules shape exactly: a design with adjacent experience being presented as the experience.
+
+The lesson from the history is not "demand deployment." It is "demand an implementation that other people can use to find out whether the design is wrong, and then listen when they do." ~fmt~ and ranges had that and survived heavy revision. S/R had that and was revised almost completely. Coroutines had half of it. Modules had none of it. Contracts have it and are being held to a standard they cannot meet, while Profiles are heading toward the standard Modules were held to, which was none.
