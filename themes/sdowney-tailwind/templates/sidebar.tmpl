@@ -1,6 +1,6 @@
 ## -*- coding: utf-8 -*-
 <%
-    recent_posts = all_posts[:10]
+    recent_posts = [p for p in all_posts if p.use_in_feeds][:10]
 %>
 <aside class="not-prose mt-10 lg:mt-0 lg:w-64 lg:shrink-0 lg:sticky lg:top-6 lg:self-start space-y-8">
 

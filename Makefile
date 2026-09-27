@@ -64,6 +64,17 @@ compile:  ## Compile the project
 compile: nikola $(TAILWIND_OUTPUT)
 	$(NIKOLA) build
 
+.PHONY: serve
+serve: ## Preview the published site locally (drafts hidden, as deployed)
+serve: compile
+	$(NIKOLA) serve
+
+.PHONY: serve-drafts
+serve-drafts: ## Preview locally with drafts rendered as published
+serve-drafts: export NIKOLA_SHOW_DRAFTS := 1
+serve-drafts: compile
+	$(NIKOLA) serve
+
 .PHONY: test
 test: compile ## Rebuild and run tests
 	$(NIKOLA) check -f # too many broken links today to test with -l :sad:
@@ -95,7 +106,8 @@ github-deploy: compile test
 
 .PHONY: prod-deploy
 prod-deploy: ## Deploy TO sdowney.org hosted at panix
-	rsync -avl output/ sdowney@panix3.panix.com:~/public_html/
+prod-deploy: compile
+	$(NIKOLA) deploy
 
 .PHONY: clean
 clean:  ## Clean the build artifacts

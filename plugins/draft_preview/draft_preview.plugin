@@ -1,0 +1,12 @@
+[Core]
+Name = draft_preview
+Module = draft_preview
+
+[Nikola]
+MinVersion = 8.0.0
+PluginCategory = SignalHandler
+
+[Documentation]
+Author = Steve Downey
+Version = 1.0
+Description = When NIKOLA_SHOW_DRAFTS is set, render draft posts as if published so they can be previewed locally in indexes, feeds, and the sidebar. Never active under a deploy command.

@@ -698,6 +698,14 @@ REDIRECTIONS = [["index.php/2020/11/28/twitter/index.html", "/pages/index.php/20
 #         "rsync -rav --delete --delete-after output/ joe@my.site:/srv/www/site",
 #     ]
 # }
+# Used by `make prod-deploy` (nikola deploy). Routing the rsync through
+# `nikola deploy` runs clean_before_deployment first, which strips draft and
+# future posts (DEPLOY_DRAFTS = False) exactly as github_deploy does.
+DEPLOY_COMMANDS = {
+    'default': [
+        "rsync -avl output/ sdowney@panix3.panix.com:~/public_html/",
+    ]
+}
 
 # github_deploy configuration
 # For more details, read the manual:
@@ -1094,7 +1102,7 @@ PRETTY_URLS = True
 # Generally, you want FUTURE_IS_NOW and DEPLOY_FUTURE to be the same value.
 # DEPLOY_FUTURE = False
 # If False, draft posts will not be deployed
-# DEPLOY_DRAFTS = True
+DEPLOY_DRAFTS = False
 
 # Allows scheduling of posts using the rule specified here (new_post -s)
 # Specify an iCal Recurrence Rule: https://www.kanzaki.com/docs/ical/rrule.html
