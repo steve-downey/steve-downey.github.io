@@ -71,6 +71,11 @@
       org-html-postamble nil
       org-html-use-infojs nil)
 
+;; Honor `#+BIND:' keywords in posts, so a post can set an export variable
+;; by its full name (`#+BIND: org-export-with-sub-superscripts nil') rather
+;; than through the `#+OPTIONS:' short codes.  Off by default in org.
+(setq org-export-allow-bind-keywords t)
+
 (setq org-export-global-macros '(
                                  ("TEASER_END" . "#+HTML:<!-- TEASER_END -->")
                                  ))

@@ -7,49 +7,49 @@
 #+keywords:
 #+language: en
 
-#+org-export-with-smart-quotes: nil
-#+org-export-with-emphasize: t
-#+org-export-with-special-strings: t
-#+org-export-with-fixed-width: t
-#+org-export-with-timestamps: t
-#+org-export-preserve-breaks: nil
-#+org-export-with-sub-superscripts: nil
-#+org-export-with-archived-trees: headline
-#+org-export-with-author: t
-#+org-export-headline-levels: 3
+#+BIND: org-export-with-smart-quotes nil
+#+BIND: org-export-with-emphasize t
+#+BIND: org-export-with-special-strings t
+#+BIND: org-export-with-fixed-width t
+#+BIND: org-export-with-timestamps t
+#+BIND: org-export-preserve-breaks nil
+#+BIND: org-export-with-sub-superscripts nil
+#+BIND: org-export-with-archived-trees headline
+#+BIND: org-export-with-author t
+#+BIND: org-export-headline-levels 3
 
-#+org-export-with-broken-links: nil
-#+org-export-with-clocks: nil
-#+org-export-with-creator: nil
-#+org-export-with-drawers: (not "LOGBOOK")
-#+org-export-with-date: t
-#+org-export-with-entities: t
+#+BIND: org-export-with-broken-links nil
+#+BIND: org-export-with-clocks nil
+#+BIND: org-export-with-creator nil
+#+BIND: org-export-with-drawers (not "LOGBOOK")
+#+BIND: org-export-with-date t
+#+BIND: org-export-with-entities t
 
-#+org-export-with-email: nil
-#+org-export-with-footnotes: t
-#+org-export-with-inlinetasks: t
-#+org-export-with-section-numbers: t
-#+org-export-with-planning: nil
-#+org-export-with-priority: nil
-#+org-export-with-properties: nil
-#+org-export-with-statistics-cookies: t
-#+org-export-with-tags: t
+#+BIND: org-export-with-email nil
+#+BIND: org-export-with-footnotes t
+#+BIND: org-export-with-inlinetasks t
+#+BIND: org-export-with-section-numbers t
+#+BIND: org-export-with-planning nil
+#+BIND: org-export-with-priority nil
+#+BIND: org-export-with-properties nil
+#+BIND: org-export-with-statistics-cookies t
+#+BIND: org-export-with-tags t
 
-#+org-export-with-tasks: t
-#+org-export-with-latex: t
-#+org-export-timestamp-file: t
-#+org-export-with-title: n
-#+org-export-with-toc: nil
-#+org-export-with-todo: t
-#+org-export-with-tables: t
+#+BIND: org-export-with-tasks t
+#+BIND: org-export-with-latex t
+#+BIND: org-export-timestamp-file t
+#+BIND: org-export-with-title nil
+#+BIND: org-export-with-toc nil
+#+BIND: org-export-with-todo t
+#+BIND: org-export-with-tables t
 
-#+org-html-link-use-abs-url: nil
-#+org-html-postamble: nil
-#+org-html-preamble: t
-#+org-html-scripts: n
-#+org-html-style: nil
-#+org-html5-fancy: t
-#+org-html-self-link-headlines: t
+#+BIND: org-html-link-use-abs-url nil
+#+BIND: org-html-postamble nil
+#+BIND: org-html-preamble t
+#+BIND: org-html-scripts nil
+#+BIND: org-html-style nil
+#+BIND: org-html5-fancy t
+#+BIND: org-html-self-link-headlines t
 
 #+html_doctype: xhtml5
 #+html_container: div
