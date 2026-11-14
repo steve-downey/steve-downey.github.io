@@ -1,0 +1,2313 @@
+#+TITLE: P4222R3 "An initialization profile": the paper's examples against its two implementations
+#+DATE: {{{modification-time(%Y-%m-%d, VC)}}}
+#+AUTHOR: Steve Downey
+#+EMAIL: sdowney@gmail.com
+
+#+description: Reviewing the Code in P4222
+#+keywords:
+#+language: en
+
+#+BIND: org-export-with-smart-quotes nil
+#+BIND: org-export-with-emphasize t
+#+BIND: org-export-with-special-strings t
+#+BIND: org-export-with-fixed-width t
+#+BIND: org-export-with-timestamps t
+#+BIND: org-export-preserve-breaks nil
+#+BIND: org-export-with-sub-superscripts nil
+#+BIND: org-export-with-archived-trees headline
+#+BIND: org-export-with-author t
+#+BIND: org-export-headline-levels 3
+
+#+BIND: org-export-with-broken-links nil
+#+BIND: org-export-with-clocks nil
+#+BIND: org-export-with-creator nil
+#+BIND: org-export-with-drawers (not "LOGBOOK")
+#+BIND: org-export-with-date t
+#+BIND: org-export-with-entities t
+
+#+BIND: org-export-with-email nil
+#+BIND: org-export-with-footnotes t
+#+BIND: org-export-with-inlinetasks t
+#+BIND: org-export-with-section-numbers t
+#+BIND: org-export-with-planning nil
+#+BIND: org-export-with-priority nil
+#+BIND: org-export-with-properties nil
+#+BIND: org-export-with-statistics-cookies t
+#+BIND: org-export-with-tags t
+
+#+BIND: org-export-with-tasks t
+#+BIND: org-export-with-latex t
+#+BIND: org-export-timestamp-file t
+#+BIND: org-export-with-title nil
+#+BIND: org-export-with-toc nil
+#+BIND: org-export-with-todo t
+#+BIND: org-export-with-tables t
+
+#+BIND: org-html-link-use-abs-url nil
+#+BIND: org-html-postamble nil
+#+BIND: org-html-preamble t
+#+BIND: org-html-scripts nil
+#+BIND: org-html-style nil
+#+BIND: org-html5-fancy t
+#+BIND: org-html-self-link-headlines t
+
+#+html_doctype: xhtml5
+#+html_container: div
+#+html_link_home:
+#+html_link_up:
+#+html_mathjax:
+#+html_head:
+#+html_head_extra:
+#+infojs_opt:
+
+#+select_tags: export
+#+exclude_tags: noexport
+
+#+bibliography: ../references.bib
+#+cite_export: basic author-year author
+
+#+startup: showall
+
+* About this document
+
+Every code block in P4222R3 (Stroustrup, 2026-10-22, "An initialization profile") is reproduced below, compiled under the profile on the two implementations the paper cites as "tested nightly" [Impl1, Impl2], with what the paper says should happen beside what does. Where a block needed scaffolding to be a translation unit (a definition of =X=, a declaration of =my_malloc=, a fix to a typo) the addition is marked in a comment; lines added to probe a consequence the paper does not spell out are marked =// added=.
+
+Compilers, as built on Compiler Explorer on the date above:
+
+- Clang :: CE id =clang_profiles_init=, built from [[https://github.com/cppalliance/clang/tree/profiles-init][cppalliance/clang branch =profiles-init=]] at commit =4a2d2673= (2026-10-15), an llvm-project fork based on =main= of 2026-07-20. Flags =-std=c++23 -pedantic-errors=.
+- GCC :: CE id =gcontracts-p4324-trunk=, built from [[https://github.com/villevoutilainen/gcc/tree/p4324][villevoutilainen/gcc branch =p4324=]] at commit =146e7ba1= (2026-10-24/25), based on trunk of 2026-07-18. Same flags.
+
+The profile is enabled in each case by the file-scope =[[profiles::enforce(std::init)]];= from P3589; =-fprofiles-enforce=std::init= works on both as well.
+
+Each Compiler Explorer link opens the source on the left and, for each compiler, the compiler pane with its diagnostics pane directly beneath it. Line numbers in the diagnostics match the numbered source blocks.
+
+The examples are grouped by how badly the paper and the implementations disagree, worst first: rejected by both compilers where the paper says OK; rejected by Clang where the paper says OK; accepted by Clang where the paper says error; GCC alone differing; and the examples where both compilers agree with the paper. Within a group the examples follow the paper's order unless noted. The [[#summary-table][summary table]] at the end lists all 36 in the paper's order.
+
+Of 36 examples, the two implementations give the same verdicts on 18 (and nearly so on 2 more); on the other 16 they disagree with each other, in most cases on lines the paper annotates. Nine of the paper's examples are rejected by both compilers on a line the paper marks OK; they are the first group below, led by the §4.7 =Vector= the paper calls "guaranteed free from initialization errors". In two of the nine ([[#user-uninitialized-fill][§4.9 uninitialized_fill]], [[#arrays][§5.5 arrays]]) the paper's own text contradicts the annotation.
+
+Three recurring causes account for most of the differences:
+
+1. GCC does not know the standard library. =malloc= returns initialized memory to it ([[#malloc-calloc][§4.3 malloc/calloc]] note, [[#vector-example][§4.7 Vector]], [[#unique-ptr-new][§4.9 unique_ptr/vector]], [[#malloc-new-mix][§4.11 malloc/new]], [[#classes-exposing-uninit][§5.3 exposing uninitialized]]); =construct_at= / =destroy_at= are unmodelled ([[#lifetimes-construct-at][§4.6 construct_at]], [[#lifetimes-destroy-at][§4.6 destroy_at]]); =std::uninitialized_fill= and =free= are unannotated and so reject marked arguments ([[#vector-example][§4.7 Vector]]). Clang knows these by builtin ID.
+2. GCC implements =[[ref_to_uninit]]= on pointers and references only: not on class-type handles ([[#lifetimes-construct-at][§4.6 construct_at]], [[#attribute-placement-settled][Appendix settled forms]]), not on return types ([[#class-slot][§4.5 Slot]]), and not on a reference bound to a local ([[#pointer-reference-flavors][§4.3 f1/f2/g]], [[#attribute-placement-variables][Appendix placement]]). Clang implements all of these.
+3. The attribute vocabulary has forked: the paper's =[[must_init]]= is unknown to Clang, which implements =[[now_init]]=; GCC implements =[[must_init]]= but on the parameter rather than in the paper's function position ([[#must-init][§4.2 must_init]], [[#attribute-placement-settled][Appendix settled forms]]). =std::now_init= ships in GCC's =<utility>= and nowhere in Clang's library ([[#now-init-span][§1.4 now_init to a span]]).
+
+* Rejected by both implementations where the paper says OK
+
+The paper marks a line OK, or presents the form as the sanctioned one, and both compilers reject it. GCC's branch is a quick proof of concept and its verdict alone settles little; when Clang, the fuller implementation, and GCC agree in rejecting, the example does not work as written. The =Vector= comes first because the paper's claim for it is the strongest. In the last two the paper's own text contradicts the annotation the compilers reject.
+
+** §4.7 — The Vector example
+:PROPERTIES:
+:CUSTOM_ID: vector-example
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <memory>
+#include <cstdlib>
+// scaffolding: std::now_init exists in the GCC branch's <utility>; the Clang branch recognizes
+// std::now_init by name but ships no declaration, so one is supplied for it
+#include <utility>
+#ifdef __clang__
+namespace std { template<class T> T* now_init(T* p [[ref_to_uninit]]); }
+#endif
+// scaffolding the sketch assumes
+struct Bad_index {};
+void* my_malloc [[ref_to_uninit]] (std::size_t);
+using std::uninitialized_fill; using std::uninitialized_move; using std::now_init;
+using std::malloc; using std::free; using std::construct_at;
+
+template<class T>
+struct Vector_memory {
+    T* elem [[ref_to_uninit]];
+    int no_of_elem = 0;
+    int no_of_slots = 0;
+    Vector_memory(int ne, int ns)
+        : elem{ (T*)my_malloc((ne + ns) * sizeof(T)) },
+          no_of_elem{ ne },
+          no_of_slots{ ns }
+    { }
+    ~Vector_memory() { free(elem); }
+};
+
+template<class T>
+class Vector {
+    Vector_memory<T> mem;
+public:
+    Vector() {}
+    Vector(int ne, int ns, const T& val = T{})
+        : mem{ ne,ns }
+    {
+        // assume that uninitialized_fill() knows about [[ref_to_uninit]]:
+        uninitialized_fill(mem.elem, mem.elem + ne, val);
+    }
+    T& operator[](int i)    // note the use of now_init()
+    {
+        if (0 <= i && i < mem.no_of_elem)
+            return *now_init(mem.elem + i);   // this slot has been initialized
+        throw Bad_index{};
+    }
+    ~Vector() { destroy(now_init(mem.elem), mem.no_of_elem); }
+    void reserve(int newsz)
+    {
+        int n = mem.no_of_elem;
+        if (newsz <= n + mem.no_of_slots) return;
+        T* p [[ref_to_uninit]] = (T*)malloc(newsz * sizeof(T));
+        T* old_elem = now_init(mem.elem);
+        uninitialized_move(old_elem, old_elem + n, p);
+        destroy(old_elem, n);
+        free(mem.elem);
+        mem.no_of_slots = newsz - n;
+        mem.elem = (T*)p;
+    }
+    void push_back(const T& x)
+    {
+        if (mem.no_of_elem == mem.no_of_slots)
+            reserve(mem.no_of_elem == 0 ? 8 : 2 * mem.no_of_elem);
+        construct_at(mem.elem + mem.no_of_elem, x);
+        ++mem.no_of_elem;
+        --mem.no_of_slots;
+    }
+    void destroy(T*, int);
+};
+
+int use()
+{
+    Vector<int> v(2, 2, 7);
+    v.push_back(1);
+    return v[0];
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=23][§4.7, page 23]]:
+
+#+begin_quote
+Here is a much-simplified sketch of such a function template [the =Vector_memory= above].
+
+=Vector_memory= knows only about uninitialized memory.
+
+[The =Vector= class above.]
+
+Here, I have assumed that =malloc()=, =free()=, etc. is known to the initialization profile. If not, equivalent functions with slightly different names that do use the initialization attributes must be used (§4.4).
+
+The main point here is that the code is quite conventional (for this kind of C++ code). It is guaranteed free from initialization errors except for the call of =now_init()= call in the subscript operator. It is only called from within an initialized range but verifying that statically would be expensive and in some similar cases impossible. Having =now_init()= saves the user from suppressing the profile and offers an easy-to-spot point for code review.
+#+end_quote
+
+The sketch is made compilable with the smallest edits: =Int= to =int=, a =Bad_index= type, a declaration of =my_malloc=, =std::= qualification, and the member =destroy= declared as the paper has it. The function =use= is added. Expected: accepted.
+
+*** What happens
+
+The paper says the sketch "is guaranteed free from initialization errors except for the call of now_init()". Clang rejects line 57, =mem.elem = (T*)p;= in =reserve=: after =uninitialized_move= into =p=, =p='s referent is initialized, and a =[[ref_to_uninit]]= member may not be made to refer to initialized memory. =elem= refers to a /mixed/ range, and the design has no marker for one. That is the design's central problem, and it is one line long. GCC rejects five lines, all for the same reason: the standard library is not annotated. =(T*)malloc(...)= into a marked pointer is rejected (GCC treats =malloc='s result as initialized), =free(elem)= is rejected twice ("its parameter is not marked =[[ref_to_uninit]]="), and =std::uninitialized_fill(mem.elem, ...)= is rejected on both iterator arguments. The paper's comment "assume that uninitialized_fill() knows about =[[ref_to_uninit]]=" is exactly the assumption that fails.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/b4xqW968f
+
+Clang:
+#+BEGIN_EXAMPLE
+57:18: error: pointer marked '[[ref_to_uninit]]' must refer to uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+51:44: error: assigning a pointer not marked '[[ref_to_uninit]]' into a pointer marked '[[ref_to_uninit]]'
+55:13: error: argument 1 to 'void free(void*)' refers to '[[uninit]]' memory but its parameter is not marked '[[ref_to_uninit]]'
+26:28: error: argument 1 to 'void free(void*)' refers to '[[uninit]]' memory but its parameter is not marked '[[ref_to_uninit]]'
+38:27: error: argument 1 to 'void std::uninitialized_fill(...)' refers to '[[uninit]]' memory but its parameter is not marked '[[ref_to_uninit]]'
+38:27: error: argument 2 to 'void std::uninitialized_fill(...)' refers to '[[uninit]]' memory but its parameter is not marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+** §1.4 — Range-for as initialization (aar6)
+:PROPERTIES:
+:CUSTOM_ID: range-for-init
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+int aar6_test()
+{
+    int aar6 [[uninit]] [10];
+    for (int& x : aar6) x = 0b1010101010101010;
+    return aar6[3];   // added: is the loop credited as initialization?
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=8][§1.4, page 8]]:
+
+#+begin_quote
+Range-for loops be are often simple to validate. For example [the loop above]. To allow that, the initialization profile would have to recognize the loop as an initialization, verify that the loop body really is initialization, and that the loop really complete.
+#+end_quote
+
+The paper implies this should be accepted. A read after the loop is added to see whether the loop is credited as initialization.
+
+*** What happens
+
+Neither compiler recognizes the range-for as an initialization. Clang rejects the loop header on line 5 (the implicit =__range= reference binds uninitialized memory unmarked) and the read on line 6. GCC rejects the same header twice (once as a marker mismatch, once as address-taken-before-initialized) and the read. So the case the paper calls "simple to validate" is a hard error on both; the only sanctioned way to fill the array is =std::uninitialized_fill= over the whole range.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/b5dTavnfK
+
+Clang:
+#+BEGIN_EXAMPLE
+5:19: error: reference to uninitialized memory must be marked '[[ref_to_uninit]]'
+6:12: error: read of a subobject of an '[[uninit]]' object accesses uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+5:19: error: assigning a pointer marked '[[ref_to_uninit]]' into a pointer not marked '[[ref_to_uninit]]'
+5:19: error: address of '[[uninit]]' variable 'aar6' is taken here before it is provably initialized
+6:18: error: 'aar6' read before it is definitely assigned
+#+END_EXAMPLE
+
+** §1.4 — now_init to a span (aar10)
+:PROPERTIES:
+:CUSTOM_ID: now-init-span
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <span>
+#include <memory>
+// scaffolding: std::now_init exists in the GCC branch's <utility>; the Clang branch recognizes
+// std::now_init by name but ships no declaration, so one is supplied for it
+#include <utility>
+#ifdef __clang__
+namespace std { template<class T> T* now_init(T* p [[ref_to_uninit]]); }
+#endif
+struct X { int v; };
+void any_initialization_technique(X*, int);
+
+int aar10_test()
+{
+    X aar10 [[uninit]] [20];
+    any_initialization_technique(aar10, 20);   // "... any initialization technique used here ..."
+    std::span<X> s{std::now_init(aar10), 20};
+    // ... use s and not aar10 here ...
+    return s[0].v;   // added
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=9][§1.4, page 9]]:
+
+#+begin_quote
+Initialization too complex for the analyzer to recognize is best avoided but if really necessary can be handled by suppressing the initialization profile or using by (the unverified) =now_init()= (§4.6). For example [the function above]. Such suppression is an obvious target for code review and more advance analysis.
+#+end_quote
+
+Expected: accepted; =s= is usable, and =aar10= should not be used directly afterwards. =now_init= is spelled =std::now_init=, since §8.5 adds it to the standard library.
+
+*** What happens
+
+First, =std::now_init= does not exist in either standard library as shipped: the GCC branch adds it to =<utility>= (taking =[[must_init]]=), the Clang branch recognizes the name =std::now_init= but provides no declaration, so the scaffolding declares one for Clang. With that, both compilers reject line 16, the "any initialization technique" call, because passing =aar10= to an unannotated =X*= parameter is itself the violation. The =now_init= line and the use of =s= are accepted by both. The example works only if the elided "…" is itself profile-clean, which for anything the paper would call "too complex for the analyzer" it will not be; =now_init= launders the /result/ but not the /route/.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/j3TvEPads
+
+Clang:
+#+BEGIN_EXAMPLE
+16:34: error: pointer to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+16:33: error: address of '[[uninit]]' variable 'aar10' is taken here before it is provably initialized
+#+END_EXAMPLE
+
+** §5.3 — Label lab1 =[[uninit]]=; construct_at(&lab1, x, y, z)
+:PROPERTIES:
+:CUSTOM_ID: label-construct-at
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <string>
+#include <memory>
+using std::string;
+
+struct Label {
+    string name;
+    string address;
+    int code;
+};
+
+void tst(const char* n, const char* a, int c, const char* x, const char* y, int z)
+{
+    Label lab0 { n, a, c };
+    Label lab1 [[uninit]];
+    // ...
+    std::construct_at(&lab1, x, y, z);
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=33][§5.3, page 33]]:
+
+#+begin_quote
+For uninitialized class objects, we’ll have to use =construct_at()= rather than simple assignment to do the initialization. For example [the code above].
+#+end_quote
+
+Expected: accepted.
+
+*** What happens
+
+Both reject =Label lab1 [[uninit]];=: the type has non-trivial default initialization (two =std::string= members), so it cannot be marked. GCC also rejects the =Label= type itself ("constructor does not initialize member 'Label::code'"), so on GCC the paper's =lab0= aggregate cannot even be declared without a default member initializer for =code=. The idiom the paper is illustrating, =construct_at= over an object whose string members are already alive, is a double construction and leaks when run (see the runtime demo in the companion document); both implementations refuse to let it be spelled.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/c9K8zG6f3
+
+Clang:
+#+BEGIN_EXAMPLE
+15:11: error: variable 'lab1' cannot be marked '[[uninit]]'; default-initialization of its type 'Label' does not leave it uninitialized
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+15:11: error: 'lab1' cannot be marked '[[uninit]]': its type 'Label' has non-trivial default initialization
+6:8: error: constructor does not initialize member 'Label::code', which is not marked '[[uninit]]'
+#+END_EXAMPLE
+
+** §5.4 — Label: mixed members, the =[[uninit]]=-member repair, and the all-initialized form
+:PROPERTIES:
+:CUSTOM_ID: label-uninit-members
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <string>
+using std::string;
+
+struct Label {
+    string name;
+    string address;
+    int code;
+};
+
+struct Label2 {             // "OK, but not for static objects"
+    string name [[uninit]];
+    string address [[uninit]];
+    int code;
+};
+
+struct Label3 {             // "OK"
+    string name;
+    string address;
+    int code = 0;
+};
+
+void f(const char* n, const char* a, int c)
+{
+    Label lab0 { n, a, c };     // OK
+    Label lab1;                 // error: lab1.code uninitialized
+    Label lab2 [[uninit]];      // error: lab1.name and lab1.address are default initialized
+    Label2 lab2b [[uninit]];    // paper: would have been OK
+    Label3 lab3;                // OK
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=34][§5.4, page 34]]:
+
+#+begin_quote
+Classes with a mix of initialized and uninitialized members give errors unless immediately initialized [the =Label=, =lab0=, =lab1= and =lab2= above].
+
+The =lab2= definition would have been OK if =Label= had been defined as [the =Label2= above, which the paper comments “OK, but not for static objects”].
+
+Usually, it would be better to ensure that either all members are default initialized or none [the =Label3= above, which the paper comments “OK”].
+#+end_quote
+
+The paper's three definitions of =Label= are renamed =Label=, =Label2=, and =Label3= so they fit in one TU, and =lab2b= is added to declare the =[[uninit]]= object the paper says the repaired definition permits. Expected: =lab0= OK; =lab1= error (=lab1.code= uninitialized); =lab2= error (=name= and =address= are default initialized); =lab2b= OK; =lab3= OK.
+
+*** What happens
+
+=lab1= and =lab2= are rejected by both, as the paper says (GCC reports =lab1='s problem against the type =Label= rather than the variable). The repair the paper offers, =Label2= with =string name [[uninit]]=, is rejected by both at the member declarations: =[[uninit]]= cannot be put on a =std::string= because default-initialization does not leave it uninitialized. So =Label2 lab2b [[uninit]]=, which the paper says "would have been OK", is an error on both, and there is no spelling in either implementation for a class with some members initialized and some not. =Label3= (=int code = 0=) is accepted by both.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/he4f8sdYj
+
+Clang:
+#+BEGIN_EXAMPLE
+12:19: error: member 'name' cannot be marked '[[uninit]]'; default-initialization of its type 'string' does not leave it uninitialized
+13:22: error: member 'address' cannot be marked '[[uninit]]'; default-initialization of its type 'string' does not leave it uninitialized
+26:11: error: variable 'lab1' must be initialized or marked '[[uninit]]'
+27:11: error: variable 'lab2' cannot be marked '[[uninit]]'; default-initialization of its type 'Label' does not leave it uninitialized
+28:12: error: variable 'lab2b' cannot be marked '[[uninit]]'; default-initialization of its type 'Label2' does not leave it uninitialized
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+12:12: error: member 'Label2::name' cannot be marked '[[uninit]]': its type 'std::string' has non-trivial default initialization
+13:12: error: member 'Label2::address' cannot be marked '[[uninit]]': its type 'std::string' has non-trivial default initialization
+5:8: error: constructor does not initialize member 'Label::code', which is not marked '[[uninit]]'
+27:11: error: 'lab2' cannot be marked '[[uninit]]': its type 'Label' has non-trivial default initialization
+28:12: error: 'lab2b' cannot be marked '[[uninit]]': its type 'Label2' has non-trivial default initialization
+11:8: error: constructor does not initialize member 'Label2::code', which is not marked '[[uninit]]'
+#+END_EXAMPLE
+
+** §Appendix — Attribute placement: variables, pointers, arrays
+:PROPERTIES:
+:CUSTOM_ID: attribute-placement-variables
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+void f()
+{
+    int x [[uninit]];
+    int [[uninit]] y;       // not acceptable
+    [[uninit]] int z;
+
+    int u [[uninit]];
+    int* p3 [[ref_to_uninit]] = &u;
+    int* [[ref_to_uninit]] p4 = &u;
+    int* p5 = &u [[ref_to_uninit]];
+
+    int* [[ref_to_uninit]] arr1 [10];
+    int* arr2 [[ref_to_uninit]] [10];
+    int* arr3 [10] [[ref_to_uninit]];
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=40][Appendix: Attribute placement, page 40]]:
+
+#+begin_quote
+Consider these alternatives for placing =[[uninit]]= [the =x=, =y= and =z= above].
+
+The middle alternative is unacceptable because under the rules for attribute placement it applies to the type, and we can’t modify the type. That would change the meaning of the program rather than just constrain it. The first and third alternatives follows the rules of attribute placement and have the right meaning. Unfortunately, this implies that we’ll get a variant of the const east west debate over aesthetics.
+
+There are the same three alternatives for placing =[[ref_to_uninit]]=:
+
+- ~int* p3 [[ref_to_uninit]] = &x;~ Plausible: =p3= is a pointer to something uninitialized.
+- ~int* [[ref_to_uninit]] p4 = &x;~ Plausible: =p4= is an =int*= that points to something uninitialized,
+- ~int* p5 = &x [[ref_to_uninit]];~ Odd: what is referencing something uninitialized, =x= or =p5=?
+
+The same choice exists for arrays:
+
+- =int* [[ref_to_uninit]] arr1 [10];= Plausible: the attribute is next to the type it describes.
+- =int* arr2 [[ref_to_uninit]] [10];= Plausible: the attribute is just after the name as in variable definitions.
+- =int* arr3 [10] [[ref_to_uninit]];= Plausible: the attribute is at the end, where the initializer would have been
+
+Interestingly, in my examples, I had consistently used the first alternative for functions and the last for arrays. That’s not consistent, likely to generalize, or easy to explain with a single rule. The middle choice is that.
+
+So, I place the attribute after the name (where the initializer is for initialized variables). Also, the attribute applies to the object rather than the type of the object.
+#+end_quote
+
+Expected: =x= and =z= accepted, =y= rejected; =p3= and =p4= accepted, =p5= doubtful; all three array forms accepted, with =arr2= the one the paper settles on.
+
+*** What happens
+
+=int [[uninit]] y= is rejected by both (Clang error, GCC warning followed by an unmarked-variable error), as the paper says; =[[uninit]] int z= accepted by both. For pointers: =p3= (after the name) is accepted by both; =p4= (=int* [[ref_to_uninit]] p4=, "plausible") is rejected by Clang as an attribute on a type, and on GCC the attribute is dropped with a warning and the now-unmarked binding is then rejected as address-taken; =p5= is a syntax error on both. For arrays, all three "plausible" placements are rejected by both compilers, including =arr2=, the after-the-name form the paper settles on: Clang says =[[ref_to_uninit]]= "only applies to pointers, references, non-union classes, and functions returning them", GCC the equivalent. An array of marked pointers cannot be declared on either implementation, although §4.2 lists "arrays of pointers" among the things that can be =[[ref_to_uninit]]=.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/nTnEK7PTd
+
+Clang:
+#+BEGIN_EXAMPLE
+5:11: error: 'uninit' attribute cannot be applied to types
+5:20: error: variable 'y' must be initialized or marked '[[uninit]]'
+10:12: error: 'ref_to_uninit' attribute cannot be applied to types
+11:18: error: an attribute list cannot appear here
+13:12: error: 'ref_to_uninit' attribute cannot be applied to types
+13:28: error: variable 'arr1' must be initialized or marked '[[uninit]]'
+14:17: error: 'ref_to_uninit' attribute only applies to pointers, references, non-union classes, and functions returning them
+14:10: error: variable 'arr2' must be initialized or marked '[[uninit]]'
+15:22: error: 'ref_to_uninit' attribute cannot be applied to types
+15:10: error: variable 'arr3' must be initialized or marked '[[uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+5:9: warning: attribute ignored
+5:20: error: local variable 'y' not initialized and not marked '[[uninit]]'
+10:28: warning: 'ref_to_uninit' attribute does not apply to types
+10:28: error: address of '[[uninit]]' variable 'u' is taken here before it is provably initialized
+11:18: error: two consecutive '[' shall only introduce an attribute before '[' token
+13:36: warning: 'ref_to_uninit' attribute does not apply to types
+13:28: error: local variable 'arr1' not initialized and not marked '[[uninit]]'
+14:36: error: 'ref_to_uninit' only supported on a pointer- or reference-typed parameter, variable, or non-static data member, or a function returning one
+14:10: error: local variable 'arr2' not initialized and not marked '[[uninit]]'
+15:36: warning: 'ref_to_uninit' attribute does not apply to types
+15:10: error: local variable 'arr3' not initialized and not marked '[[uninit]]'
+#+END_EXAMPLE
+
+** §Appendix — Attribute placement: the forms the paper settles on, and the rejected in-type forms
+:PROPERTIES:
+:CUSTOM_ID: attribute-placement-settled
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <memory>
+using std::unique_ptr;
+
+// what the paper settles on
+int* f1 [[ref_to_uninit]] (int);
+int arr [[uninit]] [7];
+void f2(int* [[ref_to_uninit]]);
+void f3(int* arg [[ref_to_uninit]]);
+auto f4 [[ref_to_uninit]] (int) -> int*;
+void g() { unique_ptr<int> up [[ref_to_uninit]]; }
+void fct1 [[must_init]] (int* p [[ref_to_uninit]]);
+
+// what the paper rejects
+template<class T> struct smart_ptr { T* p; };
+smart_ptr<int [[uninit]]> sp;          // error: [[uninit]] is not part of the type
+void fct2(int [[uninit]]);             // error: argument passing is initialization
+int fct3(int* [[ref_to_uninit]]);      // pointer to uninitialized int
+void h() { int x [[uninit]]; int [[uninit]]* p6 = &x; }   // not proposed
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=42][Appendix: Attribute placement, page 42]]:
+
+#+begin_quote
+We cannot completely escape the placement problems because we have to deal with “smart pointers” and function declarations. For example [the paper's =smart_ptr= and =fct= lines, above as =sp=, =fct2= and =fct3=].
+
+Here, there is no name to which we can attach the attribute. However, the attribute will always come last, in the position after the name, had there been one. This is a point where implementer input is essential. I proceed on the assumption that this notation is manageable.
+
+For now, I’m using what I consider the cleanest for arrays, functions, and template arguments; that is, annotations for return types are placed by the name and annotations on argument types after the argument type [the =f1=, =arr=, =f2=, =f3=, =f4= and =up= above].
+
+The placement of =[[must_init]]= follows the rule for return types: the attribute is next to the name it describes [the =fct1= above].
+#+end_quote
+
+The seven settled forms are spelled exactly as the paper has them. The paper's rejected forms follow: =smart_ptr<int [[uninit]]>= and =void fct1(int [[uninit]])= are marked errors, =int fct(int* [[ref_to_uninit]])= is given as the pointer-to-uninitialized spelling, and =int [[uninit]]* p6= is from the "not proposed" list. The two rejected functions are renamed =fct2= and =fct3= so they do not collide with the settled =fct1=. Expected: the seven settled forms accepted; =sp= and =fct2= rejected.
+
+*** What happens
+
+Of the seven forms the paper settles on: =f1=, =f3= and =f4= are accepted by both. =int arr [[uninit]] [7]= is rejected by both, not for placement but because the paper's example is a global and statics cannot be =[[uninit]]=. =void f2(int* [[ref_to_uninit]])=, the unnamed-parameter form, is an error on Clang (attribute on a type) and a warning on GCC (attribute dropped). =unique_ptr<int> up [[ref_to_uninit]]= is accepted by Clang and rejected by GCC ("only supported on a pointer- or reference-typed ..."): class-type handles carry the marker on one implementation only. =void fct1 [[must_init]] (...)= is a warning on Clang (unknown attribute) and an error on GCC (wrong position). Of the four forms the paper rejects, Clang rejects all four as errors; GCC downgrades three to "attribute ignored" warnings (so =void fct2(int [[uninit]])= compiles on GCC as plain =void fct2(int)=) and rejects only =p6=, as address-taken once its attribute is dropped. Two of the Appendix's seven settled spellings fail on both implementations, and the two implementations disagree on three more.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/rq6YzhvY1
+
+Clang:
+#+BEGIN_EXAMPLE
+7:5: error: '[[uninit]]' cannot be applied to variable 'arr' with static storage duration; it is zero-initialized
+8:16: error: 'ref_to_uninit' attribute cannot be applied to types
+12:13: warning: unknown attribute 'must_init' ignored
+16:17: error: 'uninit' attribute cannot be applied to types
+17:17: error: 'uninit' attribute cannot be applied to types
+18:17: error: 'ref_to_uninit' attribute cannot be applied to types
+19:36: error: 'uninit' attribute cannot be applied to types
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+7:22: error: 'uninit' on declaration other than automatic variable or non-static data member
+8:30: warning: 'ref_to_uninit' attribute does not apply to types
+11:47: error: 'ref_to_uninit' only supported on a pointer- or reference-typed parameter, variable, or non-static data member, or a function returning one
+12:50: error: 'must_init' only supported on a pointer- or reference-typed parameter
+16:24: warning: 'uninit' attribute does not apply to types
+17:15: warning: attribute ignored
+18:31: warning: 'ref_to_uninit' attribute does not apply to types
+19:34: warning: attribute ignored
+19:46: error: address of '[[uninit]]' variable 'x' is taken here before it is provably initialized
+#+END_EXAMPLE
+
+** §4.9 — A user-written uninitialized_fill with a marked range parameter
+:PROPERTIES:
+:CUSTOM_ID: user-uninitialized-fill
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <ranges>
+#include <concepts>
+using std::ranges::forward_range; using std::ranges::range_value_t; using std::constructible_from;
+
+template<forward_range R, class V>
+    requires constructible_from<range_value_t<R>, V>
+void uninitialized_fill(R& r [[ref_to_uninit]], V val);   // R& : the paper's by-value R decays the array
+
+int tst()
+{
+    int a1[] = {1,2,3};
+    int a2 [[uninit]] [3];
+    uninitialized_fill(a1, 10);     // error: a1 is already initialized
+    int x = a2[0];                  // error
+    uninitialized_fill(a2, 10);     // OK
+    int y = a2[0];                  // OK. Now a2 is initialized
+    return x + y;
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=28][§4.9, page 28]]:
+
+#+begin_quote
+By default, a template function’s argument must be initialized; if not, it must be marked =[[uninit]]=. A pointer argument must point to an initialized object; if not, it must be marked =[[ref_to_uninit]]=. For example [the template and the =a1= and =a2= calls above].
+
+How do we know that =R= refers to something and what? After all, it isn’t a (built-in) pointer or reference. We don’t have to. Instead, when compiling =uninitialized_fill()=, writing through pointers (things that refer to elements) must be done using =construct_at()= or – for built-in types by simple assignment (see §5.2) or profile suppression must be used.
+#+end_quote
+
+A page later the paper continues with the same array:
+
+#+begin_quote
+How does the compiler know that =uninitialized_fill()= initializes? [In the paper’s fragment ~int x = a2[0]~ is an error before the call and ~int y = a2[0]~ is “OK. Now a2 is initialized” after it.]
+
+We could simply require that the compiler knows about the semantics of standard-library functions such as =uninitilized_fill()=, but that’s not general. Alternatively, we could use the attribute =[[must_init]]= (§6.2).
+#+end_quote
+
+The two fragments are merged into one function. The paper's template is written =template<forward_range R, auto V>=; =auto V= would be a non-type parameter, so =class V= is used, =range_value_t<T>= is corrected to =<R>=, and =R r= by value, which would decay the array, becomes =R&=.
+
+*** What happens
+
+The paper's template needs two corrections to be C++ at all (=auto V= → =class V=, =range_value_t<T>= → =<R>=) and a third to work (=R r= by value decays the array; =R&= is used). With those, both compilers match the paper's first three annotations: =uninitialized_fill(a1, 10)= rejected, =int x = a2[0]= rejected, =uninitialized_fill(a2, 10)= accepted. Both then reject =int y = a2[0]= — the paper's "OK. Now a2 is initialized" — because a user-written =[[ref_to_uninit]]= function initializes nothing; the paper itself concedes this ("How does the compiler know ... =[[must_init]]="), so the example's last line contradicts its own text.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/nbWr5nsrn
+
+Clang:
+#+BEGIN_EXAMPLE
+14:24: error: reference marked '[[ref_to_uninit]]' must refer to uninitialized memory
+15:13: error: read of a subobject of an '[[uninit]]' object accesses uninitialized memory
+17:13: error: read of a subobject of an '[[uninit]]' object accesses uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+14:23: error: argument 1 to 'void uninitialized_fill(R&, V) [with R = int [3]; V = int]' must refer to '[[uninit]]' memory, matching its '[[ref_to_uninit]]' parameter
+15:9: error: 'a2' read before it is definitely assigned
+17:9: error: 'a2' read before it is definitely assigned
+#+END_EXAMPLE
+
+** §5.5 — Arrays: arr1..arr4 and ranges::uninitialized_fill
+:PROPERTIES:
+:CUSTOM_ID: arrays
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <memory>
+struct X { int v = 0; };    // has a default constructor
+X xval;
+
+void f()
+{
+    int arr1[] = {1,2,3,4};
+    int arr2[10] [[uninit]];
+
+    X arr3[20];                                 // error unless X has a default constructor
+    std::ranges::uninitialized_fill(arr3, xval);     // error if X has a default constructor
+
+    X arr4[20] [[uninit]];                      // error if X has a default constructor
+    std::ranges::uninitialized_fill(arr4, xval);
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=35][§5.5, page 35]]:
+
+#+begin_quote
+Like structs, arrays can be initialized in the definition or marked =[[uninit]]=. For example [the =arr1= and =arr2= above].
+
+However, it is quite common and quite reasonable for large arrays to have initialization delayed and initialized by – sometimes complex – algorithms (e.g., the input buffer example in §4.6).
+
+The =uninitialized_*()= family of range algorithms are close to ideal for initializing arrays and can be verified, but using it is tricky. For example [the =arr3= and its fill above].
+
+So we get one error or the other.
+
+Adding =[[uninit]]= helps when the programmer knows =X= [the =arr4= and its fill above].
+#+end_quote
+
+Note the placement =int arr2[10] [[uninit]]=, after the bound. =X= is given a default constructor here, so the paper's comments predict: =arr3= OK, the fill into =arr3= an error, =arr4= an error.
+
+*** What happens
+
+The paper's own placement =int arr2[10] [[uninit]]= (attribute after the bound) is rejected by both (Clang as an error, "'uninit' attribute cannot be applied to types"; GCC as a warning), after which =arr2= is an unmarked uninitialized array and an error. The paper's Appendix settles on =int arr [[uninit]] [7]=, so §5.5 contradicts the Appendix and both compilers side with the Appendix. For =arr3= (X has a default constructor) Clang rejects the =uninitialized_fill= as the paper predicts; GCC accepts it. For =arr4= both drop the misplaced attribute; Clang then rejects the fill again, GCC treats =arr4= as an ordinary default-initialized array and accepts everything.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/G7hq9Efr3
+
+Clang:
+#+BEGIN_EXAMPLE
+9:20: error: 'uninit' attribute cannot be applied to types
+9:9: error: variable 'arr2' must be initialized or marked '[[uninit]]'
+12:37: error: reference marked '[[ref_to_uninit]]' must refer to uninitialized memory
+14:18: error: 'uninit' attribute cannot be applied to types
+15:37: error: reference marked '[[ref_to_uninit]]' must refer to uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+9:27: warning: 'uninit' attribute does not apply to types
+9:9: error: local variable 'arr2' not initialized and not marked '[[uninit]]'
+14:25: warning: 'uninit' attribute does not apply to types
+#+END_EXAMPLE
+
+* Rejected by Clang where the paper says OK
+
+Clang rejects a line the paper marks OK. GCC accepts that line, or differs on other lines of the same example.
+
+** §4.2 — Uninitialized pointers (p1, p2, p3)
+:PROPERTIES:
+:CUSTOM_ID: uninit-pointers
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+void f()
+{
+    int* p1;                // error: uninitialized
+    int* p2 [[uninit]];     // p2 is uninitialized
+    int* p3 = nullptr;
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=15][§4.2, page 15]]:
+
+#+begin_quote
+As ever, a reference cannot be uninitialized. The initialization profile requires the same for pointers unless marked =[[uninit]]=. When feasible, instead of leaving pointers uninitialized, use initialization to =nullptr=.
+#+end_quote
+
+Expected: =p1= error; =p2= OK (=p2= itself is uninitialized); =p3= OK.
+
+*** What happens
+
+=p1= is rejected by both. =int* p2 [[uninit]]=, which the paper presents as the sanctioned way to leave a pointer uninitialized (and uses again as =p4= in §4.3), is rejected by Clang: "'=[[uninit]]=' cannot be applied to a pointer; initialize the pointer (for example to 'nullptr')". GCC accepts it. The two implementations disagree on a line the paper gives twice.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/5T9j9Wevr
+
+Clang:
+#+BEGIN_EXAMPLE
+4:10: error: variable 'p1' must be initialized or marked '[[uninit]]'
+5:15: error: '[[uninit]]' cannot be applied to a pointer; initialize the pointer (for example to 'nullptr')
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+4:10: error: local variable 'p1' not initialized and not marked '[[uninit]]'
+#+END_EXAMPLE
+
+** §4.2 — =[[must_init]]=: the callee must initialize
+:PROPERTIES:
+:CUSTOM_ID: must-init
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+struct X { int v; };
+
+void f(X* p [[must_init]]);             // attribute on the parameter
+void f2 [[must_init]] (X* p [[ref_to_uninit]]);   // Appendix placement: on the function
+
+X tst()
+{
+    X x [[uninit]];
+    f(&x);
+    // ... here *p is initialized ...
+    X z = x;    // OK: x is initialized
+    return z;
+}
+X tst2()
+{
+    X x [[uninit]];
+    f2(&x);
+    X z = x;    // OK per the Appendix spelling
+    return z;
+}
+void does_not_initialize(X* p [[must_init]]) { }   // paper: error
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=16][§4.2, page 16]]:
+
+#+begin_quote
+We can require that all elements must be initialized: A =[[must_init]]= is a =[[ref_to_uninit]]= that must initialize all elements [the =tst= example above].
+
+Naturally, it’s an error for a function that is passed a =[[must_init]]= not to initialize what’s referred to.
+#+end_quote
+
+The paper's Appendix on attribute placement adds:
+
+#+begin_quote
+The placement of =[[must_init]]= follows the rule for return types: the attribute is next to the name it describes
+
+- =void fct1 [[must_init]] (int* p [[ref_to_uninit]]);=
+#+end_quote
+
+Expected: after =f(&x)=, ~X z = x;~ is OK. The §4.2 example puts the attribute on the parameter and the Appendix puts it after the function name, so both placements are included (=tst= and =tst2=), along with a callee that does not initialize its argument, which the paper says is an error.
+
+*** What happens
+
+The attribute has forked. Clang does not know =[[must_init]]= at all (three "unknown attribute ignored" warnings); it implements the same idea as =[[now_init]]=. With the attribute ignored, Clang then rejects =f(&x)= on line 10 as an unmarked pointer binding and the two =X z = x= reads, so the paper's "OK" lines are all errors on Clang. GCC implements =[[must_init]]=, but only on the parameter: the Appendix's function-position spelling =f2 [[must_init]] (...)= is an error, and its call site (line 19) is then rejected like an ordinary =[[ref_to_uninit]]= call. GCC does check the callee, the one piece of §4.2 only GCC has: =does_not_initialize= is rejected with "function may return without the pointee of 'p' being definitely assigned".
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/jfP551n5h
+
+Clang:
+#+BEGIN_EXAMPLE
+4:15: warning: unknown attribute 'must_init' ignored
+5:11: warning: unknown attribute 'must_init' ignored
+10:7: error: pointer to uninitialized memory must be marked '[[ref_to_uninit]]'
+12:11: error: reference to uninitialized memory must be marked '[[ref_to_uninit]]'
+19:11: error: reference to uninitialized memory must be marked '[[ref_to_uninit]]'
+22:33: warning: unknown attribute 'must_init' ignored
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+5:46: error: 'must_init' only supported on a pointer- or reference-typed parameter
+19:7: error: 'x' read before it is definitely assigned
+22:6: error: function may return without the pointee of 'p' being definitely assigned
+#+END_EXAMPLE
+
+** §4.3 — f1/f2/g: pointer and reference flavors
+:PROPERTIES:
+:CUSTOM_ID: pointer-reference-flavors
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+void f1(int* p [[ref_to_uninit]]);   // *p must be uninitialized
+void f2(int& r [[ref_to_uninit]]);   // r must refer to uninitialized
+
+int* p0;    // static, thus initialized
+
+void g(int x)
+{
+    int* p1;                            // error: uninitialized pointer
+    int* p2 = nullptr;                  // OK
+    int* p3 [[ref_to_uninit]] = &x;     // error: x is initialized
+    f1(p2);                             // error: nullptr doesn't point to something uninitialized
+    f1(p3);                             // OK
+    int& r1 = x;                        // OK: x is initialized
+    int y [[uninit]];
+    int& r2 [[ref_to_uninit]] = y;
+    f2(r1);                             // error: r1 refers to initialized
+    f2(r2);                             // OK: r2 refers to uninitialized
+    int* p4 [[uninit]];                 // p4 is uninitialized
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=18][§4.3, page 18]]:
+
+The paper introduces the example with the single word "Consider" and lets the comments speak; they are reproduced in the source block. Expected: =p0= static, thus initialized; =p1= error; =p2= OK; =p3= error (=x= is initialized); =f1(p2)= error (=nullptr= doesn't point to something uninitialized); =f1(p3)= OK; =r1= OK; =r2= OK; =f2(r1)= error; =f2(r2)= OK; =p4= is an uninitialized pointer and OK.
+
+*** What happens
+
+The paper annotates four errors (p1, p3, =f1(p2)=, =f2(r1)=) and the rest OK. Clang: p1, p3 and =f2(r1)= rejected as the paper says; =f1(p2)= (passing =nullptr= to a =[[ref_to_uninit]]= parameter) is /accepted/ (Clang's docs: a null handle "refers to nothing, so it suits either" marking); and =int* p4 [[uninit]]= is rejected (as in [[#uninit-pointers][§4.2 pointers]]). GCC: p1, p3 and =f2(r1)= as the paper says, =f1(p2)= accepted like Clang; but =f1(p3)=, which the paper marks OK, is rejected, and the binding =int& r2 [[ref_to_uninit]] = y= on line 16 is rejected as address-taken: GCC does not implement =[[ref_to_uninit]]= references to locals. Neither compiler matches the paper's table, and they disagree with each other on three of the eleven lines (=f1(p3)=, =r2=, =p4=).
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/Thb447q7j
+
+Clang:
+#+BEGIN_EXAMPLE
+9:10: error: variable 'p1' must be initialized or marked '[[uninit]]'
+11:10: error: pointer marked '[[ref_to_uninit]]' must refer to uninitialized memory
+17:8: error: reference marked '[[ref_to_uninit]]' must refer to uninitialized memory
+19:15: error: '[[uninit]]' cannot be applied to a pointer; initialize the pointer (for example to 'nullptr')
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+9:10: error: local variable 'p1' not initialized and not marked '[[uninit]]'
+11:10: error: assigning a pointer not marked '[[ref_to_uninit]]' into a pointer marked '[[ref_to_uninit]]'
+13:7: error: argument 1 to 'void f1(int*)' must refer to '[[uninit]]' memory, matching its '[[ref_to_uninit]]' parameter
+16:10: error: address of '[[uninit]]' variable 'y' is taken here before it is provably initialized
+17:7: error: argument 1 to 'void f2(int&)' must refer to '[[uninit]]' memory, matching its '[[ref_to_uninit]]' parameter
+#+END_EXAMPLE
+
+** §5.2 — A member initialized in the constructor body (=[[uninit]]= int* p)
+:PROPERTIES:
+:CUSTOM_ID: member-in-ctor-body
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+constexpr int sys_max = 1000;
+void error(int);
+
+class X {
+    int* p [[uninit]];
+    int x;
+public:
+    X(int v) : x{v}
+    {
+        if (v < 0 or sys_max <= v) error(v);
+        p = new int(v);
+    }
+    int* get() { return p; }      // added: "p is still considered uninitialized" -- so is this an error?
+    int  val() { return *p; }     // added
+};
+
+int use() { X x(3); return x.val() + *x.get(); }
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=31][§5.2, page 31]]:
+
+#+begin_quote
+If a member isn’t initialized in one of those two ways but rather initialized in the constructor body, it must be declared =[[uninit]]=. For example [the =class X= above].
+
+Is =p= is still =[[uninit]]= after construction? To answer “no” (i.e., no longer =[[uninit]]=), the compiler would have to indulge in a form of non-local static analysis: Looking at all constructors to see if all paths through them initialized the =[[uninit]]= member. If any constructor wasn’t defined in the class’ TU it would not be possible. So, the answer is: =p= is still considered uninitialized.
+#+end_quote
+
+Expected: the class accepted. A getter and a reader are added to see what "still considered uninitialized" means for a user of =X=.
+
+*** What happens
+
+Clang rejects the member declaration: =[[uninit]]= "cannot be applied to a pointer; initialize the pointer (for example to 'nullptr')". The paper's recommended pattern for a member initialized in the constructor body is unavailable for pointer members on Clang, and the paper's own next paragraph (the =nullptr= pseudo-initialization) is what Clang demands. GCC accepts the whole file: the constructor-body assignment, the getter returning =p= unmarked, and =*p= in =val()=. The paper's "p is still considered uninitialized" after construction is not something GCC enforces for a user of =X=.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/eoazcs37K
+
+Clang:
+#+BEGIN_EXAMPLE
+6:14: error: '[[uninit]]' cannot be applied to a pointer; initialize the pointer (for example to 'nullptr')
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+** §4.9 — unique_ptr<T>(new T) and vector(10, x)
+:PROPERTIES:
+:CUSTOM_ID: unique-ptr-new
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <memory>
+#include <vector>
+#include <string>
+using std::unique_ptr; using std::vector;
+
+int f()
+{
+    unique_ptr<std::string> ps (new std::string);   // new T, T has a default constructor
+    unique_ptr<int> pi (new int);                   // new T, T = int: *pi is indeterminate
+    int x [[uninit]];
+    vector v(10, x);                                // error
+    return *pi;                                     // added: read of the indeterminate int
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=27][§4.9, page 27]]:
+
+#+begin_quote
+Unfortunately, some class objects can be initialized with uninitialized “objects” and we must avoid breaking significant amounts of code that isn’t broken to provide guarantees. Consider:
+
+=unique_ptr<T> p (new T);=
+
+Is the =T= pointed to initialized or not (§4.1)? Do users of =p= care? They should care. The initialization profile must catch misuses. That implies that code like that must work as written if =new T= provides an initialized object and we must provide the user a way to handle the uninitialized cases. Unfortunately, =make_unique()= has equivalent problems relative to initialized/uninitialized.
+
+Even =vector= is vulnerable [the two lines above, =vector v(10,x)= marked as an error].
+#+end_quote
+
+The paper leaves =new T= as a question rather than a verdict; for ~T = int~ it does not provide an initialized object, so both ~T = std::string~ and ~T = int~ are included, with a read of =*pi= added. Expected: =vector v(10, x)= rejected.
+
+*** What happens
+
+Clang answers the paper's open question "Is the T pointed to initialized or not?" for ~T = int~: =unique_ptr<int> pi (new int)= is rejected ("handle of type 'unique_ptr<int>' to uninitialized memory must be marked '=[[ref_to_uninit]]='"), and =vector v(10, x)= is rejected as the paper says. GCC rejects only the =vector= line (as address-taken), and accepts =new int= into a =unique_ptr= and the read =*pi=: GCC does not treat =new T= of a scalar as uninitialized memory.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/4rq8xzvjb
+
+Clang:
+#+BEGIN_EXAMPLE
+10:21: error: handle of type 'unique_ptr<int>' to uninitialized memory must be marked '[[ref_to_uninit]]'
+12:18: error: reference to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+12:19: error: address of '[[uninit]]' variable 'x' is taken here before it is provably initialized
+#+END_EXAMPLE
+
+* Accepted by Clang where the paper says error
+
+Clang accepts a line the paper marks as an error.
+
+** §4.6 — Lifetimes: construct_at into a span, indexed reads and double construction
+:PROPERTIES:
+:CUSTOM_ID: lifetimes-construct-at
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <span>
+#include <memory>
+struct X { int v; X(int v) : v(v) {} };
+
+void init(std::span<X> s [[ref_to_uninit]], int i1, int i2)
+{
+    std::construct_at(&s[2], 10);   // only s[2] is initialized
+    X y = s[i2];                    // error: reading uninitialized? i2 could be != 2
+    std::construct_at(&s[i1], 10);  // error: double initialization? i1 could be == 2
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=22][§4.6, page 22]]:
+
+#+begin_quote
+When the initialization profile is in force, the result of destruction is equivalent to an =[[uninit]]= annotation. It is an error to initialize an object twice (e.g., using =construct_at()=). Similarly, it is an error to destroy/uninitialize an object twice (e.g., using =destroy_at()=).
+
+Initializing an object of a type with a constructor twice is an error, so =construct_at()= must require an uninitialized argument.
+
+Enforcing this requires the simple flow analysis described in §1.2.
+
+This relegates some unstructured techniques to code that suppresses the initialization profile. For example [the function above].
+
+More realistic examples would involve loops and conditions.
+#+end_quote
+
+The comments are the paper's: =construct_at(&s[2],10)= initializes only =s[2]=; ~X y = s[i2]~ is an error (reading uninitialized? =i2= could be != 2); =construct_at(&s[i1],10)= is an error (double initialization? =i1= could be == 2). The paper puts =[[ref_to_uninit]]= on a =span= parameter.
+
+*** What happens
+
+Clang accepts =construct_at(&s[2], 10)= and rejects only the read =X y = s[i2]=. The second =construct_at(&s[i1])=, which the paper marks "error: double initialization?", is accepted (Clang's docs: an element credit through a handle "initializes nothing", so there is nothing for the second construction to collide with). GCC rejects the declaration: =[[ref_to_uninit]]= on a =std::span= parameter is "only supported on a pointer- or reference-typed parameter". The paper's premise, that a span can carry the marker (§4.2 lists spans, iterators, smart pointers), is implemented by Clang only.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/Ph11dWK4f
+
+Clang:
+#+BEGIN_EXAMPLE
+9:11: error: reference to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+6:42: error: 'ref_to_uninit' only supported on a pointer- or reference-typed parameter, variable, or non-static data member, or a function returning one
+#+END_EXAMPLE
+
+** §4.6 — Lifetimes: double destruction
+:PROPERTIES:
+:CUSTOM_ID: lifetimes-destroy-at
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <span>
+#include <memory>
+struct X { int v; ~X(); };
+
+void init(std::span<X> s, int i1, int i2)
+{
+    std::destroy_at(&s[2]);
+    std::destroy_at(&s[i1]);    // error: double destruction? i1 could be == 2
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=22][§4.6, page 22]]:
+
+#+begin_quote
+Destruction has a similar pattern and similar constraints. For example [the function above].
+#+end_quote
+
+The comment is the paper's: the second =destroy_at= is an error (double destruction? =i1= could be == 2). Expected: rejected.
+
+*** What happens
+
+Both accept the whole function. The paper's "error: double destruction? i1 could be == 2" is diagnosed by neither: destroys of /elements/ through a span or pointer are not judged (Clang's Known Gaps say so explicitly; GCC does not model =destroy_at= at all).
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/G319W14bc
+
+Clang:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+* GCC alone diverges
+
+Clang gives the paper's verdict on every annotated line; only GCC differs, in one direction or the other. These are recorded, not held against a proof-of-concept branch.
+
+** §4.4 — The definition of now_init
+:PROPERTIES:
+:CUSTOM_ID: now-init-definition
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+template<class T> T* now_init(T* p [[ref_to_uninit]]) { return p; }
+
+int use()
+{
+    int u [[uninit]];
+    int* p = now_init(&u);   // the user-defined one
+    return *p;
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=19][§4.4, page 19]]:
+
+#+begin_quote
+We need a =now_init()= that takes a =[[ref_to_uninit]]= pointer and returns a pointer to initialized objects in the formerly uninitialized memory [the template above].
+
+This function cannot be compiled with the initialization profile on because it provides a deliberate and explicit hole in the enforcement. It is a cast in disguise. Compiled without the initialization profile it is a no-op. If there was a way of writing it with the initialization profile on, then the profile would be flawed. Having =now_init()= provides the user a way to avoid suppressing all of the initialization profile and offers an easy-to-spot point for code review.
+#+end_quote
+
+Expected: the definition is rejected when the profile is on. The function =use= is added to see what a caller gets if it is not.
+
+*** What happens
+
+Clang rejects the body of =now_init= ("cannot be compiled with the initialization profile on"), as the paper says. GCC accepts the whole file, including the read through the laundered pointer: its =return p;= from a =[[ref_to_uninit]]= parameter into an unmarked return type is not checked. The user's =now_init= works on GCC without suppression, which the paper says must be impossible ("If there was a way of writing it with the initialization profile on, then the profile would be flawed").
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/cbxe1n959
+
+Clang:
+#+BEGIN_EXAMPLE
+2:64: error: pointer to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+** §4.5 — class Wrong: one function, two kinds of return
+:PROPERTIES:
+:CUSTOM_ID: class-wrong
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+class Wrong {
+    int x = 7;
+    int y [[uninit]];
+public:
+    int& get(bool b) { return (b) ? x : y; }   // error
+};
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=20][§4.5, page 20]]:
+
+#+begin_quote
+We have three choices for classes that hold objects for which pointers or references can be returned:
+
+- cannot return a reference to an uninitialized object (that must be the default rule).
+- always returns a reference to an uninitialized object (the analyzer must know that).
+- can return both initialized and uninitialized objects uniformly.
+
+The third alternative cannot be implemented with a purely static guarantee [the =class Wrong= above].
+
+Even if =[[uninit]]= had been part of the type, =get()= would be an error because a function can have only one return type. Separating the two alternatives requires some form of run-time test. Variants of this third alternative come up in several potential use cases.
+#+end_quote
+
+Expected: =get= rejected.
+
+*** What happens
+
+Clang rejects the conditional return, as the paper says. GCC accepts it: a reference-returning member that mixes an initialized and an uninitialized member is not diagnosed, so the "third alternative" the paper says "cannot be implemented with a purely static guarantee" compiles cleanly on one of the two implementations.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/r6cr3ce3a
+
+Clang:
+#+BEGIN_EXAMPLE
+6:31: error: reference to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+** §4.5 — class Slot: marked getter
+:PROPERTIES:
+:CUSTOM_ID: class-slot
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+class Slot {
+    int x = 0b101010101010;
+    int y [[uninit]];
+public:
+    Slot (int xx) : x{ xx } {}
+    Slot() {}
+    int& get_init() { return x; }
+    int& get_uninit [[ref_to_uninit]] () { return y; }
+};
+
+void tst()
+{
+    Slot ii = 7;
+    Slot uu;                                    // leaves uu.y uninitialized
+    int i1 = ii.get_init();                     // OK
+    int i2 = ii.get_uninit();                   // error: tries to read from an [[uninit]]
+    int u1 [[uninit]] = uu.get_init();          // error: tries to initialize an [[uninit]]
+    int& u2 [[ref_to_uninit]] = uu.get_uninit();    // OK
+    u2 = 5;                                     // added: initialize y through u2
+    int u3 = uu.get_uninit();                   // added: y is initialized now -- but the getter is marked
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=20][§4.5, page 20]]:
+
+#+begin_quote
+When returning an object, we must identify the uninitialized ones. The default must always be that what is returned is a properly initialized object. The uninitialized version must be marked as such. For example [the =class Slot= and its uses above].
+
+At least until we can gather a lot of experience, we must choose a simple solution. Templatize =Slot= and you have one solution. That – like all initialization profile – is compile-time enforced.
+
+The weakness of this approach is that you can’t ask a slot if it is initialized. That has to be managed externally.
+#+end_quote
+
+Expected: =i1= OK; =i2= error (tries to read from an =[[uninit]]=); =u1= error (tries to initialize an =[[uninit]]=); =u2= OK. Two lines are added: initializing =y= through =u2=, and then reading it through the marked getter.
+
+*** What happens
+
+Clang matches all four of the paper's annotations, with =u1= rejected for the §4.1 reason (both =[[uninit]]= and an initializer) rather than the "tries to initialize an =[[uninit]]=" the paper gives. The two added lines show the §4.5 weakness the paper admits: after =u2 = 5= initializes =y=, =uu.get_uninit()= on line 21 is still rejected: a marked getter is uninitialized forever. GCC rejects only =u1=: =ii.get_uninit()= on line 17 (the paper's "error: tries to read from an =[[uninit]]=") is accepted, as is line 21. GCC does not implement =[[ref_to_uninit]]= on return types.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/qYr64aTbW
+
+Clang:
+#+BEGIN_EXAMPLE
+17:17: error: read through a '[[ref_to_uninit]]' pointer or reference accesses uninitialized memory
+18:9: error: variable 'u1' cannot be both '[[uninit]]' and have an initializer
+21:17: error: read through a '[[ref_to_uninit]]' pointer or reference accesses uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+18:9: error: 'u1' is marked '[[uninit]]' but also has an initializer
+#+END_EXAMPLE
+
+** §4.11 — Mixing malloc and new in one return
+:PROPERTIES:
+:CUSTOM_ID: malloc-new-mix
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <cstdlib>
+int* f(int x)
+{
+    return (0 < x) ? (int*)std::malloc(x * sizeof(int)) : new int[x];
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=29][§4.11, page 29]]:
+
+#+begin_quote
+Consider mixing uninitialized and initialized data. This is problematic. The problem comes in the relatively few cases (in the global picture of things) where a class or a function needs to pass along either initialized or uninitialized arguments. Static initialized/uninitialized analysis cannot be perfect. For example [the function above].
+
+Providing an incomplete guarantee, especially one that is often valid, leads to overconfidence and becomes a source of subtle bugs. That’s exactly the kind of problem the initialization profile (and other profiles) is aimed to prevent. So, if we want to do such mixing, we’d have to suppress the initialization profile.
+#+end_quote
+
+Expected: rejected.
+
+*** What happens
+
+Clang rejects the mixed return, as the paper wants. GCC accepts it: it treats =malloc= as returning initialized memory, so for GCC there is no mixing to detect.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/YE1zcnaGh
+
+Clang:
+#+BEGIN_EXAMPLE
+5:12: error: pointer to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+** §5.3 — Classes exposing uninitialized memory: struct X { Y m1; Y* m2; int arr[10]; }
+:PROPERTIES:
+:CUSTOM_ID: classes-exposing-uninit
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <cstdlib>
+struct Y { Y(int); };   // no default constructor
+
+struct X {
+    Y m1;           // maybe error: maybe Y doesn't have a default constructor
+    Y* m2;          // error, see constructor
+    int arr[10];    // error, see constructor
+    X(int x) : m2{ (Y*)std::malloc(x) } {}
+};
+
+struct X_annotated {
+    Y m1;                       // OK if Y has a default constructor
+    Y* m2 [[ref_to_uninit]];
+    int a [[uninit]] [10];
+    X_annotated(int x) : m1{x}, m2{ (Y*)std::malloc(x) } {}
+};
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=32][§5.3, page 32]]:
+
+#+begin_quote
+Some classes need to expose uninitialized members to users, e.g., some memory pools. Consider [the =struct X= above].
+
+The initializer profile deems =m1= (if =Y= doesn’t have a default constructor), =m2= (=malloc()= returns a pointer to uninitialized memory), and =arr= (has uninitialized members) errors because they try to expose users of =X= to uninitialized objects without any indication of that.
+
+Thus, we must add attributes [the =X_annotated= above].
+#+end_quote
+
+=Y= is given no default constructor here, so the paper's "maybe error" on =m1= is an error. The annotated form is renamed =X_annotated= so that both fit in one TU. Expected: the three members of =X= rejected; =X_annotated= accepted.
+
+*** What happens
+
+For the unannotated =X=, Clang reports three errors: =m2= initialized from =malloc= (unmarked pointer to uninitialized memory), =m1= not initialized (which is ordinary C++, since =Y= has no default constructor), and =arr= not initialized. GCC reports =m1= as the ordinary C++ error and =arr= as the profile error, and says nothing about =m2=: =malloc= again. The annotated =X_annotated= is accepted by both.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/ca33PfPYE
+
+Clang:
+#+BEGIN_EXAMPLE
+9:20: error: pointer to uninitialized memory must be marked '[[ref_to_uninit]]'
+9:5: error: constructor for 'X' must explicitly initialize the member 'm1' which does not have a default constructor
+9:5: error: constructor does not initialize member 'arr'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+9:39: error: no matching function for call to 'Y::Y()'
+9:5: error: constructor does not initialize member 'X::arr', which is not marked '[[uninit]]'
+#+END_EXAMPLE
+
+** §5.4 — Classes without constructors: S s1..s4
+:PROPERTIES:
+:CUSTOM_ID: classes-without-ctors
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <string>
+using std::string;
+struct S { int x; string s; };
+
+void f()
+{
+    S s1 = {1, "foo"};  // OK
+    S s2 = {1};         // OK, s2.s defaults to ""
+    S s3;               // error: s3.x uninitialized
+    s3.x = 1;
+    s3.s = "foo";
+    S s4 [[uninit]];    // error: s4.s is default constructed
+    s4.x = 1;
+    s4.s = "foo";
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=33][§5.4, page 33]]:
+
+#+begin_quote
+When defining objects of classes without constructors we must initialize all members in their definitions. For example [the function above].
+
+The member =s4.s= is a =string=, and =string= has a default constructor. That means that =S s4 [[uninit]];= declares =s4.s= as both initialized and uninitialized. That’s an error (even before we start considering delayed initialization).
+
+Immediate initialization is simpler and clearer.
+
+Don’t introduce a variable until you have an initializer for it.
+#+end_quote
+
+Expected: =s1= OK; =s2= OK (=s2.s= defaults to =""=); =s3= error (=s3.x= uninitialized), followed by member assignments; =s4= error (=s4.s= is default constructed), followed by member assignments.
+
+*** What happens
+
+Clang: =s3= rejected as the paper says; =s4 [[uninit]]= rejected because =S= default-initializes (the paper's reason, differently phrased); and then both member assignments to =s4= are rejected too. GCC: =s4= rejected for the same reason, but =S s3;= is /not/ reported at line 10. GCC instead rejects the type =S= at line 4 ("constructor does not initialize member 'S::x'"): on GCC an aggregate with an =int= member and a =string= member is ill-formed under the profile however it is used, including =s1= and =s2=, which the paper marks OK.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/oKnszPY33
+
+Clang:
+#+BEGIN_EXAMPLE
+10:7: error: variable 's3' must be initialized or marked '[[uninit]]'
+13:7: error: variable 's4' cannot be marked '[[uninit]]'; default-initialization of its type 'S' does not leave it uninitialized
+14:10: error: writing a member of an '[[uninit]]' object does not initialize it; initialize the whole object
+15:8: error: calling member function 'operator=' binds its implicit object parameter to uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+4:8: error: constructor does not initialize member 'S::x', which is not marked '[[uninit]]'
+13:7: error: 's4' cannot be marked '[[uninit]]': its type 'S' has non-trivial default initialization
+#+END_EXAMPLE
+
+** §5.6 — Unions
+:PROPERTIES:
+:CUSTOM_ID: unions
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+union S {
+    int x;
+    const char* s;
+};
+
+void f()
+{
+    S x1 = {7};
+    S x2 = {.s = "foo"};
+    S x3;               // error: uninitialized
+    S x4 [[uninit]];
+    x4.s = "foo";       // OK? (no)
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=35][§5.6, page 35]]:
+
+#+begin_quote
+Consider the simplest solution (aligned with the handling of classes with public members) [the union and its uses above].
+
+Here, the handling of =x1= and =x2= is simple and obvious. Should delayed initialization of =x4= be accepted? No, to avoid treating union members of different types dramatically different.
+#+end_quote
+
+Expected: =x1= and =x2= OK; =x3= error (uninitialized); =x4 [[uninit]]= followed by ~x4.s = "foo"~, which the paper comments "OK? (no)". The paper's ~S x1 = 7;~ is not valid C++ for a union; braced forms are used.
+
+*** What happens
+
+Clang: =x3= rejected ("variable 'x3' of union type must be initialized"), =x4 [[uninit]]= rejected ("cannot be applied to a variable of union type"), and the member write rejected: three errors, matching the paper's verdicts though not its reasons. GCC reports a single error, at =x4=: "cannot verify '=[[uninit]]=' on 'x4': member-level access on this aggregate is not yet analyzed", and does not diagnose =S x3;= at all.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/q3415jYhz
+
+Clang:
+#+BEGIN_EXAMPLE
+11:7: error: variable 'x3' of union type must be initialized
+12:12: error: '[[uninit]]' cannot be applied to a variable of union type
+13:10: error: writing a member of an '[[uninit]]' object does not initialize it; initialize the whole object
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+12:7: error: cannot verify '[[uninit]]' on 'x4': member-level access on this aggregate is not yet analyzed
+#+END_EXAMPLE
+
+* As the paper says
+
+Both compilers give the paper's verdict on every annotated line.
+
+** §1.4 — Definite assignment: the maybe-maybe-maybe example (X = int)
+:PROPERTIES:
+:CUSTOM_ID: definite-assignment
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+// scaffolding: the paper leaves X abstract; instantiate the 'X is int' bullet
+using X = int;
+
+void f(int v)
+{
+    X x;        // maybe uninitialized
+    X y = x;    // maybe a read of an uninitialized
+    // ...
+    x = v;      // maybe an initialization
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=8][§1.4, page 8]]:
+
+#+begin_quote
+Consider a simple example of the complexity we would face if initialization could be implicitly deferred and disguised as assignment [the example above]. Depending on what =X= is, this has different meanings:
+
+- If =X= is =int=, =x= is uninitialized and the initialization of =y= is UB in older compilers and erroneous behavior in C++26.
+
+Imagine writing generic code with such a general definite-assignment extension to C++. If the extension was implemented only for the initialization profile, we’d get code that would have different meanings compiled with and without the profile. We chose to make “uninitialized” explicit and allow delayed initialization only when it doesn’t change semantics.
+#+end_quote
+
+The paper lists five cases for =X=; the one for =int= is quoted. The paper leaves =X= abstract, so ~X = int~ is instantiated here. Under the profile the §4.1 rule makes the declaration itself an error (an uninitialized object not marked =[[uninit]]=), and the read of =x= an error.
+
+*** What happens
+
+Both reject, and both reject the declaration itself, under the §4.1 rule, before getting to the read that §1.4 discusses. Clang additionally reports the read of =x= on line 8; GCC stops at the declaration. The "maybe" in the paper's comments does not survive: under the profile there is nothing conditional about it.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/3bq3orMnj
+
+Clang:
+#+BEGIN_EXAMPLE
+7:7: error: variable 'x' must be initialized or marked '[[uninit]]'
+8:11: error: variable 'x' is read before initialization
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+7:7: error: local variable 'x' not initialized and not marked '[[uninit]]'
+#+END_EXAMPLE
+
+** §1.4 — C-style even/odd loops (aar7)
+:PROPERTIES:
+:CUSTOM_ID: c-style-loops
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+int aar7_test()
+{
+    int aar7 [[uninit]] [10];
+    // ... no use of aar7 here ...
+    for (int x = 0; x < 10; x += 2) aar7[x] = 2;   // initialize even
+    // ... restricted use of aar7 here ...
+    for (int x = 1; x < 10; x += 2) aar7[x] = 1;   // initialize odd
+    return aar7[5];   // added
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=8][§1.4, page 8]]:
+
+#+begin_quote
+C-style loops are trickier. For example, I don’t recommend accepting this [the loops above].
+#+end_quote
+
+Expected: rejected. A read after the loops is added.
+
+*** What happens
+
+Both reject, as the paper wants. Clang's message is the informative one: each element store is "writing an element of an =[[uninit]]= object does not initialize it; initialize the whole object". GCC reports the element stores as /reads/ of =aar7= (the subscript expression reads the array lvalue). The verdict is right for an odd reason.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/njncas4YW
+
+Clang:
+#+BEGIN_EXAMPLE
+6:45: error: writing an element of an '[[uninit]]' object does not initialize it; initialize the whole object
+8:45: error: writing an element of an '[[uninit]]' object does not initialize it; initialize the whole object
+9:12: error: read of a subobject of an '[[uninit]]' object accesses uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+6:45: error: 'aar7' read before it is definitely assigned
+8:45: error: 'aar7' read before it is definitely assigned
+9:18: error: 'aar7' read before it is definitely assigned
+#+END_EXAMPLE
+
+** §1.4 — while (cin && count<10) (aar8)
+:PROPERTIES:
+:CUSTOM_ID: while-cin
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <iostream>
+using std::cin;
+struct X { int v; };
+std::istream& operator>>(std::istream& is, X& x) { return is >> x.v; }
+
+X aar8_test()
+{
+    X aar8 [[uninit]] [10];
+    // ... no use of aar8 here ...
+    int count = 0;
+    while (cin && count < 10)
+        cin >> aar8[count++];
+    // ... we can use aar8 here ...
+    return aar8[0];   // added
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=9][§1.4, page 9]]:
+
+#+begin_quote
+Even the simplest and most reasonable generalizations leave us with serious problems of verification. Consider [the loop above]. This is an example of the problem of determining what an initialization is and whether it is complete. Also, to verify this, we’d have to track the use of =count= and how would we handle the case where =cin= read only 5 values? Real-world examples can be far more complex. The idea of delayed initialization leads us to complexities.
+#+end_quote
+
+Expected: rejected; the paper's next paragraphs route such initialization through a recognized initialization method, suppression of the profile, or =now_init=. The paper writes =aar8[count++] << cin=, which is not valid C++; =cin >> aar8[count++]= is used.
+
+*** What happens
+
+Both reject, as the paper wants. Clang rejects at =cin >> aar8[count++]= (binding an element to =operator>>='s unmarked =X&=) and at the read; GCC only at the read on line 15. It accepted the extraction into the element: GCC treats the =X&= out-parameter binding as fine and simply never credits it.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/3qsr3WaKz
+
+Clang:
+#+BEGIN_EXAMPLE
+13:16: error: reference to uninitialized memory must be marked '[[ref_to_uninit]]'
+15:12: error: reference to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+15:18: error: 'aar8' read before it is definitely assigned
+#+END_EXAMPLE
+
+** §3 — Static objects: f.c / g.c mutual recursion, and the four remedies
+:PROPERTIES:
+:CUSTOM_ID: static-objects
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+// the paper's f.c and g.c, in one TU
+int f();
+int g();
+int x = f();          // paper: run-time initialization, must be rejected
+int y = g();          // paper: run-time initialization, must be rejected
+int f() { return y; }
+int g() { return x; }
+
+// the remedies the paper lists
+struct X { int v; };
+X init();
+constinit int c1 = 7;                         // "Use only constinit global variables"
+X& var() { static X v = init(); return v; }   // "Wrap statics in functions"
+struct Z { consteval Z() : v(0) {} int v; };  // "Define default constructors to be consteval"
+Z z;
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=12][§3, page 12]]:
+
+#+begin_quote
+Either order of initialization leads to an uninitialized variable being read. This must be avoided. Naturally, good developers avoid such examples, but not all examples are this trivial and we want initialization before use to be guaranteed. So
+
+- Every non-local variable with static or thread storage duration shall have static initialization. No run-time initialization is allowed for such objects.
+
+This rule seems Draconian, but it conforms to common practice and has language support.
+
+There are simple ways to obey this rule:
+
+- Don’t use global variables.
+- Use only =constinit= global variables.
+- Wrap statics in functions that guarantee initialization before use.
+- Define default constructors to be =consteval=.
+
+Variations of all four techniques have been used for decades. Even =constinit= is just a recent direct support of an old technique.
+#+end_quote
+
+The paper's two-TU example (=f.c= and =g.c=) is folded into one TU. Expected: ~int x = f();~ and ~int y = g();~ rejected; the =constinit=, function-local-static, and =consteval= forms accepted.
+
+*** What happens
+
+Both enforce the §3 rule exactly: =int x = f();= and =int y = g();= are errors ("requires constant initialization" / "has non-constant initialization"). All four remedies are accepted. Note this is the one rule that applies to code with no =[[uninit]]= anywhere in it, and it rejects every namespace-scope object with a non-constexpr constructor.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/s3PW87ra8
+
+Clang:
+#+BEGIN_EXAMPLE
+5:5: error: non-local variable 'x' requires constant initialization
+6:5: error: non-local variable 'y' requires constant initialization
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+5:5: error: 'x' has non-constant initialization
+6:5: error: 'y' has non-constant initialization
+#+END_EXAMPLE
+
+** §4.1 — =[[uninit]]= rules example (glob, loc, v1/v2, s1/s2, loc5, loc6)
+:PROPERTIES:
+:CUSTOM_ID: uninit-rules
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <vector>
+#include <string>
+using std::vector; using std::string;
+
+int glob;                   // OK: default initialized
+int glob2 [[uninit]];       // error: initialized and [[uninit]]
+
+void f()
+{
+    int loc;                // error: no initialization
+    int loc2 [[uninit]];    // OK
+    int loc3 = 3;           // OK
+    int loc4 [[uninit]] = 4;    // error: initialized and [[uninit]]
+
+    vector<int> v1;         // OK: default initialized
+    vector<int> v2 [[uninit]];  // error: default initialized and [[uninit]]
+
+    string s1;              // OK: default initialized
+    string s2 [[uninit]];   // error: default initialized and [[uninit]]
+
+    int loc5 [[uninit]];
+    int x = loc5;           // error: read before initialized
+
+    int loc6 [[uninit]];
+    loc6 = 7;               // initializing
+    int y = loc6;           // OK
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=14][§4.1, page 14]]:
+
+#+begin_quote
+Rules:
+
+- An uninitialized object not marked =[[uninit]]= is an error.
+- An initialized object marked =[[uninit]]= is an error.
+- An object marked =[[uninit]]= is left uninitialized and must be initialized before use (e.g., using =construct_at()=; §1.3). After initialization, the object is no longer =[[uninit]]=.
+- A pointer or reference to an =[[uninit]]= can be passed only to a =[[ref_to_uninit]]= (§4.2).
+- A pointer or reference to something initialized can’t be passed to a =[[ref_to_uninit]]= (§4.2).
+- The function template =now_init()= can be used to provide a pointer to something initialized from a pointer to something previously uninitialized (§4.7).
+
+For example [the function above].
+
+We could imagine using =[[uninit]]= to suppress default initialization, but that would make code more error prone rather than less so.
+#+end_quote
+
+The paper annotates every line, and the comments in the source block are its annotations: =glob= OK; =glob2= error (initialized and =[[uninit]]=); =loc= error (no initialization); =loc2= OK; =loc3= OK; =loc4= error; =v1= OK; =v2= error; =s1= OK; =s2= error; ~int x = loc5~ error (read before initialized); ~loc6 = 7~ is initialization and ~int y = loc6~ OK.
+
+*** What happens
+
+Every line matches the paper's annotation on both compilers, with one difference of kind: the paper says =glob2= is an error because it is "initialized and =[[uninit]]="; both compilers say the attribute is simply not allowed on a static (Clang: "it is zero-initialized"; GCC: "'uninit' on declaration other than automatic variable or non-static data member"). The =loc6 = 7; int y = loc6;= pair is accepted by both. Both implement definite assignment for scalars, which §1.4 rejects by name.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/4a4bv85sf
+
+Clang:
+#+BEGIN_EXAMPLE
+7:5: error: '[[uninit]]' cannot be applied to variable 'glob2' with static storage duration; it is zero-initialized
+11:9: error: variable 'loc' must be initialized or marked '[[uninit]]'
+14:9: error: variable 'loc4' cannot be both '[[uninit]]' and have an initializer
+17:17: error: variable 'v2' cannot be marked '[[uninit]]'; default-initialization of its type 'vector<int>' does not leave it uninitialized
+20:12: error: variable 's2' cannot be marked '[[uninit]]'; default-initialization of its type 'string' does not leave it uninitialized
+23:13: error: variable 'loc5' is read before initialization
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+7:20: error: 'uninit' on declaration other than automatic variable or non-static data member
+11:9: error: local variable 'loc' not initialized and not marked '[[uninit]]'
+14:9: error: 'loc4' is marked '[[uninit]]' but also has an initializer
+17:17: error: 'v2' cannot be marked '[[uninit]]': its type 'std::vector<int>' has non-trivial default initialization
+20:12: error: 's2' cannot be marked '[[uninit]]': its type 'std::string' has non-trivial default initialization
+23:9: error: 'loc5' read before it is definitely assigned
+#+END_EXAMPLE
+
+** §4.2 — =[[ref_to_uninit]]= parameters: f/g/tst
+:PROPERTIES:
+:CUSTOM_ID: ref-to-uninit-params
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+struct X { int v; };
+
+void f(X* p [[ref_to_uninit]]);   // p must point to something uninitialized
+void g(X* p);                     // q must point to something initialized
+
+void tst()
+{
+    X x [[uninit]];
+    f(&x);      // OK
+    g(&x);      // error
+    X y = { 7 };
+    f(&y);      // error
+    g(&y);      // OK
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=15][§4.2, page 15]]:
+
+#+begin_quote
+We introduce =[[ref_to_uninit]]=, “reference to uninitialized”, to help correctly manipulate areas of uninitialized memory. For more examples, see §4.7 and §4.8. Manipulating a mix of initialized and uninitialized memory is error-prone and almost always under performance constraints. It would be far simpler to demand that all elements of an array are initialized (or not), but that would leave major critical areas of C++ use unserved. We get [the example above]. That is
+
+- An =[[uninit]]= can only be referred to by a =[[ref_to_uninit]]=
+- An object that is initialized cannot be referred to by a =[[ref_to_uninit]]=
+- The result of dereferencing a =[[ref_to_uninit]]= is =[[uninit]]=
+#+end_quote
+
+Expected: =f(&x)= OK; =g(&x)= error; =f(&y)= error; =g(&y)= OK.
+
+*** What happens
+
+Both match the paper's four annotations: =g(&x)= and =f(&y)= rejected, =f(&x)= and =g(&y)= accepted. GCC's wording for =g(&x)= is "address taken before provably initialized" rather than a marker mismatch, but the verdicts agree.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/43Grc1doh
+
+Clang:
+#+BEGIN_EXAMPLE
+11:7: error: pointer to uninitialized memory must be marked '[[ref_to_uninit]]'
+13:7: error: pointer marked '[[ref_to_uninit]]' must refer to uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+11:6: error: address of '[[uninit]]' variable 'x' is taken here before it is provably initialized
+13:6: error: argument 1 to 'void f(X*)' must refer to '[[uninit]]' memory, matching its '[[ref_to_uninit]]' parameter
+#+END_EXAMPLE
+
+** §4.2 — A =[[ref_to_uninit]]= call does not initialize
+:PROPERTIES:
+:CUSTOM_ID: ref-to-uninit-call
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+struct X { int v; };
+void f(X* p [[ref_to_uninit]]);   // p must point to something uninitialized
+
+X tst()
+{
+    X x [[uninit]];
+    f(&x);
+    // ... here *p is not considered initialized ...
+    X z = x;    // error: x is still [[uninit]]
+    return z;
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=16][§4.2, page 16]]:
+
+#+begin_quote
+A =[[ref_to_uninit]]= need not be initialized. It may be passed on to another =[[ref_to_uninit]]= or it may be used in a way that doesn’t initialize every element (e.g., memory held by a vector).
+
+Consider [the example above].
+#+end_quote
+
+The comments in the source block are the paper's: after the call, =*p= is not considered initialized, and ~X z = x;~ is an error because =x= is still =[[uninit]]=. The paper declares =x= at namespace scope, which contradicts §3 and §4.1; it is a local here.
+
+*** What happens
+
+Both reject =X z = x;= as the paper says. This is the class-typed form; the scalar form of the same shape (=int u [[uninit]]; f(&u); return u;=) is /accepted/ by Clang, because its plain-local analysis treats the call as an escape that initializes =u= (see the companion probes). The paper's example happens to be the one Clang gets right.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/Yzxbz7jWr
+
+Clang:
+#+BEGIN_EXAMPLE
+10:11: error: reference to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+10:7: error: 'x' read before it is definitely assigned
+#+END_EXAMPLE
+
+** §4.3 — void* defaults to initialized
+:PROPERTIES:
+:CUSTOM_ID: void-pointer
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+void f()
+{
+    int x1 = 7;
+    void* p1 = &x1;     // OK
+    int x2 [[uninit]];
+    void* p2 = &x2;     // error
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=17][§4.3, page 17]]:
+
+#+begin_quote
+From about 1983, we have =void*= to point to memory of unknown type. Unfortunately, for compatibility reasons, by default, we must assume that =void*= points for something initialized. For example [the function above].
+
+All =void*=s require casting to access what they point to, but what is pointed to by =p1= and =p2= is fundamentally different from the perspective of initialization. However, the type system doesn’t reflect that.
+#+end_quote
+
+Expected: =p1= OK; =p2= error.
+
+*** What happens
+
+Both reject =void* p2 = &x2;= and accept =p1=, as the paper says.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/qPf13TnnW
+
+Clang:
+#+BEGIN_EXAMPLE
+7:11: error: pointer to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+7:11: error: address of '[[uninit]]' variable 'x2' is taken here before it is provably initialized
+#+END_EXAMPLE
+
+** §4.3 — Annotating malloc and calloc
+:PROPERTIES:
+:CUSTOM_ID: malloc-calloc
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <cstddef>
+// the paper's proposed declarations (not including <cstdlib>, which declares them unmarked)
+void* malloc [[ref_to_uninit]] ( std::size_t size );
+void* calloc( std::size_t num, std::size_t size );
+void* uninit_malloc [[ref_to_uninit]] ( std::size_t size );
+
+int f()
+{
+    int* a [[ref_to_uninit]] = (int*)malloc(sizeof(int));   // OK
+    int* b = (int*)malloc(sizeof(int));                     // error: unmarked
+    int* c = (int*)calloc(1, sizeof(int));                  // OK: zero-initialized
+    int* d [[ref_to_uninit]] = (int*)uninit_malloc(4);      // OK
+    *a = 1;
+    return *a + *c;
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=17][§4.3, page 17]]:
+
+#+begin_quote
+Consider the most common C-style allocators:
+
+- =malloc()= returns a =void*= pointing to uninitialized memory
+- =calloc()= returns a =void*= pointing to zero-initialized memory
+
+The obvious solution would be to define [the first two declarations above]. To require that, we would have to explore if the addition of =[[ref_to_uninit]]= to all allocators is manageable. The problem is that some system headers might not be modified for the benefit of C++ profiles. In that case, either functions like =malloc()= will have to be called only in code where the initialization profile is suppressed or such functions must be known to an analyzer enforcing the initialization profile. The latter will already be the case in some implementations because of erroneous behavior implementation.
+
+If we can’t add =[[ref_to_uninit]]= to =malloc()=, we must find a new name to reflect the fact [the =uninit_malloc= above].
+#+end_quote
+
+The function =f= is added to exercise the declarations: a marked pointer from =malloc= is fine, an unmarked one is not, and =calloc='s result is initialized. =<cstdlib>= is deliberately not included, since it declares =malloc= unmarked.
+
+*** What happens
+
+With the paper's proposed annotated declarations in scope (and =<cstdlib>= not included), both compilers behave as the paper describes: the unmarked =b= is rejected, =a=, =c=, =d= accepted. This is the one place the design works as drawn, because the declarations were written for it. With the real =<cstdlib>=, Clang knows =malloc= by builtin ID and treats its result as uninitialized; GCC does not, and treats =malloc='s result as initialized memory (see the companion probes: GCC accepts =int* p = (int*)malloc(4); return *p;=).
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/YK17cszc3
+
+Clang:
+#+BEGIN_EXAMPLE
+11:10: error: pointer to uninitialized memory must be marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+11:26: error: assigning a pointer marked '[[ref_to_uninit]]' into a pointer not marked '[[ref_to_uninit]]'
+#+END_EXAMPLE
+
+** §4.8 — The input-buffer example
+:PROPERTIES:
+:CUSTOM_ID: input-buffer
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <span>
+#include <memory>
+#include <cstddef>
+#include <cstdlib>
+// scaffolding: std::now_init exists in the GCC branch's <utility>; the Clang branch recognizes
+// std::now_init by name but ships no declaration, so one is supplied for it
+#include <utility>
+#ifdef __clang__
+namespace std { template<class T> T* now_init(T* p [[ref_to_uninit]]); }
+#endif
+constexpr int imax = 4096;
+void* my_malloc [[ref_to_uninit]] (std::size_t);
+void process(const struct Message&);
+
+class Message {
+    // operations to read typed members from a byte buffer rep
+    std::byte rep[16];
+};
+
+// read at most max bytes into *p; return the number of bytes read:
+int read(std::byte* p [[ref_to_uninit]], int max);
+void destroy(Message&);    // maybe scrub buffer area
+
+void tst(int live)
+{
+    // memory from some buffer pool:
+    std::byte* inbuf [[ref_to_uninit]] = (std::byte*) my_malloc(imax);
+    while (live) {   // read into inbuf and process the messages stored as bytes
+        int n = read(inbuf, imax);   // some input function
+        std::span<Message> messages {
+            (Message*)std::now_init(inbuf), n / sizeof(Message)
+        };
+        // this buffer now contains Messages:
+        for (Message& m : messages) {
+            process(m);   // ... process a message from the buffer ...
+            destroy(m);
+        }
+        --live;
+    }
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=25][§4.8, page 25]]:
+
+#+begin_quote
+Consider another important use case, recycling a buffer. Here, reading or writing of a message should be once only and allocation should not be done while passing a stream of messages. Such code is – in many variations – used in much high performance and low latency applications. Again, this is just a sketch illustrating the techniques as they relate to initialization [the code above].
+
+Note that assigning to an uninitialized =std::byte=, as =read= must do, is allowed. In addition to initialization, we require at least one explicit type conversion (bytes to messages done in =now_init()=) and must ensure that we don’t have range errors. This is the kind of low-level code where various forms of suppression of guarantees are tempting (and common in “safe” languages).
+#+end_quote
+
+Expected: accepted. Scaffolding: =Message='s =rep= member, =imax=, =my_malloc=, =process=, and =destroy(Message&)= as the paper declares it.
+
+*** What happens
+
+Both accept, as the paper says, once =std::now_init= is available (scaffolding, see [[#now-init-span][§1.4 now_init to a span]]) and with =my_malloc= declared marked. This and [[#malloc-calloc][§4.3 malloc/calloc]] are the two examples where the paper's design and both implementations agree on a non-trivial program; both depend on the author controlling every declaration involved.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/YTsjhTb7h
+
+Clang:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+** §5.2 — Member initializers: the accepted form
+:PROPERTIES:
+:CUSTOM_ID: member-initializers
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+class X {
+    int m1 = 7;
+    int m2;
+public:
+    X(int x) : m2{x} {}
+};
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=31][§5.2, page 31]]:
+
+#+begin_quote
+The simplest and most direct way of initializing a member is through explicit initialization. For example [the =class X= above].
+
+This is what the initialization profile requires.
+#+end_quote
+
+Expected: accepted.
+
+*** What happens
+
+Both accept.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/GhMvaoq7x
+
+Clang:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+** §5.2 — The three alternatives: nullptr pseudo-initialization, unique_ptr, default-constructed strings
+:PROPERTIES:
+:CUSTOM_ID: member-alternatives
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <memory>
+#include <string>
+constexpr int sys_max = 1000;
+void error(int);
+
+class X1 {
+    int* p = nullptr;
+    int x;
+public:
+    X1(int v) : x{v}
+    {
+        if (v < 0 or sys_max <= v) error(v);
+        p = new int(v);
+    }
+};
+
+class X2 {
+    std::unique_ptr<int> p;
+public:
+    X2(int x) : p{std::make_unique<int>(x)} {}
+};
+
+class X3 {
+    std::string s1;
+    std::string s2;
+public:
+    X3(const char* ss1, const char* ss2) : s1{ss1} { s2 = ss2; }
+};
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=31][§5.2, page 31]]:
+
+#+begin_quote
+Often, using a “pseudo initialization” is a better choice. For example [the =X1= above].
+
+In most such cases, the optimizer can eliminate the redundant initialization.
+
+Alternatively, we could use =now_init()= or suppression to expose that unverified =p= to users.
+
+Often, an even better alternative is to use a member of a type that performs its own checks rather than more primitive types. For example [the =X2= above].
+
+Default construction works as ever. For example [the =X3= above].
+
+The use of the member initialization (for =s1=) is preferred to the assignment (of =s2=) as being more readable and more efficient unless the optimizer is smart enough to eliminate the default initialization of =s2=.
+#+end_quote
+
+All three are presented as acceptable. Expected: accepted. The paper's =make_unique(x)= is missing its template argument; =make_unique<int>(x)= is used.
+
+*** What happens
+
+Both accept all three.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/bd66Mro5f
+
+Clang:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+(accepted, exit 0)
+#+END_EXAMPLE
+
+** §5.4 — struct Point: member-wise initialization is banned
+:PROPERTIES:
+:CUSTOM_ID: struct-point
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+struct Point { int x, y; };
+
+int f()
+{
+    Point p [[uninit]];
+    // ...
+    p.x = 7;    // error: member assignment
+    // ...
+    p.y = 9;    // error: member assignment
+    return p.x + p.y;   // added
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=34][§5.4, page 34]]:
+
+#+begin_quote
+It would be possible to initialize and validate a struct with no constructor and no members with constructors. For example [the code above].
+
+However, that adds complexity and opens opportunities for errors and confusion so unless we find genuine need, this is banned.
+#+end_quote
+
+Expected: ~p.x = 7~ error; ~p.y = 9~ error. A read of both members is added.
+
+*** What happens
+
+Both reject the two member assignments, as the paper says. Clang also rejects the added read. The companion probes show the same ban reached through pointers: =int* px [[ref_to_uninit]] = &p.x; *px = 7;= is accepted at the store but credits nothing.
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/4Thn5exYh
+
+Clang:
+#+BEGIN_EXAMPLE
+8:9: error: writing a member of an '[[uninit]]' object does not initialize it; initialize the whole object
+10:9: error: writing a member of an '[[uninit]]' object does not initialize it; initialize the whole object
+11:14: error: read of a subobject of an '[[uninit]]' object accesses uninitialized memory
+11:20: error: read of a subobject of an '[[uninit]]' object accesses uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+8:9: error: member 'Point::x' of 'p' is written before 'p' is initialized as a whole
+10:9: error: member 'Point::y' of 'p' is written before 'p' is initialized as a whole
+#+END_EXAMPLE
+
+* Not reproduced
+
+Three of the paper's code fragments are not translation units under any reasonable completion and are omitted:
+
+- §4.6's =vector<Slot> v; vector<Live> live_slot; ... if (live_slot[x]==Live.init) { int xx = v[x]; ... }=: =Live.init= is not C++, and =v[x]= is a =Slot=, not an =int=; the paper offers it as a sketch of a run-time technique the profile cannot verify.
+- §4.10's concept-based overload set (=template<Pointer_to_uninit T> int f(T* p)=): the paper itself calls it an "unattainable ideal", since "the information for doing that is not available to a concept".
+- §1's opening figure of "errors caught by the GCC and Clang implementations" is an image in the PDF, not text; its content is covered by [[#uninit-rules][§4.1 rules]].
+
+* Companion probes
+
+The probes that go beyond the paper's own examples — two pointers to one object, aliases of the pointer object, lambda captures, =this= aliases in constructors, =[[uninit]]= members reached through a pointer to the whole object, by-value copies, the =-Wmaybe-uninitialized= shapes, and GCC's self-documented nested-diamond false positive — are in the earlier set of links and the file =p4222r3-probes.cpp=; the §5.3 runtime leak demonstration is at https://godbolt.org/z/szzP1zWxe.
+
+* Method
+
+Each source was compiled through Compiler Explorer's API on 2026-10-25 against the two compilers above and the diagnostics recorded; the links were then created with CE's shortener using a full layout state (editor; per compiler, a compiler pane over an output pane) and each link's stored source checked against the compiled source. Diagnostics shown are trimmed of ANSI colour, source-echo and caret lines, notes, and the trailing "under profile 'std::init'" on every message; nothing else is edited.
+
+* Summary table
+:PROPERTIES:
+:CUSTOM_ID: summary-table
+:END:
+
+All 36 examples in the paper's order; each section number links to its example above.
+
+A legend for the one-line verdicts:
+
+- /as paper/ :: the compiler's accept/reject verdicts match the paper's annotations.
+- /stricter/ :: rejects something the paper marks OK.
+- /looser/ :: accepts something the paper marks as an error.
+- /diverge/ :: the two implementations disagree with each other.
+
+| § | Example | Clang | GCC | Agree? |
+|---+---------+-------+-----+--------|
+| [[#definite-assignment][§1.4]] | Definite assignment: the maybe-maybe-maybe example (X = int) | as paper | as paper | yes |
+| [[#range-for-init][§1.4]] | Range-for as initialization (aar6) | stricter | stricter | yes |
+| [[#c-style-loops][§1.4]] | C-style even/odd loops (aar7) | as paper | as paper | yes |
+| [[#while-cin][§1.4]] | while (cin && count<10) (aar8) | as paper | as paper | yes |
+| [[#now-init-span][§1.4]] | now_init to a span (aar10) | stricter (the elided step) | stricter (the elided step) | yes |
+| [[#static-objects][§3]] | Static objects: f.c / g.c mutual recursion, and the four remedies | as paper | as paper | yes |
+| [[#uninit-rules][§4.1]] | =[[uninit]]= rules example (glob, loc, v1/v2, s1/s2, loc5, loc6) | as paper | as paper | yes |
+| [[#uninit-pointers][§4.2]] | Uninitialized pointers (p1, p2, p3) | stricter: no =[[uninit]]= on pointers | as paper | no |
+| [[#ref-to-uninit-params][§4.2]] | =[[ref_to_uninit]]= parameters: f/g/tst | as paper | as paper | yes |
+| [[#ref-to-uninit-call][§4.2]] | A =[[ref_to_uninit]]= call does not initialize | as paper | as paper | yes |
+| [[#must-init][§4.2]] | =[[must_init]]=: the callee must initialize | =[[must_init]]= unknown | =[[must_init]]= on parameter only | no |
+| [[#void-pointer][§4.3]] | void* defaults to initialized | as paper | as paper | yes |
+| [[#malloc-calloc][§4.3]] | Annotating malloc and calloc | as paper | as paper | yes |
+| [[#pointer-reference-flavors][§4.3]] | f1/f2/g: pointer and reference flavors | looser (nullptr), stricter (p4) | looser (nullptr), stricter (p3 use, r2) | no |
+| [[#now-init-definition][§4.4]] | The definition of now_init | as paper | looser: now_init compiles | no |
+| [[#class-wrong][§4.5]] | class Wrong: one function, two kinds of return | as paper | looser | no |
+| [[#class-slot][§4.5]] | class Slot: marked getter | as paper | looser: marked getters unchecked | no |
+| [[#lifetimes-construct-at][§4.6]] | Lifetimes: construct_at into a span, indexed reads and double construction | looser (double construct_at) | span cannot carry marker | no |
+| [[#lifetimes-destroy-at][§4.6]] | Lifetimes: double destruction | looser | looser | yes |
+| [[#vector-example][§4.7]] | The Vector example | stricter: rejects the Vector | stricter: rejects the Vector (×5) | no (different lines) |
+| [[#input-buffer][§4.8]] | The input-buffer example | as paper | as paper | yes |
+| [[#unique-ptr-new][§4.9]] | unique_ptr<T>(new T) and vector(10, x) | stricter (new int) | looser (new int) | no |
+| [[#user-uninitialized-fill][§4.9]] | A user-written uninitialized_fill with a marked range parameter | stricter on last line (paper self-contradicts) | same | yes |
+| [[#malloc-new-mix][§4.11]] | Mixing malloc and new in one return | as paper | looser | no |
+| [[#member-initializers][§5.2]] | Member initializers: the accepted form | as paper | as paper | yes |
+| [[#member-in-ctor-body][§5.2]] | A member initialized in the constructor body (=[[uninit]]= int* p) | stricter: no =[[uninit]]= on pointer member | looser: nothing checked | no |
+| [[#member-alternatives][§5.2]] | The three alternatives: nullptr pseudo-initialization, unique_ptr, default-constructed strings | as paper | as paper | yes |
+| [[#classes-exposing-uninit][§5.3]] | Classes exposing uninitialized memory: struct X { Y m1; Y* m2; int arr[10]; } | as paper | looser (malloc) | no |
+| [[#label-construct-at][§5.3]] | Label lab1 =[[uninit]]=; construct_at(&lab1, x, y, z) | stricter: example rejected | stricter: example and type rejected | mostly |
+| [[#classes-without-ctors][§5.4]] | Classes without constructors: S s1..s4 | as paper | stricter: type S rejected | no |
+| [[#struct-point][§5.4]] | struct Point: member-wise initialization is banned | as paper | as paper | yes |
+| [[#label-uninit-members][§5.4]] | Label: mixed members, the =[[uninit]]=-member repair, and the all-initialized form | stricter: repair rejected | stricter: repair rejected | yes |
+| [[#arrays][§5.5]] | Arrays: arr1..arr4 and ranges::uninitialized_fill | §5.5 placement rejected | §5.5 placement rejected; fill accepted | no |
+| [[#unions][§5.6]] | Unions | as paper | looser (x3) / 'not yet analyzed' | no |
+| [[#attribute-placement-variables][§Appendix]] | Attribute placement: variables, pointers, arrays | array forms rejected | array forms rejected | mostly |
+| [[#attribute-placement-settled][§Appendix]] | Attribute placement: the forms the paper settles on, and the rejected in-type forms | 2 of 7 settled forms fail | 2 of 7 fail, 1 more differs | no |
