@@ -1,0 +1,132 @@
+#+TITLE: Probes for the initialization profile, beyond the paper's examples
+#+DATE: {{{modification-time(%Y-%m-%d, VC)}}}
+#+AUTHOR: Steve Downey
+#+EMAIL: sdowney@gmail.com
+
+#+description: Programs probing the two implementations of the P4222 initialization profile
+#+keywords:
+#+language: en
+
+#+BIND: org-export-with-smart-quotes nil
+#+BIND: org-export-with-emphasize t
+#+BIND: org-export-with-special-strings t
+#+BIND: org-export-with-fixed-width t
+#+BIND: org-export-with-timestamps t
+#+BIND: org-export-preserve-breaks nil
+#+BIND: org-export-with-sub-superscripts nil
+#+BIND: org-export-with-archived-trees headline
+#+BIND: org-export-with-author t
+#+BIND: org-export-headline-levels 3
+
+#+BIND: org-export-with-broken-links nil
+#+BIND: org-export-with-clocks nil
+#+BIND: org-export-with-creator nil
+#+BIND: org-export-with-drawers (not "LOGBOOK")
+#+BIND: org-export-with-date t
+#+BIND: org-export-with-entities t
+
+#+BIND: org-export-with-email nil
+#+BIND: org-export-with-footnotes t
+#+BIND: org-export-with-inlinetasks t
+#+BIND: org-export-with-section-numbers t
+#+BIND: org-export-with-planning nil
+#+BIND: org-export-with-priority nil
+#+BIND: org-export-with-properties nil
+#+BIND: org-export-with-statistics-cookies t
+#+BIND: org-export-with-tags t
+
+#+BIND: org-export-with-tasks t
+#+BIND: org-export-with-latex t
+#+BIND: org-export-timestamp-file t
+#+BIND: org-export-with-title nil
+#+BIND: org-export-with-toc nil
+#+BIND: org-export-with-todo t
+#+BIND: org-export-with-tables t
+
+#+BIND: org-html-link-use-abs-url nil
+#+BIND: org-html-postamble nil
+#+BIND: org-html-preamble t
+#+BIND: org-html-scripts nil
+#+BIND: org-html-style nil
+#+BIND: org-html5-fancy t
+#+BIND: org-html-self-link-headlines t
+
+#+html_doctype: xhtml5
+#+html_container: div
+#+html_link_home:
+#+html_link_up:
+#+html_mathjax:
+#+html_head:
+#+html_head_extra:
+#+infojs_opt:
+
+#+select_tags: export
+#+exclude_tags: noexport
+
+#+bibliography: ../references.bib
+#+cite_export: basic author-year author
+
+#+startup: showall
+
+
+These are the probes that go with [[link://slug/the-initialization-profile][the review of P4222R3's examples]]: small programs that ask what the two implementations of the initialization profile do with shapes the paper does not show. The compilers and flags are the ones described there, =-std=c++23 -pedantic-errors=, with the profile turned on by the attribute at the top of the file.
+
+{{{TEASER_END}}}
+
+Each section is one Compiler Explorer link with both compilers side by side. The linked source asks the question; the comments here give the answer, line by line and compiler by compiler. A few of the linked sources have a function or two more than is shown here. Two abbreviations run through the comments: FN marks a line that is accepted although it reads, or constructs a second time, memory in the wrong state; FP marks a line that is rejected although the paper says it is fine.
+
+The code is one file, @@html:<a href="/code/initialization-profile-probes.cpp">initialization-profile-probes.cpp</a>@@, shown here a section at a time. Its comments were written on 2026-10-24 and rechecked on 2026-11-14, after Compiler Explorer had rebuilt the GCC branch at a newer commit. All six sources were compiled again and each comment compared with the diagnostics. Two comments changed, and each says what it said before.
+
+* Two pointers to one object
+:PROPERTIES:
+:CUSTOM_ID: two-pointers
+:END:
+
+- Compiler Explorer (both compilers): https://godbolt.org/z/ex75Eeqbe
+
+#+transclude: [[file:../files/code/initialization-profile-probes.cpp]] :lines 17-34 :src cpp
+
+* Escape, an alias of the pointer object, a lambda capture
+:PROPERTIES:
+:CUSTOM_ID: escape-alias-lambda
+:END:
+
+- Compiler Explorer (both compilers): https://godbolt.org/z/4qMKz13T5
+
+#+transclude: [[file:../files/code/initialization-profile-probes.cpp]] :lines 39-75 :src cpp
+
+* Two references to one object, and an alias of =this=
+:PROPERTIES:
+:CUSTOM_ID: two-references
+:END:
+
+- Compiler Explorer (both compilers): https://godbolt.org/z/da4MGM6Eo
+
+#+transclude: [[file:../files/code/initialization-profile-probes.cpp]] :lines 80-90 :src cpp
+
+* Pointers to members of an =[[uninit]]= aggregate
+:PROPERTIES:
+:CUSTOM_ID: members-of-uninit-aggregate
+:END:
+
+- Compiler Explorer (both compilers): https://godbolt.org/z/87vnTdTza
+
+#+transclude: [[file:../files/code/initialization-profile-probes.cpp]] :lines 95-120 :src cpp
+
+* =[[uninit]]= members through another object, memset, void*, malloc
+:PROPERTIES:
+:CUSTOM_ID: uninit-members-memset-malloc
+:END:
+
+- Compiler Explorer (both compilers): https://godbolt.org/z/joG1Kbo4Y
+
+#+transclude: [[file:../files/code/initialization-profile-probes.cpp]] :lines 125-161 :src cpp
+
+* Double construction, and correlated conditions
+:PROPERTIES:
+:CUSTOM_ID: double-construction
+:END:
+
+- Compiler Explorer (both compilers): https://godbolt.org/z/Kf6114vdb
+
+#+transclude: [[file:../files/code/initialization-profile-probes.cpp]] :lines 166-182 :src cpp

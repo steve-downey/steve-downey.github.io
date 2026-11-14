@@ -72,10 +72,12 @@
 
 Every code block in P4222R3 (Stroustrup, 2026-10-22, "An initialization profile") is reproduced below, compiled under the profile on the two implementations the paper cites as "tested nightly" [Impl1, Impl2], with what the paper says should happen beside what does. Where a block needed scaffolding to be a translation unit (a definition of =X=, a declaration of =my_malloc=, a fix to a typo) the addition is marked in a comment; lines added to probe a consequence the paper does not spell out are marked =// added=.
 
+The whole set was rechecked on 2026-11-14: every listing recompiled and compared, and each claim in the prose that goes beyond a listing tried with a small program of its own. The listings all stood. Some of the prose did not, and where a passage changed it carries a bracketed note beginning "Revised 2026-11-14" that says what the first version said.
+
 Compilers, as built on Compiler Explorer on the date above:
 
 - Clang :: CE id =clang_profiles_init=, built from [[https://github.com/cppalliance/clang/tree/profiles-init][cppalliance/clang branch =profiles-init=]] at commit =4a2d2673= (2026-10-15), an llvm-project fork based on =main= of 2026-07-20. Flags =-std=c++23 -pedantic-errors=.
-- GCC :: CE id =gcontracts-p4324-trunk=, built from [[https://github.com/villevoutilainen/gcc/tree/p4324][villevoutilainen/gcc branch =p4324=]] at commit =146e7ba1= (2026-10-24/25), based on trunk of 2026-07-18. Same flags.
+- GCC :: CE id =gcontracts-p4324-trunk=, built from [[https://github.com/villevoutilainen/gcc/tree/p4324][villevoutilainen/gcc branch =p4324=]] at commit =146e7ba1= (2026-10-24/25), based on trunk of 2026-07-18. Same flags. [Revised 2026-11-14: Compiler Explorer rebuilds this compiler from the branch, and by the recheck it was at commit =a9bec5e9= (2026-11-13). All 36 examples give the same diagnostics on that build. The Clang build had not changed.]
 
 The profile is enabled in each case by the file-scope =[[profiles::enforce(std::init)]];= from P3589; =-fprofiles-enforce=std::init= works on both as well.
 
@@ -83,12 +85,12 @@ Each Compiler Explorer link opens the source on the left and, for each compiler,
 
 The examples are grouped by how badly the paper and the implementations disagree, worst first: rejected by both compilers where the paper says OK; rejected by Clang where the paper says OK; accepted by Clang where the paper says error; GCC alone differing; and the examples where both compilers agree with the paper. Within a group the examples follow the paper's order unless noted. The [[#summary-table][summary table]] at the end lists all 36 in the paper's order.
 
-Of 36 examples, the two implementations give the same verdicts on 18 (and nearly so on 2 more); on the other 16 they disagree with each other, in most cases on lines the paper annotates. Nine of the paper's examples are rejected by both compilers on a line the paper marks OK; they are the first group below, led by the §4.7 =Vector= the paper calls "guaranteed free from initialization errors". In two of the nine ([[#user-uninitialized-fill][§4.9 uninitialized_fill]], [[#arrays][§5.5 arrays]]) the paper's own text contradicts the annotation.
+Of 36 examples, the two implementations give the same verdicts on 20 (and nearly so on 1 more); on the other 15 they disagree with each other, in most cases on lines the paper annotates. [Revised 2026-11-14: the first version had 18, 2 and 16. In [[#label-construct-at][§5.3 Label]] and [[#classes-without-ctors][§5.4 classes without constructors]] GCC's extra error against the type turned out to be its report of the same line Clang rejects.] Nine of the paper's examples are rejected by both compilers on a line the paper marks OK; they are the first group below, led by the §4.7 =Vector= the paper calls "guaranteed free from initialization errors". In two of the nine ([[#user-uninitialized-fill][§4.9 uninitialized_fill]], [[#arrays][§5.5 arrays]]) the paper's own text contradicts the annotation.
 
 Three recurring causes account for most of the differences:
 
-1. GCC does not know the standard library. =malloc= returns initialized memory to it ([[#malloc-calloc][§4.3 malloc/calloc]] note, [[#vector-example][§4.7 Vector]], [[#unique-ptr-new][§4.9 unique_ptr/vector]], [[#malloc-new-mix][§4.11 malloc/new]], [[#classes-exposing-uninit][§5.3 exposing uninitialized]]); =construct_at= / =destroy_at= are unmodelled ([[#lifetimes-construct-at][§4.6 construct_at]], [[#lifetimes-destroy-at][§4.6 destroy_at]]); =std::uninitialized_fill= and =free= are unannotated and so reject marked arguments ([[#vector-example][§4.7 Vector]]). Clang knows these by builtin ID.
-2. GCC implements =[[ref_to_uninit]]= on pointers and references only: not on class-type handles ([[#lifetimes-construct-at][§4.6 construct_at]], [[#attribute-placement-settled][Appendix settled forms]]), not on return types ([[#class-slot][§4.5 Slot]]), and not on a reference bound to a local ([[#pointer-reference-flavors][§4.3 f1/f2/g]], [[#attribute-placement-variables][Appendix placement]]). Clang implements all of these.
+1. GCC does not know the standard library. =malloc= returns initialized memory to it ([[#malloc-calloc][§4.3 malloc/calloc]] note, [[#vector-example][§4.7 Vector]], [[#malloc-new-mix][§4.11 malloc/new]], [[#classes-exposing-uninit][§5.3 exposing uninitialized]]), and so does =new int= ([[#unique-ptr-new][§4.9 unique_ptr/vector]]); a second =construct_at= or =destroy_at= of the same object goes unnoticed ([[#lifetimes-destroy-at][§4.6 destroy_at]]); =std::uninitialized_fill= and =free= are unannotated and so reject marked arguments ([[#vector-example][§4.7 Vector]]). Clang knows these by builtin ID. [Revised 2026-11-14: the first version said =construct_at= and =destroy_at= were unmodelled on GCC, and listed the §4.9 example under =malloc=, which it does not call. =construct_at= is modelled: GCC accepts =std::construct_at(&x, 10)= on an =[[uninit]]= local and a read of =x= after it, where the same address passed to an unannotated function template is an error. What GCC does not do is notice the second one.]
+2. GCC implements =[[ref_to_uninit]]= on pointers and references only: not on class-type handles ([[#lifetimes-construct-at][§4.6 construct_at]], [[#attribute-placement-settled][Appendix settled forms]]), not on a read through a marked return value ([[#class-slot][§4.5 Slot]]), and not on a reference bound to a local ([[#pointer-reference-flavors][§4.3 f1/f2/g]]). Clang implements all of these. [Revised 2026-11-14: the first version said "not on return types". GCC does check where a marked returned pointer is stored ([[#malloc-calloc][§4.3 malloc/calloc]]); it is a read through the returned pointer or reference that it lets by. The Appendix placement example was also cited for references to locals, and it has none.]
 3. The attribute vocabulary has forked: the paper's =[[must_init]]= is unknown to Clang, which implements =[[now_init]]=; GCC implements =[[must_init]]= but on the parameter rather than in the paper's function position ([[#must-init][§4.2 must_init]], [[#attribute-placement-settled][Appendix settled forms]]). =std::now_init= ships in GCC's =<utility>= and nowhere in Clang's library ([[#now-init-span][§1.4 now_init to a span]]).
 
 * Rejected by both implementations where the paper says OK
@@ -198,7 +200,7 @@ The sketch is made compilable with the smallest edits: =Int= to =int=, a =Bad_in
 
 *** What happens
 
-The paper says the sketch "is guaranteed free from initialization errors except for the call of now_init()". Clang rejects line 57, =mem.elem = (T*)p;= in =reserve=: after =uninitialized_move= into =p=, =p='s referent is initialized, and a =[[ref_to_uninit]]= member may not be made to refer to initialized memory. =elem= refers to a /mixed/ range, and the design has no marker for one. That is the design's central problem, and it is one line long. GCC rejects five lines, all for the same reason: the standard library is not annotated. =(T*)malloc(...)= into a marked pointer is rejected (GCC treats =malloc='s result as initialized), =free(elem)= is rejected twice ("its parameter is not marked =[[ref_to_uninit]]="), and =std::uninitialized_fill(mem.elem, ...)= is rejected on both iterator arguments. The paper's comment "assume that uninitialized_fill() knows about =[[ref_to_uninit]]=" is exactly the assumption that fails.
+The paper says the sketch "is guaranteed free from initialization errors except for the call of now_init()". Clang rejects line 57, =mem.elem = (T*)p;= in =reserve=: after =uninitialized_move= into =p=, =p='s referent is initialized, and a =[[ref_to_uninit]]= member may not be made to refer to initialized memory. =elem= refers to a /mixed/ range, and the design has no marker for one. That is the design's central problem, and it is one line long. GCC reports five errors on four lines, all for the same reason: the standard library is not annotated. [Revised 2026-11-14: was "rejects five lines".] =(T*)malloc(...)= into a marked pointer is rejected (GCC treats =malloc='s result as initialized), =free(elem)= is rejected twice ("its parameter is not marked =[[ref_to_uninit]]="), and =std::uninitialized_fill(mem.elem, ...)= is rejected on both iterator arguments. The paper's comment "assume that uninitialized_fill() knows about =[[ref_to_uninit]]=" is exactly the assumption that fails.
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/b4xqW968f
 
@@ -243,7 +245,7 @@ The paper implies this should be accepted. A read after the loop is added to see
 
 *** What happens
 
-Neither compiler recognizes the range-for as an initialization. Clang rejects the loop header on line 5 (the implicit =__range= reference binds uninitialized memory unmarked) and the read on line 6. GCC rejects the same header twice (once as a marker mismatch, once as address-taken-before-initialized) and the read. So the case the paper calls "simple to validate" is a hard error on both; the only sanctioned way to fill the array is =std::uninitialized_fill= over the whole range.
+Neither compiler recognizes the range-for as an initialization. Clang rejects the loop header on line 5 (the implicit =__range= reference binds uninitialized memory unmarked) and the read on line 6. GCC rejects the same header twice (once as a marker mismatch, once as address-taken-before-initialized) and the read. So the case the paper calls "simple to validate" is a hard error on both. The sanctioned way to fill the array is =std::uninitialized_fill= over the whole range, and that works on Clang only: GCC rejects =std::uninitialized_fill(aar6, aar6 + 10, 0)= and the =std::ranges= form as well, its library not being annotated. [Revised 2026-11-14: the first version gave =std::uninitialized_fill= as the way out without having tried it on GCC.]
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/b5dTavnfK
 
@@ -352,7 +354,7 @@ Expected: accepted.
 
 *** What happens
 
-Both reject =Label lab1 [[uninit]];=: the type has non-trivial default initialization (two =std::string= members), so it cannot be marked. GCC also rejects the =Label= type itself ("constructor does not initialize member 'Label::code'"), so on GCC the paper's =lab0= aggregate cannot even be declared without a default member initializer for =code=. The idiom the paper is illustrating, =construct_at= over an object whose string members are already alive, is a double construction and leaks when run (see the runtime demo in the companion document); both implementations refuse to let it be spelled.
+Both reject =Label lab1 [[uninit]];=: the type has non-trivial default initialization (two =std::string= members), so it cannot be marked. GCC's second error, against the =Label= type ("constructor does not initialize member 'Label::code'"), is the same line again: it comes with a note that the synthesized default constructor was first required at =lab1=, and =Label lab0 { n, a, c };= compiles on GCC by itself. The idiom the paper is illustrating, =construct_at= over an object whose string members are already alive, is a double construction: no destructor runs for the strings that were there. With both still empty, libstdc++ loses nothing; once one of them owns heap memory it leaks, which is what the [[https://godbolt.org/z/szzP1zWxe][runtime demo]] shows under AddressSanitizer. Both implementations refuse to let it be spelled. [Revised 2026-11-14: the first version said GCC rejects the =Label= type itself, so that =lab0= could not be declared, and said the idiom "leaks when run" without saying that the demo first assigns a long string to =lab1.name=.]
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/c9K8zG6f3
 
@@ -421,7 +423,7 @@ The paper's three definitions of =Label= are renamed =Label=, =Label2=, and =Lab
 
 *** What happens
 
-=lab1= and =lab2= are rejected by both, as the paper says (GCC reports =lab1='s problem against the type =Label= rather than the variable). The repair the paper offers, =Label2= with =string name [[uninit]]=, is rejected by both at the member declarations: =[[uninit]]= cannot be put on a =std::string= because default-initialization does not leave it uninitialized. So =Label2 lab2b [[uninit]]=, which the paper says "would have been OK", is an error on both, and there is no spelling in either implementation for a class with some members initialized and some not. =Label3= (=int code = 0=) is accepted by both.
+=lab1= and =lab2= are rejected by both, as the paper says (GCC reports =lab1='s problem against the type =Label= rather than the variable). The repair the paper offers, =Label2= with =string name [[uninit]]=, is rejected by both at the member declarations: =[[uninit]]= cannot be put on a =std::string= because default-initialization does not leave it uninitialized. So =Label2 lab2b [[uninit]]=, which the paper says "would have been OK", is an error on both, and there is no spelling in either implementation for leaving a member that has a default constructor uninitialized. A class that mixes an initialized member with an =[[uninit]]= scalar or array member is accepted by both ([[#class-slot][§4.5 Slot]], [[#classes-exposing-uninit][§5.3 =X_annotated=]]). [Revised 2026-11-14: the first version said there was no spelling for a class with some members initialized and some not, which those two examples contradict.] =Label3= (=int code = 0=) is accepted by both.
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/he4f8sdYj
 
@@ -576,7 +578,7 @@ The seven settled forms are spelled exactly as the paper has them. The paper's r
 
 *** What happens
 
-Of the seven forms the paper settles on: =f1=, =f3= and =f4= are accepted by both. =int arr [[uninit]] [7]= is rejected by both, not for placement but because the paper's example is a global and statics cannot be =[[uninit]]=. =void f2(int* [[ref_to_uninit]])=, the unnamed-parameter form, is an error on Clang (attribute on a type) and a warning on GCC (attribute dropped). =unique_ptr<int> up [[ref_to_uninit]]= is accepted by Clang and rejected by GCC ("only supported on a pointer- or reference-typed ..."): class-type handles carry the marker on one implementation only. =void fct1 [[must_init]] (...)= is a warning on Clang (unknown attribute) and an error on GCC (wrong position). Of the four forms the paper rejects, Clang rejects all four as errors; GCC downgrades three to "attribute ignored" warnings (so =void fct2(int [[uninit]])= compiles on GCC as plain =void fct2(int)=) and rejects only =p6=, as address-taken once its attribute is dropped. Two of the Appendix's seven settled spellings fail on both implementations, and the two implementations disagree on three more.
+Of the seven forms the paper settles on: =f1=, =f3= and =f4= are accepted by both. =int arr [[uninit]] [7]= is rejected by both, not for placement but because the paper's example is a global and statics cannot be =[[uninit]]=. =void f2(int* [[ref_to_uninit]])=, the unnamed-parameter form, is an error on Clang (attribute on a type) and a warning on GCC (attribute dropped). =unique_ptr<int> up [[ref_to_uninit]]= is accepted by Clang and rejected by GCC ("only supported on a pointer- or reference-typed ..."): class-type handles carry the marker on one implementation only. =void fct1 [[must_init]] (...)= is a warning on Clang (unknown attribute) and an error on GCC (wrong position). Of the four forms the paper rejects, Clang rejects all four as errors; GCC downgrades three to "attribute ignored" warnings (so =void fct2(int [[uninit]])= compiles on GCC as plain =void fct2(int)=) and rejects only =p6=, as address-taken once its attribute is dropped. Of the Appendix's seven settled spellings, three work on both implementations, one (=arr=) is an error on both, and the other three (=f2=, =up=, =fct1=) are each an error on one compiler and accepted, or ignored with a warning, on the other. [Revised 2026-11-14: the first version counted two failing on both and three more in dispute; only =arr= is an error on both.]
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/rq6YzhvY1
 
@@ -833,7 +835,7 @@ Expected: after =f(&x)=, ~X z = x;~ is OK. The §4.2 example puts the attribute 
 
 *** What happens
 
-The attribute has forked. Clang does not know =[[must_init]]= at all (three "unknown attribute ignored" warnings); it implements the same idea as =[[now_init]]=. With the attribute ignored, Clang then rejects =f(&x)= on line 10 as an unmarked pointer binding and the two =X z = x= reads, so the paper's "OK" lines are all errors on Clang. GCC implements =[[must_init]]=, but only on the parameter: the Appendix's function-position spelling =f2 [[must_init]] (...)= is an error, and its call site (line 19) is then rejected like an ordinary =[[ref_to_uninit]]= call. GCC does check the callee, the one piece of §4.2 only GCC has: =does_not_initialize= is rejected with "function may return without the pointee of 'p' being definitely assigned".
+The attribute has forked. Clang does not know =[[must_init]]= at all (three "unknown attribute ignored" warnings); it implements the same idea as =[[now_init]]=. With the attribute ignored, Clang then rejects =f(&x)= on line 10 as an unmarked pointer binding and the two =X z = x= reads, so the paper's "OK" lines are all errors on Clang. GCC implements =[[must_init]]=, but only on the parameter: the Appendix's function-position spelling =f2 [[must_init]] (...)= is an error, the call on line 18 is then an ordinary =[[ref_to_uninit]]= call that initializes nothing, and the read on line 19 is rejected. [Revised 2026-11-14: the first version put the error at the call site; line 19 is the read.] GCC does check the callee, the one piece of §4.2 only GCC has: =does_not_initialize= is rejected with "function may return without the pointee of 'p' being definitely assigned".
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/jfP551n5h
 
@@ -890,7 +892,7 @@ The paper introduces the example with the single word "Consider" and lets the co
 
 *** What happens
 
-The paper annotates four errors (p1, p3, =f1(p2)=, =f2(r1)=) and the rest OK. Clang: p1, p3 and =f2(r1)= rejected as the paper says; =f1(p2)= (passing =nullptr= to a =[[ref_to_uninit]]= parameter) is /accepted/ (Clang's docs: a null handle "refers to nothing, so it suits either" marking); and =int* p4 [[uninit]]= is rejected (as in [[#uninit-pointers][§4.2 pointers]]). GCC: p1, p3 and =f2(r1)= as the paper says, =f1(p2)= accepted like Clang; but =f1(p3)=, which the paper marks OK, is rejected, and the binding =int& r2 [[ref_to_uninit]] = y= on line 16 is rejected as address-taken: GCC does not implement =[[ref_to_uninit]]= references to locals. Neither compiler matches the paper's table, and they disagree with each other on three of the eleven lines (=f1(p3)=, =r2=, =p4=).
+The paper annotates four errors (p1, p3, =f1(p2)=, =f2(r1)=) and the rest OK. Clang: p1, p3 and =f2(r1)= rejected as the paper says; =f1(p2)= (passing =nullptr= to a =[[ref_to_uninit]]= parameter) is /accepted/ (Clang's docs: a null handle "refers to nothing, so it suits either" marking); and =int* p4 [[uninit]]= is rejected (as in [[#uninit-pointers][§4.2 pointers]]). GCC: p1, p3 and =f2(r1)= as the paper says, =f1(p2)= accepted like Clang; but =f1(p3)=, which the paper marks OK, is rejected, and the binding =int& r2 [[ref_to_uninit]] = y= on line 16 is rejected as address-taken: GCC does not implement =[[ref_to_uninit]]= references to locals. GCC's rejection of =f1(p3)= follows from line 11: it goes by what =p3= was bound to, the initialized =x=, where the paper and Clang go by the marker. With =p3= bound to an =[[uninit]]= local, GCC accepts the call. [Revised 2026-11-14: this explanation was not in the first version, which left =f1(p3)= looking like a separate GCC restriction.] Neither compiler matches the paper's table, and they disagree with each other on three of the eleven lines (=f1(p3)=, =r2=, =p4=).
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/Thb447q7j
 
@@ -1005,7 +1007,7 @@ The paper leaves =new T= as a question rather than a verdict; for ~T = int~ it d
 
 *** What happens
 
-Clang answers the paper's open question "Is the T pointed to initialized or not?" for ~T = int~: =unique_ptr<int> pi (new int)= is rejected ("handle of type 'unique_ptr<int>' to uninitialized memory must be marked '=[[ref_to_uninit]]='"), and =vector v(10, x)= is rejected as the paper says. GCC rejects only the =vector= line (as address-taken), and accepts =new int= into a =unique_ptr= and the read =*pi=: GCC does not treat =new T= of a scalar as uninitialized memory.
+Clang answers the paper's open question "Is the T pointed to initialized or not?" for ~T = int~: =unique_ptr<int> pi (new int)= is rejected ("handle of type 'unique_ptr<int>' to uninitialized memory must be marked '=[[ref_to_uninit]]='"), and =vector v(10, x)= is rejected as the paper says. GCC rejects only the =vector= line (as address-taken), and accepts =new int= into a =unique_ptr= and the read =*pi=: GCC does not treat =new T= of a scalar as uninitialized memory. The only line here that the paper annotates is the =vector= one, and both compilers reject it as marked. The =new int= lines answer a question the paper asks and leaves open, so Clang's rejection of =pi= is not against an "OK" in the paper, and this example sits in this group on weaker ground than its neighbours. [Revised 2026-11-14: the first version called Clang "stricter" and GCC "looser" on =new int=, as if the paper had ruled on it.]
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/4rq8xzvjb
 
@@ -1265,7 +1267,7 @@ Expected: =i1= OK; =i2= error (tries to read from an =[[uninit]]=); =u1= error (
 
 *** What happens
 
-Clang matches all four of the paper's annotations, with =u1= rejected for the §4.1 reason (both =[[uninit]]= and an initializer) rather than the "tries to initialize an =[[uninit]]=" the paper gives. The two added lines show the §4.5 weakness the paper admits: after =u2 = 5= initializes =y=, =uu.get_uninit()= on line 21 is still rejected: a marked getter is uninitialized forever. GCC rejects only =u1=: =ii.get_uninit()= on line 17 (the paper's "error: tries to read from an =[[uninit]]=") is accepted, as is line 21. GCC does not implement =[[ref_to_uninit]]= on return types.
+Clang matches all four of the paper's annotations, with =u1= rejected for the §4.1 reason (both =[[uninit]]= and an initializer) rather than the "tries to initialize an =[[uninit]]=" the paper gives. The two added lines show the §4.5 weakness the paper admits: after =u2 = 5= initializes =y=, =uu.get_uninit()= on line 21 is still rejected: a marked getter is uninitialized forever. GCC rejects only =u1=: =ii.get_uninit()= on line 17 (the paper's "error: tries to read from an =[[uninit]]=") is accepted, as is line 21. GCC does not check a read through a marked return value; it does check where a marked returned pointer is stored, as [[#malloc-calloc][§4.3 malloc/calloc]] shows. [Revised 2026-11-14: the first version said GCC does not implement =[[ref_to_uninit]]= on return types.]
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/qYr64aTbW
 
@@ -1379,66 +1381,6 @@ GCC:
 #+BEGIN_EXAMPLE
 9:39: error: no matching function for call to 'Y::Y()'
 9:5: error: constructor does not initialize member 'X::arr', which is not marked '[[uninit]]'
-#+END_EXAMPLE
-
-** §5.4 — Classes without constructors: S s1..s4
-:PROPERTIES:
-:CUSTOM_ID: classes-without-ctors
-:END:
-
-#+BEGIN_SRC C++ -n
-[[profiles::enforce(std::init)]];
-#include <string>
-using std::string;
-struct S { int x; string s; };
-
-void f()
-{
-    S s1 = {1, "foo"};  // OK
-    S s2 = {1};         // OK, s2.s defaults to ""
-    S s3;               // error: s3.x uninitialized
-    s3.x = 1;
-    s3.s = "foo";
-    S s4 [[uninit]];    // error: s4.s is default constructed
-    s4.x = 1;
-    s4.s = "foo";
-}
-#+END_SRC
-
-*** What the paper says
-
-P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=33][§5.4, page 33]]:
-
-#+begin_quote
-When defining objects of classes without constructors we must initialize all members in their definitions. For example [the function above].
-
-The member =s4.s= is a =string=, and =string= has a default constructor. That means that =S s4 [[uninit]];= declares =s4.s= as both initialized and uninitialized. That’s an error (even before we start considering delayed initialization).
-
-Immediate initialization is simpler and clearer.
-
-Don’t introduce a variable until you have an initializer for it.
-#+end_quote
-
-Expected: =s1= OK; =s2= OK (=s2.s= defaults to =""=); =s3= error (=s3.x= uninitialized), followed by member assignments; =s4= error (=s4.s= is default constructed), followed by member assignments.
-
-*** What happens
-
-Clang: =s3= rejected as the paper says; =s4 [[uninit]]= rejected because =S= default-initializes (the paper's reason, differently phrased); and then both member assignments to =s4= are rejected too. GCC: =s4= rejected for the same reason, but =S s3;= is /not/ reported at line 10. GCC instead rejects the type =S= at line 4 ("constructor does not initialize member 'S::x'"): on GCC an aggregate with an =int= member and a =string= member is ill-formed under the profile however it is used, including =s1= and =s2=, which the paper marks OK.
-
-- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/oKnszPY33
-
-Clang:
-#+BEGIN_EXAMPLE
-10:7: error: variable 's3' must be initialized or marked '[[uninit]]'
-13:7: error: variable 's4' cannot be marked '[[uninit]]'; default-initialization of its type 'S' does not leave it uninitialized
-14:10: error: writing a member of an '[[uninit]]' object does not initialize it; initialize the whole object
-15:8: error: calling member function 'operator=' binds its implicit object parameter to uninitialized memory
-#+END_EXAMPLE
-
-GCC:
-#+BEGIN_EXAMPLE
-4:8: error: constructor does not initialize member 'S::x', which is not marked '[[uninit]]'
-13:7: error: 's4' cannot be marked '[[uninit]]': its type 'S' has non-trivial default initialization
 #+END_EXAMPLE
 
 ** §5.6 — Unions
@@ -1695,7 +1637,7 @@ The paper's two-TU example (=f.c= and =g.c=) is folded into one TU. Expected: ~i
 
 *** What happens
 
-Both enforce the §3 rule exactly: =int x = f();= and =int y = g();= are errors ("requires constant initialization" / "has non-constant initialization"). All four remedies are accepted. Note this is the one rule that applies to code with no =[[uninit]]= anywhere in it, and it rejects every namespace-scope object with a non-constexpr constructor.
+Both enforce the §3 rule exactly: =int x = f();= and =int y = g();= are errors ("requires constant initialization" / "has non-constant initialization"). The three remedies that are code are accepted; the fourth, not using global variables, leaves nothing to compile. [Revised 2026-11-14: was "All four remedies are accepted".] Note this is the one rule that applies to code with no =[[uninit]]= anywhere in it, and it rejects every namespace-scope object with a non-constexpr constructor.
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/s3PW87ra8
 
@@ -1883,7 +1825,7 @@ The comments in the source block are the paper's: after the call, =*p= is not co
 
 *** What happens
 
-Both reject =X z = x;= as the paper says. This is the class-typed form; the scalar form of the same shape (=int u [[uninit]]; f(&u); return u;=) is /accepted/ by Clang, because its plain-local analysis treats the call as an escape that initializes =u= (see the companion probes). The paper's example happens to be the one Clang gets right.
+Both reject =X z = x;= as the paper says. This is the class-typed form; the scalar form of the same shape (=int u [[uninit]]; f(&u); return u;=) is /accepted/ by Clang, because its plain-local analysis treats the call as an escape that initializes =u= (see [[link://slug/initialization-profile-probes][the companion probes]]). The paper's example happens to be the one Clang gets right.
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/Yzxbz7jWr
 
@@ -1984,7 +1926,7 @@ The function =f= is added to exercise the declarations: a marked pointer from =m
 
 *** What happens
 
-With the paper's proposed annotated declarations in scope (and =<cstdlib>= not included), both compilers behave as the paper describes: the unmarked =b= is rejected, =a=, =c=, =d= accepted. This is the one place the design works as drawn, because the declarations were written for it. With the real =<cstdlib>=, Clang knows =malloc= by builtin ID and treats its result as uninitialized; GCC does not, and treats =malloc='s result as initialized memory (see the companion probes: GCC accepts =int* p = (int*)malloc(4); return *p;=).
+With the paper's proposed annotated declarations in scope (and =<cstdlib>= not included), both compilers behave as the paper describes: the unmarked =b= is rejected, =a=, =c=, =d= accepted. This is the one place the design works as drawn, because the declarations were written for it. With the real =<cstdlib>=, Clang knows =malloc= by builtin ID and treats its result as uninitialized; GCC does not, and treats =malloc='s result as initialized memory (see [[link://slug/initialization-profile-probes][the companion probes]]: GCC accepts =int* p = (int*)malloc(4); return *p;=).
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/YK17cszc3
 
@@ -2191,6 +2133,66 @@ GCC:
 (accepted, exit 0)
 #+END_EXAMPLE
 
+** §5.4 — Classes without constructors: S s1..s4
+:PROPERTIES:
+:CUSTOM_ID: classes-without-ctors
+:END:
+
+#+BEGIN_SRC C++ -n
+[[profiles::enforce(std::init)]];
+#include <string>
+using std::string;
+struct S { int x; string s; };
+
+void f()
+{
+    S s1 = {1, "foo"};  // OK
+    S s2 = {1};         // OK, s2.s defaults to ""
+    S s3;               // error: s3.x uninitialized
+    s3.x = 1;
+    s3.s = "foo";
+    S s4 [[uninit]];    // error: s4.s is default constructed
+    s4.x = 1;
+    s4.s = "foo";
+}
+#+END_SRC
+
+*** What the paper says
+
+P4222R3 [[https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2026/p4222r3.pdf#page=33][§5.4, page 33]]:
+
+#+begin_quote
+When defining objects of classes without constructors we must initialize all members in their definitions. For example [the function above].
+
+The member =s4.s= is a =string=, and =string= has a default constructor. That means that =S s4 [[uninit]];= declares =s4.s= as both initialized and uninitialized. That’s an error (even before we start considering delayed initialization).
+
+Immediate initialization is simpler and clearer.
+
+Don’t introduce a variable until you have an initializer for it.
+#+end_quote
+
+Expected: =s1= OK; =s2= OK (=s2.s= defaults to =""=); =s3= error (=s3.x= uninitialized), followed by member assignments; =s4= error (=s4.s= is default constructed), followed by member assignments.
+
+*** What happens
+
+Clang: =s3= rejected as the paper says; =s4 [[uninit]]= rejected because =S= default-initializes (the paper's reason, differently phrased); and then both member assignments to =s4= are rejected too. GCC: =s4= rejected for the same reason. =S s3;= is reported not at line 10 but against the type at line 4 ("constructor does not initialize member 'S::x'"), with a note that the synthesized default constructor was first required at line 10. That is the paper's error on =s3=, reported where the constructor is and not where it is used; =s1= and =s2= compile on GCC by themselves. GCC says nothing about the member assignments to =s4=. [Revised 2026-11-14: the first version read the line-4 error as GCC rejecting the type =S= however it is used, =s1= and =s2= included, and filed this example with the ones where GCC alone diverges. Compiling =s1= and =s2= without =s3= shows otherwise, and the example has moved here.]
+
+- Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/oKnszPY33
+
+Clang:
+#+BEGIN_EXAMPLE
+10:7: error: variable 's3' must be initialized or marked '[[uninit]]'
+13:7: error: variable 's4' cannot be marked '[[uninit]]'; default-initialization of its type 'S' does not leave it uninitialized
+14:10: error: writing a member of an '[[uninit]]' object does not initialize it; initialize the whole object
+15:8: error: calling member function 'operator=' binds its implicit object parameter to uninitialized memory
+#+END_EXAMPLE
+
+GCC:
+#+BEGIN_EXAMPLE
+4:8: error: constructor does not initialize member 'S::x', which is not marked '[[uninit]]'
+13:7: error: 's4' cannot be marked '[[uninit]]': its type 'S' has non-trivial default initialization
+#+END_EXAMPLE
+
 ** §5.4 — struct Point: member-wise initialization is banned
 :PROPERTIES:
 :CUSTOM_ID: struct-point
@@ -2225,7 +2227,7 @@ Expected: ~p.x = 7~ error; ~p.y = 9~ error. A read of both members is added.
 
 *** What happens
 
-Both reject the two member assignments, as the paper says. Clang also rejects the added read. The companion probes show the same ban reached through pointers: =int* px [[ref_to_uninit]] = &p.x; *px = 7;= is accepted at the store but credits nothing.
+Both reject the two member assignments, as the paper says. Clang also rejects the added read. [[link://slug/initialization-profile-probes][The companion probes]] show the same ban reached through pointers: =int* px [[ref_to_uninit]] = &p.x; *px = 7;= is accepted at the store but credits nothing.
 
 - Compiler Explorer (both compilers, diagnostics pane open): https://godbolt.org/z/4Thn5exYh
 
@@ -2253,11 +2255,13 @@ Three of the paper's code fragments are not translation units under any reasonab
 
 * Companion probes
 
-The probes that go beyond the paper's own examples — two pointers to one object, aliases of the pointer object, lambda captures, =this= aliases in constructors, =[[uninit]]= members reached through a pointer to the whole object, by-value copies, the =-Wmaybe-uninitialized= shapes, and GCC's self-documented nested-diamond false positive — are in the earlier set of links and the file =p4222r3-probes.cpp=; the §5.3 runtime leak demonstration is at https://godbolt.org/z/szzP1zWxe.
+The probes that go beyond the paper's own examples — two pointers to one object, aliases of the pointer object, lambda captures, two references to one object, =this= aliases in constructors, pointers to members of an =[[uninit]]= aggregate, =[[uninit]]= members reached through a pointer to the whole object, a partial =memset=, =void*= storage from =malloc=, double construction, and correlated conditions — are in [[link://slug/initialization-profile-probes][a post of their own]], with a Compiler Explorer link for each group; the §5.3 runtime leak demonstration is at https://godbolt.org/z/szzP1zWxe. [Revised 2026-11-14: the first version pointed at a file and an earlier set of links that were not published. It also listed by-value copies, the =-Wmaybe-uninitialized= shapes, and GCC's self-documented nested-diamond false positive; those are not among the published probes.]
 
 * Method
 
-Each source was compiled through Compiler Explorer's API on 2026-10-25 against the two compilers above and the diagnostics recorded; the links were then created with CE's shortener using a full layout state (editor; per compiler, a compiler pane over an output pane) and each link's stored source checked against the compiled source. Diagnostics shown are trimmed of ANSI colour, source-echo and caret lines, notes, and the trailing "under profile 'std::init'" on every message; nothing else is edited.
+Each source was compiled through Compiler Explorer's API on 2026-10-25 against the two compilers above and the diagnostics recorded; the links were then created with CE's shortener using a full layout state (editor; per compiler, a compiler pane over an output pane) and each link's stored source checked against the compiled source. Diagnostics shown are trimmed of ANSI colour, source-echo and caret lines, context lines and notes, Clang's trailing warning-flag name, the "under profile 'std::init'" (Clang) or "under the 'std::init' profile" (GCC) that every message carries, and the "aka" expansion after a type name. The =std::uninitialized_fill= signature in the §4.7 listing is cut to =(...)=, and four listings are in line order where the compiler emitted them otherwise. Nothing else is edited. [Revised 2026-11-14: the first version listed fewer trims than were made.]
+
+On 2026-11-14 all 36 sources were compiled again and each listing compared with the fresh output, and each link's stored source and compiler settings compared with the post. Everything matched. The claims in the prose that a listing does not show by itself were then each tried with a small program of their own; where one failed, the passage is revised and says so.
 
 * Summary table
 :PROPERTIES:
@@ -2272,6 +2276,7 @@ A legend for the one-line verdicts:
 - /stricter/ :: rejects something the paper marks OK.
 - /looser/ :: accepts something the paper marks as an error.
 - /diverge/ :: the two implementations disagree with each other.
+- /revised/ :: the cell changed in the 2026-11-14 recheck; the example's own section says how.
 
 | § | Example | Clang | GCC | Agree? |
 |---+---------+-------+-----+--------|
@@ -2296,18 +2301,18 @@ A legend for the one-line verdicts:
 | [[#lifetimes-destroy-at][§4.6]] | Lifetimes: double destruction | looser | looser | yes |
 | [[#vector-example][§4.7]] | The Vector example | stricter: rejects the Vector | stricter: rejects the Vector (×5) | no (different lines) |
 | [[#input-buffer][§4.8]] | The input-buffer example | as paper | as paper | yes |
-| [[#unique-ptr-new][§4.9]] | unique_ptr<T>(new T) and vector(10, x) | stricter (new int) | looser (new int) | no |
+| [[#unique-ptr-new][§4.9]] | unique_ptr<T>(new T) and vector(10, x) | rejects =new int=, which the paper leaves open (/revised/) | accepts =new int= and the read (/revised/) | no |
 | [[#user-uninitialized-fill][§4.9]] | A user-written uninitialized_fill with a marked range parameter | stricter on last line (paper self-contradicts) | same | yes |
 | [[#malloc-new-mix][§4.11]] | Mixing malloc and new in one return | as paper | looser | no |
 | [[#member-initializers][§5.2]] | Member initializers: the accepted form | as paper | as paper | yes |
 | [[#member-in-ctor-body][§5.2]] | A member initialized in the constructor body (=[[uninit]]= int* p) | stricter: no =[[uninit]]= on pointer member | looser: nothing checked | no |
 | [[#member-alternatives][§5.2]] | The three alternatives: nullptr pseudo-initialization, unique_ptr, default-constructed strings | as paper | as paper | yes |
 | [[#classes-exposing-uninit][§5.3]] | Classes exposing uninitialized memory: struct X { Y m1; Y* m2; int arr[10]; } | as paper | looser (malloc) | no |
-| [[#label-construct-at][§5.3]] | Label lab1 =[[uninit]]=; construct_at(&lab1, x, y, z) | stricter: example rejected | stricter: example and type rejected | mostly |
-| [[#classes-without-ctors][§5.4]] | Classes without constructors: S s1..s4 | as paper | stricter: type S rejected | no |
+| [[#label-construct-at][§5.3]] | Label lab1 =[[uninit]]=; construct_at(&lab1, x, y, z) | stricter: example rejected | stricter: example rejected (/revised/) | yes (/revised/) |
+| [[#classes-without-ctors][§5.4]] | Classes without constructors: S s1..s4 | as paper | as paper: =s3= reported at the type (/revised/) | yes (/revised/) |
 | [[#struct-point][§5.4]] | struct Point: member-wise initialization is banned | as paper | as paper | yes |
 | [[#label-uninit-members][§5.4]] | Label: mixed members, the =[[uninit]]=-member repair, and the all-initialized form | stricter: repair rejected | stricter: repair rejected | yes |
 | [[#arrays][§5.5]] | Arrays: arr1..arr4 and ranges::uninitialized_fill | §5.5 placement rejected | §5.5 placement rejected; fill accepted | no |
 | [[#unions][§5.6]] | Unions | as paper | looser (x3) / 'not yet analyzed' | no |
 | [[#attribute-placement-variables][§Appendix]] | Attribute placement: variables, pointers, arrays | array forms rejected | array forms rejected | mostly |
-| [[#attribute-placement-settled][§Appendix]] | Attribute placement: the forms the paper settles on, and the rejected in-type forms | 2 of 7 settled forms fail | 2 of 7 fail, 1 more differs | no |
+| [[#attribute-placement-settled][§Appendix]] | Attribute placement: the forms the paper settles on, and the rejected in-type forms | 2 of 7 settled forms fail, 1 more ignored (/revised/) | 3 of 7 fail, 1 more ignored (/revised/) | no |
